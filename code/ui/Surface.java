@@ -19,7 +19,6 @@ import static code.ImgMod30.shiftOrigin;
 import static code.ui.Applet.*;
 
 class Surface extends JPanel {
-
     public final static int BELL = 0;
     public final static int MANHATTAN = 1;
     public final static int EUCLIDEAN = 2;
@@ -56,11 +55,11 @@ class Surface extends JPanel {
         super.paintComponent(g);
     }
 
-    private void drawLineHash(Graphics g, int startx, int starty, int endx, int endy, Color color, int shift) {
+    private void drawLineHash(Graphics g, int startX, int startY, int endX, int endY, Color color, int shift) {
         Graphics2D g2d = (Graphics2D) g;
         g2d.setStroke(new BasicStroke(shift == 2 ? 2 : 3));
         g2d.setColor(color);
-        g.drawLine(startx + getShiftX(shift), starty + getShiftY(shift), endx + getShiftX(shift), endy + getShiftY(shift));
+        g.drawLine(startX + getShiftX(shift), startY + getShiftY(shift), endX + getShiftX(shift), endY + getShiftY(shift));
     }
 
     private void drawRectHash(Graphics g, Color c, int x, int y, int w, int h, int shift) {
@@ -79,35 +78,20 @@ class Surface extends JPanel {
         g2d.setRenderingHints(rh);
         g2d.setStroke(new BasicStroke(3));
         g2d.setColor(new Color(0, 0, 0));
-        // g2d.drawRect(shift == 0 ? 0 : SHIFTS[shift], shift == 0 ? 0 : SHIFTY[shift],
-        // shift == 2 ? HASH_W / 2 : HASH_W, shift == 2 ? HASH_H / 2 : HASH_H);
+
         if (drawMode == DMODE.Antoine256 || drawMode == DMODE.AntoineShift256 || drawMode == DMODE.Adjacency1_256 || drawMode == DMODE.Adjacency2_256 || drawMode == DMODE.Blockies128) {
             drawAntoineHash(g, hash, shift, drawMode, prng);
         } else if (drawMode.toString().startsWith("GridLines")) {
             drawGridLinesHash(g, hash, shift, drawMode);
         } else if (drawMode == DMODE.Landscape32) {
-            drawLandscapeHash(g, hash, shift, drawMode);
+            drawLandscapeHash(g, hash, shift);
         } else if (drawMode == DMODE.Random128) {
             drawFuncHash(g, hash, shift, DEPTH);
-        } else if (drawMode.name().substring(0, 7).equals("Fourier")) {
-            drawFourierHash(g, hash, shift, drawMode, prng);
+        } else if (drawMode.name().startsWith("Fourier")) {
+            drawFourierHash(g, hash, shift, drawMode);
         }
         if (shift == 2) resetShiftY();
 
-    }
-
-    public void drawGridHash(Graphics g, int[][] values, int shift) {
-        int sideLength = getHashWidth(shift) / values.length;
-        for (int i = 0; i < values.length; i++) {
-            for (int j = 0; j < values[0].length; j++) {
-                drawRectHash(g, values[i][j] == 1 ? new Color(255, 255, 255) : new Color(0, 0, 0), j * sideLength, i * sideLength, sideLength, sideLength, shift);
-            }
-        }
-    }
-
-    public int mathToRGB(double d) {
-        // From [-1, 1] to [0, 255]
-        return (int) Math.floor((d + 1) / 2.0 * 255);
     }
 
     public void drawFuncHash(Graphics g, String hash, int shift, int depth) {
@@ -190,24 +174,23 @@ class Surface extends JPanel {
     private double dist(double x, double y, int func, double cut) {
 
         if (x > 128) return dist(256 - x, y, func, cut);
-        double minxy = Math.min(Math.abs(x), Math.abs(y));
-        double maxxy = Math.max(Math.abs(x), Math.abs(y));
-        double sumxy = Math.abs(x) + Math.abs(y);
+        double minXY = Math.min(Math.abs(x), Math.abs(y));
+        double maxXY = Math.max(Math.abs(x), Math.abs(y));
+        double sumXY = Math.abs(x) + Math.abs(y);
 
-        if (maxxy > cut) return 0;
+        if (maxXY > cut) return 0;
 
         if (func == SQRTMIN) {
             if (x == 0 && y == 0) return 1.0;
-            return 0.5 * (x == 0 || y == 0 ? 2 : 1 / Math.pow(minxy, 0.2));
+            return 0.5 * (x == 0 || y == 0 ? 2 : 1 / Math.pow(minXY, 0.2));
         }
         if (func == SIGMOID) {
-            double l = 1 - (2 * maxxy) / (2 * cut + 1);
-            if (minxy == 0) return l * l * l * l * l;// (1 + Math.exp(-0.3 * (-maxxy)));
+            double l = 1 - (2 * maxXY) / (2 * cut + 1);
 
-            return l / (1 + Math.exp(-(-maxxy * 0.001) * (-minxy)));
+            return l / (1 + Math.exp(-(-maxXY * 0.001) * (-minXY)));
         }
         if (func == MULT) return x * y == 0 ? 4 : 2 / Math.abs(x * y);
-        if (func == MANHATTAN) return (sumxy) == 0 ? 4 : 2 / (sumxy);
+        if (func == MANHATTAN) return (sumXY) == 0 ? 4 : 2 / (sumXY);
         double dist = Math.sqrt(x * x + y * y);
         if (func == EUCLIDEAN) return dist == 0 ? 4 : 2 / dist;
         if (func == BELL) return Math.exp(-0.5 * dist * dist / 1.5);
@@ -215,69 +198,70 @@ class Surface extends JPanel {
             double cube = (Math.abs(x) * x * x + Math.abs(y) * y * y);
             return cube == 0 ? 4 : 2 / cube;
         }
-        if (func == SQUARE) return (x * x + y * y) == 0 ? 4 : 2 / (x * x + y * y);
-        if (func == XY) return (x * x + y * y) == 0 ? 4 : x * y * 2.0 / (x * x + y * y);
+        double squareDist = (x*x + y*y);
+        if (func == SQUARE) return squareDist == 0 ? 4 : 2 / squareDist;
+        if (func == XY) return squareDist == 0 ? 4 : x * y * 2.0 / squareDist;
         return 0;
     }
 
     private double[] normalizeMean(double[] in) {
-        double mean = Arrays.stream(in).average().getAsDouble();
+        double mean = Arrays.stream(in).average().isPresent() ? Arrays.stream(in).average().getAsDouble() : -1;
         return Arrays.stream(in).map(d -> d / mean).toArray();
     }
 
     private void setValues(int i, int j, TwoDArray target, double modulus, double phi, int size) {
+        //if(i == 1 && j == 0) System.out.println("Set " + modulus + " at 1 0 ");
         target.values[i][j] = ComplexNumber.rPhi(modulus, phi);
 
         if (j == 0 && i != 0) {
             target.values[size - i][j] = ComplexNumber.rPhi(modulus, phi);
         } else if (i == 0 && j != 0) {
             target.values[i][size - j] = ComplexNumber.rPhi(modulus, phi);
-        }
-        else if (i != 0 && j != 0) {
+        } else if (i != 0) {
             target.values[size - i][size - j] = ComplexNumber.rPhi(modulus, phi);
         }
     }
 
-    public int[] drawFourierHash(Graphics g, String hash, int shift, DMODE drawMode, Blockies prng) {
+    public int[] drawFourierHash(Graphics g, String hash, int shift, DMODE drawMode) {
         int spectrumWidth = Integer.parseInt(drawMode.name().substring(drawMode.name().length() - 3), 10);
-        int spectrumHeight = spectrumWidth;
         String binHash = TransformHash.hexToBin(hash);
+        assert binHash.length() == spectrumWidth;
+        long moduloMod = new BigInteger(hash, 16).mod(new BigInteger("ffffffffffffffad", 16)).longValue();
+        long moduloPhase = new BigInteger(hash, 16).mod(new BigInteger("ffffffffffffffc5", 16)).longValue();
 
-        BufferedImage spectrum = new BufferedImage(spectrumWidth, spectrumHeight, BufferedImage.TYPE_INT_RGB);
+        BufferedImage spectrum = new BufferedImage(spectrumWidth, spectrumWidth, BufferedImage.TYPE_INT_RGB);
 
         double modulusR, modulusG, modulusB;
         double phiR, phiG, phiB;
         double frequencyCoeff;
 
+        int ind = 0;
+
+        Random randomMod = new Random(moduloMod);
+        Random randomPhase = new Random(moduloPhase);
+
         TwoDArray datSpecB = new TwoDArray(spectrumWidth, spectrum.getHeight());
         TwoDArray datSpecG = new TwoDArray(spectrumWidth, spectrum.getHeight());
         TwoDArray datSpecR = new TwoDArray(spectrumWidth, spectrum.getHeight());
 
-        int ind = 0;
-
-        BigInteger bigint = new BigInteger(hash, 16);
-        long seedMod = bigint.shiftRight(128).and(new BigInteger("ffffffffffffffffffffffffffffffff", 16)).mod(new BigInteger("ffffffffffffffc5", 16)).longValue();
-        long seedPhase = bigint.and(new BigInteger("ffffffffffffffffffffffffffffffff", 16)).mod(new BigInteger("ffffffffffffffc5", 16)).longValue();
-        Random randomMod = new Random(seedMod);
-        Random randomPhase = new Random(seedPhase);
-        int jMax = 8;
-
-        int iMax = 8;
-
         for (int i = 0; i < spectrumWidth; i++) {
             for (int j = 0; j < spectrumWidth / 2; j++) {
 
-                //DModRPhase : 6
                 frequencyCoeff = dist(i, j, drawMode.modeDist(), drawMode.modeCut());
                 if (drawMode == DMODE.FourierRModDPhase256 || drawMode == DMODE.FourierRModRPhase256) {
                     modulusR = frequencyCoeff * randomMod.nextDouble();
                     modulusG = frequencyCoeff * randomMod.nextDouble();
                     modulusB = frequencyCoeff * randomMod.nextDouble();
-                } else {
+                } else if (drawMode == DMODE.FourierDModRPhase256){
                     modulusR = frequencyCoeff * (binHash.charAt(ind % spectrumWidth) - '0');
                     modulusG = frequencyCoeff * (binHash.charAt((ind + 1) % spectrumWidth) - '0');
                     modulusB = frequencyCoeff * (binHash.charAt((ind + 2) % spectrumWidth) - '0');
-                    if (frequencyCoeff > 0) ind += 3;
+                    if (frequencyCoeff > 0 && !(0 < i && i < spectrumWidth / 2 && j == 0)) ind += 3;
+                } else {
+                    modulusR = frequencyCoeff * 0.5 * (binHash.charAt(ind % spectrumWidth) - '0' + 1);
+                    modulusG = frequencyCoeff * 0.5 * (binHash.charAt((ind + 1) % spectrumWidth) - '0' + 1);
+                    modulusB = frequencyCoeff * 0.5 * (binHash.charAt((ind + 2) % spectrumWidth) - '0' + 1);
+                    if (frequencyCoeff > 0 && !(0 < i && i < spectrumWidth / 2 && j == 0)) ind += 3;
                 }
 
                 if (drawMode == DMODE.FourierDModRPhase256 || drawMode == DMODE.FourierRModRPhase256) {
@@ -288,7 +272,7 @@ class Surface extends JPanel {
                     phiR = Math.PI * (binHash.charAt(ind % spectrumWidth) - '0');
                     phiG = Math.PI * (binHash.charAt((ind + 1) % spectrumWidth) - '0');
                     phiB = Math.PI * (binHash.charAt((ind + 2) % spectrumWidth) - '0');
-                    if (frequencyCoeff > 0) ind += 3;
+                    //if (frequencyCoeff > 0 && !(0 < i && i < spectrumWidth / 2 && j == 0)) ind += 3;
                 }
 
                 setValues(i, j, datSpecR, modulusR, phiR, spectrumWidth);
@@ -297,10 +281,12 @@ class Surface extends JPanel {
 
             }
         }
-        //System.out.println("ind = " + ind + ", MUST BE >= 256");
-        TwoDArray inverseFFTB = new InverseFFT().transform(datSpecB);
-        TwoDArray inverseFFTG = new InverseFFT().transform(datSpecG);
+        if (ind < 256 && drawMode != DMODE.FourierRModRPhase256) {
+            System.out.println("ind = " + ind + ", MUST BE >= 256");
+        }
         TwoDArray inverseFFTR = new InverseFFT().transform(datSpecR);
+        TwoDArray inverseFFTG = new InverseFFT().transform(datSpecG);
+        TwoDArray inverseFFTB = new InverseFFT().transform(datSpecB);
 
         double[] imageValuesR = inverseFFTR.getMagnitude();
         double[] imageValuesG = inverseFFTG.getMagnitude();
@@ -314,11 +300,11 @@ class Surface extends JPanel {
         magG = normalize(magG);
         magB = normalize(magB);
 
-        imageValuesR = inverseFFTB.DCToCentre(normalizeMean(imageValuesR));
-        imageValuesG = inverseFFTB.DCToCentre(normalizeMean(imageValuesG));
+        imageValuesR = inverseFFTR.DCToCentre(normalizeMean(imageValuesR));
+        imageValuesG = inverseFFTG.DCToCentre(normalizeMean(imageValuesG));
         imageValuesB = inverseFFTB.DCToCentre(normalizeMean(imageValuesB));
 
-        BufferedImage res = new BufferedImage(spectrumWidth, spectrumHeight, BufferedImage.TYPE_INT_RGB);
+        BufferedImage res = new BufferedImage(spectrumWidth, spectrumWidth, BufferedImage.TYPE_INT_RGB);
         int[] resint = new int[res.getWidth() * res.getHeight()];
         int coordY;
         int pixelLoc, pixelLocMod;
@@ -326,25 +312,22 @@ class Surface extends JPanel {
         double[] bigMagR = new double[magR.length];
         double[] bigMagG = new double[magG.length];
         double[] bigMagB = new double[magB.length];
+        int sum = binHash.chars().map(c -> c - '0').sum() % 2;
         double corr = drawMode.modeCorr();
         for (int i = 0; i < spectrumWidth; i++) {
             for (int j = 0; j < spectrum.getHeight(); j++) {
-                coordY = i > spectrumWidth / 2 ? j == 0 ? j : spectrum.getHeight() - j : j;
+                coordY = i > spectrumWidth / 2 ? j == 0 || sum == 1 ? j : spectrum.getHeight() - j : j;
                 pixelLoc = j * spectrumWidth + i;
                 pixelLocMod = getPixelLocSpectrum(i, j, spectrumWidth, drawMode);
-                spectrum.setRGB(i, j, (Math.min(255, (int)(magR[pixelLocMod] * 255)) << 16) | (Math.min(255, (int)(magG[pixelLocMod] * 255)) << 8) | Math.min(255,(int)(magB[pixelLocMod] * 255)));
+                spectrum.setRGB(i, j, (Math.min(255, (int) (magR[pixelLocMod] * 255)) << 16) | (Math.min(255, (int) (magG[pixelLocMod] * 255)) << 8) | Math.min(255, (int) (magB[pixelLocMod] * 255)));
                 //res.setRGB(i, i > spectrumWidth / 2 ? j == 0 ? j : spectrum.getHeight() - j : j, (int) (255 * corrCoeff * imageValuesR[j * spectrumWidth + i] % 255) << 16 | (int) (255 * corrCoeff * imageValuesG[j * spectrumWidth + i] % 255) << 8 | (int) (255 * corrCoeff * imageValuesB[j * spectrumWidth + i] % 255));
 
                 bigMagR[i + j * spectrumWidth] = magR[pixelLocMod];
                 bigMagG[i + j * spectrumWidth] = magG[pixelLocMod];
                 bigMagB[i + j * spectrumWidth] = magB[pixelLocMod];
 
-                res.setRGB(i, coordY,(corr * imageValuesR[pixelLoc] > 0.5 ? 255 : 0) << 16
-                        | (corr * imageValuesG[pixelLoc] > 0.5 ? 255 : 0) << 8
-                        | (corr * imageValuesB[pixelLoc] > 0.5 ? 0xc5e4 : 0));
-                resint[i + coordY * res.getWidth()] = (corr * imageValuesR[pixelLoc] > 0.5 ? 255 : 0) << 16
-                        | (corr * imageValuesG[pixelLoc] > 0.5 ? 255 : 0) << 8
-                        | (corr * imageValuesB[pixelLoc] > 0.5 ? 0xc5e4 : 0);//(int) (255 * corrCoeff * imageValuesR[j * spectrumWidth + i] % 255) << 16 | (int) (255 * corrCoeff * imageValuesG[j * spectrumWidth + i] % 255) << 8 | (int) (255 * corrCoeff * imageValuesB[j * spectrumWidth + i] % 255);
+                res.setRGB(i, coordY, getRGBCorr(imageValuesR[pixelLoc], imageValuesG[pixelLoc], imageValuesB[pixelLoc], corr, drawMode.getFiltered()));
+                resint[i + coordY * res.getWidth()] = getRGBCorr(imageValuesR[pixelLoc], imageValuesG[pixelLoc], imageValuesB[pixelLoc], corr, drawMode.getFiltered());//(int) (255 * corrCoeff * imageValuesR[j * spectrumWidth + i] % 255) << 16 | (int) (255 * corrCoeff * imageValuesG[j * spectrumWidth + i] % 255) << 8 | (int) (255 * corrCoeff * imageValuesB[j * spectrumWidth + i] % 255);
             }
         }
 
@@ -352,23 +335,31 @@ class Surface extends JPanel {
         bigMagG = inverseFFTG.DCToCentre(bigMagG);
         bigMagB = inverseFFTB.DCToCentre(bigMagB);
 
-        BufferedImage otherSpectrum = new BufferedImage(spectrumWidth, spectrumHeight, BufferedImage.TYPE_INT_RGB);
+        BufferedImage centerSpectrum = new BufferedImage(spectrumWidth, spectrumWidth, BufferedImage.TYPE_INT_RGB);
         for (int i = 0; i < spectrumWidth; i++) {
             for (int j = 0; j < spectrumWidth; j++) {
-                otherSpectrum.setRGB(i, j, (Math.min(255, (int)(bigMagR[i + j * spectrumWidth] * 255)) << 16) | (Math.min(255, (int)(bigMagG[i + j * spectrumWidth] * 255)) << 8) | Math.min(255, (int)(bigMagB[i + j * spectrumWidth] * 255)));
+                centerSpectrum.setRGB(i, j, (Math.min(255, (int) (bigMagR[i + j * spectrumWidth] * 255)) << 16) | (Math.min(255, (int) (bigMagG[i + j * spectrumWidth] * 255)) << 8) | Math.min(255, (int) (bigMagB[i + j * spectrumWidth] * 255)));
             }
         }
         g.drawImage(scale(res, getHashWidth(shift), getHashHeight(shift)), getShiftX(shift), getShiftY(shift), null);
         if (shift == 1) {
             //g.drawImage(spectrum, getShiftX(shift) + (int) (getHashWidth(shift) * 1.1), getShiftY(shift), null);
-            g.drawImage(otherSpectrum, getShiftX(shift) + (int) (getHashWidth(shift) * 1.1), getShiftY(shift), null);
+            g.drawImage(centerSpectrum, getShiftX(shift) + (int) (getHashWidth(shift) * 1.1), getShiftY(shift), null);
         }
         return resint;
 
     }
 
-    public int getPixelLocSpectrum(int i, int j, int spectrumWidth, DMODE mode) {
-        int spectrumWidthPixels = spectrumWidth / (2 * (mode.modeCut() + 1)); // <- le meme 6 (+1 !!!) que quand on compute la dist, le cut;
+    private int getRGBCorr(double red, double green, double blue, double corr, boolean filtered) {
+        if (filtered) return (corr * red > 0.5 ? 255 : 0) << 16
+                | (corr * green > 0.5 ? 255 : 0) << 8
+                | (corr * blue > 0.5 ? 0xc5e4 : 0);
+        else
+            return (int) (255 * corr * red) % 255 << 16 | (int) (255 * corr * green) % 255 << 8 | (int) (255 * corr * blue) % 255;
+    }
+
+    private int getPixelLocSpectrum(int i, int j, int spectrumWidth, DMODE mode) {
+        int spectrumWidthPixels = spectrumWidth / (2 * (mode.modeCut() + 1));
         int x = i > spectrumWidth / 2 ? (i - spectrumWidth / 2) / spectrumWidthPixels + spectrumWidth - (mode.modeCut() + 1) : i / spectrumWidthPixels;
         int y = j > spectrumWidth / 2 ? (j - spectrumWidth / 2) / spectrumWidthPixels + spectrumWidth - (mode.modeCut() + 1) : j / spectrumWidthPixels;
         if (x > spectrumWidth - 1) return 0;
@@ -385,12 +376,12 @@ class Surface extends JPanel {
         return Arrays.stream(temp).map(d -> (d - min) / (max - min)).toArray();
     }
 
-    public void drawGridHashRGB(Graphics g, int[][] values, int shift, DMODE drawMode, Blockies prng) {
+    public void drawGridHashRGB(Graphics g, int[][] values, int shift, DMODE drawMode) {
 
         int sideLength = getHashWidth(shift) / values.length;
         for (int i = 0; i < values.length; i++) {
             for (int j = 0; j < values[0].length; j++) {
-                drawRectHash(g, getPalette(drawMode, prng)[values[i][j]], j * sideLength, i * sideLength, sideLength, sideLength, shift);
+                drawRectHash(g, getPalette(drawMode)[values[i][j]], j * sideLength, i * sideLength, sideLength, sideLength, shift);
             }
         }
     }
@@ -401,14 +392,14 @@ class Surface extends JPanel {
 
         int[][] values = TransformHash.extractValues(bin, drawMode, prng);
 
-        drawGridHashRGB(g, values, shift, drawMode, prng);
+        drawGridHashRGB(g, values, shift, drawMode);
     }
 
     private void resetShiftY() {
         SHIFTS_Y[2] = HASH_Y * 3 / 2 + ThreadLocalRandom.current().nextInt(VERT_JITTER) - VERT_JITTER / 2;
     }
 
-    public void drawLandscapeHash(Graphics g, String hex, int shift, DMODE drawMode) {
+    public void drawLandscapeHash(Graphics g, String hex, int shift) {
         long info = Long.parseLong(hex, 16);
 
         Color[] palette = TransformHash.buildHSVWheel(16);
@@ -418,7 +409,7 @@ class Surface extends JPanel {
         curr_ind = 32;
         obj = extract(info, curr_ind, 2);
         curr_ind -= 2;
-        GradientPaint gp = new GradientPaint(getShiftX(shift), getShiftY(shift), new Color(0, 0, 0), getShiftX(shift), getShiftY(shift) + 3 * getHashHeight(shift) / 4, palette[obj + 11]);
+        GradientPaint gp = new GradientPaint(getShiftX(shift), getShiftY(shift), new Color(0, 0, 0), getShiftX(shift), getShiftY(shift) + 3 * getHashHeight(shift) / 4f, palette[obj + 11]);
         g2d.setPaint(gp);
         drawRectHash(g2d, null, 0, 0, getHashWidth(shift), 2 * getHashHeight(shift) / 3, shift);
 
@@ -427,17 +418,17 @@ class Surface extends JPanel {
         curr_ind -= 3;
         int SUN_RADIUS = 2 * getHashWidth(shift) / 3 - getHashHeight(shift) / 30;
         float[] hsb = Color.RGBtoHSB(palette[obj].getRed(), palette[obj].getGreen(), palette[obj].getBlue(), null);
-        gp = new GradientPaint(getShiftX(shift), getShiftY(shift) + getHashHeight(shift) / 3, palette[obj], getShiftX(shift), getShiftY(shift) + getHashHeight(shift), Color.getHSBColor(hsb[0], hsb[1], 0));
+        gp = new GradientPaint(getShiftX(shift), getShiftY(shift) + getHashHeight(shift) / 3f, palette[obj], getShiftX(shift), getShiftY(shift) + getHashHeight(shift), Color.getHSBColor(hsb[0], hsb[1], 0));
         g2d.setPaint(gp);
         obj = extract(info, curr_ind, 1);
         curr_ind -= 1;
-        Ellipse2D sun = new Ellipse2D.Double(getShiftX(shift) + getHashWidth(shift) / 6.0 + (-1 + 2 * obj) * SUN_RADIUS / 4, getShiftY(shift) + getHashHeight(shift) / 3.0, SUN_RADIUS, SUN_RADIUS);
+        Ellipse2D sun = new Ellipse2D.Double(getShiftX(shift) + getHashWidth(shift) / 6.0 + (-1 + 2 * obj) * SUN_RADIUS / 4f, getShiftY(shift) + getHashHeight(shift) / 3.0, SUN_RADIUS, SUN_RADIUS);
         g2d.fill(sun);
 
         // Obj = ground
         obj = extract(info, curr_ind, 2);
         curr_ind -= 2;
-        gp = new GradientPaint(getShiftX(shift), getShiftY(shift) + getHashHeight(shift) * 2 / 3, new Color(0, 0, 0), getShiftX(shift), getShiftY(shift) + getHashHeight(shift), palette[obj + 5]);
+        gp = new GradientPaint(getShiftX(shift), getShiftY(shift) + getHashHeight(shift) * 2 / 3f, new Color(0, 0, 0), getShiftX(shift), getShiftY(shift) + getHashHeight(shift), palette[obj + 5]);
         g2d.setPaint(gp);
         drawRectHash(g2d, null, 0, 2 * getHashHeight(shift) / 3, getHashWidth(shift), getHashHeight(shift) / 3, shift);
 
@@ -464,10 +455,10 @@ class Surface extends JPanel {
         g2d.setColor(palette[moonCol]);
 
         if (moonPat < 2) {
-            Arc2D moon = new Arc2D.Double(getShiftX(shift) + (moonPos) * getHashWidth(shift) / 5.0 + MOON_RADIUS / 2, getShiftY(shift) + MOON_RADIUS / 2.0, MOON_RADIUS, MOON_RADIUS, 90, -180 + moonPat * 360, Arc2D.OPEN);
+            Arc2D moon = new Arc2D.Double(getShiftX(shift) + (moonPos) * getHashWidth(shift) / 5.0 + MOON_RADIUS / 2f, getShiftY(shift) + MOON_RADIUS / 2.0, MOON_RADIUS, MOON_RADIUS, 90, -180 + moonPat * 360, Arc2D.OPEN);
             g2d.fill(moon);
         } else {
-            Ellipse2D moon = new Ellipse2D.Double(getShiftX(shift) + (moonPos) * getHashWidth(shift) / 5.0 + MOON_RADIUS / 2, getShiftY(shift) + MOON_RADIUS / 2.0, MOON_RADIUS, MOON_RADIUS);
+            Ellipse2D moon = new Ellipse2D.Double(getShiftX(shift) + (moonPos) * getHashWidth(shift) / 5.0 + MOON_RADIUS / 2f, getShiftY(shift) + MOON_RADIUS / 2.0, MOON_RADIUS, MOON_RADIUS);
             g2d.draw(moon);
             if (moonPat == 2) g2d.fill(moon);
         }
@@ -501,9 +492,9 @@ class Surface extends JPanel {
             drawRectHash(g, null, getHashWidth(shift) / 6 * (ind + 1), posY, width, height, shift);
         } else {
             Path2D path = new Path2D.Double();
-            path.moveTo(getShiftX(shift) + getHashWidth(shift) / 6 * (ind + 1), getShiftY(shift) + posY + height);
-            path.lineTo(getShiftX(shift) + getHashWidth(shift) / 6 * (ind + 1) + width / 2, getShiftY(shift) + posY);
-            path.lineTo(getShiftX(shift) + getHashWidth(shift) / 6 * (ind + 1) + width, getShiftY(shift) + posY + height);
+            path.moveTo(getShiftX(shift) + getHashWidth(shift) / 6f * (ind + 1), getShiftY(shift) + posY + height);
+            path.lineTo(getShiftX(shift) + getHashWidth(shift) / 6f * (ind + 1) + width / 2f, getShiftY(shift) + posY);
+            path.lineTo(getShiftX(shift) + getHashWidth(shift) / 6f * (ind + 1) + width, getShiftY(shift) + posY + height);
             path.closePath();
             g.fill(path);
         }
@@ -527,14 +518,14 @@ class Surface extends JPanel {
 
     public void drawGridLinesHash(Graphics g, String hex, int shift, DMODE drawMode) {
         int length = hex.length() * 4;
-        String hex256 = hex;
+        StringBuilder hex256 = new StringBuilder(hex);
         while (length < 256) {
-            hex256 = hex256 + hex256;
+            hex256.append(hex256);
             length = hex256.length() * 4;
         }
 
         int tileSide = (drawMode == DMODE.GridLines256 || drawMode == DMODE.GridLines64 ? 4 : 3);
-        BigInteger bin = new BigInteger(hex256, 16);
+        BigInteger bin = new BigInteger(hex256.toString(), 16);
 
         int colorsmaskLength = 4 * tileSide * tileSide - ((4 * tileSide * tileSide) % 8);
         BigInteger maskColors = BigInteger.ONE.shiftLeft(colorsmaskLength).subtract(BigInteger.ONE);
@@ -571,7 +562,7 @@ class Surface extends JPanel {
     public void drawLineHashIndices(Graphics g, int index1, int index2, int cornerX, int cornerY, int sideLength, int shift) {
         int[] startCoords = getCoordFromIndex(index1, cornerX, cornerY, sideLength, sideLength / 6);
         if (index1 == index2) {
-            drawLineHash(g, startCoords[0], startCoords[1], cornerX + sideLength / 2, cornerY + sideLength / 2, index1 <= index2 ? new Color(0, 0, 0) : new Color(255, 255, 255), shift);
+            drawLineHash(g, startCoords[0], startCoords[1], cornerX + sideLength / 2, cornerY + sideLength / 2, new Color(0, 0, 0) , shift);
         } else {
 
             int[] endCoords = getCoordFromIndex(index2, cornerX, cornerY, sideLength, sideLength / 6);

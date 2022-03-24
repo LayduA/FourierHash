@@ -1,46 +1,29 @@
 package code.ui;
 
-import static code.transform.TransformHash.buildHSVWheel;
-import static code.transform.TransformHash.flipBitsRandom;
-import static code.transform.TransformHash.hamDistHex;
-import static code.transform.TransformHash.shiftRBits;
-
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.image.*;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Writer;
-import java.math.BigInteger;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.IntStream;
-
-import javax.imageio.ImageIO;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.BadLocationException;
-
 import code.Crypto;
 import code.transform.Blockies;
 import code.transform.TransformHash;
 
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.IntStream;
+
+import static code.transform.TransformHash.*;
+
 public class Applet extends JFrame {
 
     private Blockies prng;
+
+    public static boolean filtered = true;
 
     public enum DMODE {
         Antoine256, AntoineShift256, Adjacency1_256, Adjacency2_256, GridLines256, GridLines128, GridLines64,
@@ -53,9 +36,25 @@ public class Applet extends JFrame {
                     return Surface.CUBIC;
                 case FourierDModDPhase256:
                     return Surface.SIGMOID;
+                case FourierRModRPhase256:
+                    return Surface.BELL;
                 default:
-                    return 0;
+                    return Surface.SQUARE;
             }
+        }
+
+        public int worstBit(){
+            switch (this){
+                case FourierDModRPhase256:
+                case FourierRModDPhase256:
+                case FourierDModDPhase256:
+                    return 147;
+                default: return 0;
+            }
+        }
+
+        public boolean getFiltered(){
+            return filtered;
         }
 
         public double modeCorr() {
@@ -63,7 +62,7 @@ public class Applet extends JFrame {
                 case FourierDModRPhase256:
                     return 0.505;
                 case FourierDModDPhase256:
-                    return 0.6;
+                    return 0.451;
                 default:
                     return 0.5;
             }
@@ -73,11 +72,10 @@ public class Applet extends JFrame {
             switch (this) {
                 case FourierDModRPhase256:
                 case FourierRModDPhase256:
-                    return 6;
                 case FourierDModDPhase256:
-                    return 4;
+                    return 6;
                 case FourierRModRPhase256:
-                    return 8;
+                    return 127;
                 default:
                     return 0;
             }
@@ -92,15 +90,11 @@ public class Applet extends JFrame {
         return Integer.parseInt(digits);
     }
 
-    public static Color[] getPalette(DMODE m) {
-        return getPalette(m, null);
-    }
-
     private static Color back;
     private static Color front;
     private static Color spots;
 
-    public static Color[] getPalette(DMODE m, Blockies prng) {
+    public static Color[] getPalette(DMODE m) {
         switch (m) {
             case Antoine256:
                 return new Color[]{new Color(0, 0, 0), new Color(255, 255, 255)};
@@ -115,8 +109,6 @@ public class Applet extends JFrame {
         }
     }
 
-    ;
-
     public final static int WINDOW_W = 1100;
     public final static int WINDOW_H = 650;
     public final static int BANNER_H = 160;
@@ -130,18 +122,20 @@ public class Applet extends JFrame {
     private final static int[] SHIFTS_X = {1, HASH_X_0, HASH_X_1};
     public final static int[] SHIFTS_Y = {1, HASH_Y, HASH_Y * 3 / 2};
 
-    public final static int getShiftX(int shift) {
-        if (shift < 3)
+    public static int getShiftX(int shift) {
+        if (0 < shift && shift < 3)
             return SHIFTS_X[shift];
+        if (shift < 0) return 40 + 600 * (((-shift - 1) % 4) / 2) + (int)(HASH_W * 1.1 * ((-shift - 1) % 2));
         int ind = shift - 3;
-        return 20 + (int) Math.floor(150 * (ind % 8));
+        return 20 + 150 * (ind % 8);
     }
 
-    public final static int getShiftY(int shift) {
-        if (shift < 3)
+    public static int getShiftY(int shift) {
+        if (0 < shift && shift < 3)
             return SHIFTS_Y[shift];
+        if (shift < 0) return 40 + 300 * ((-shift -1) / 4);
         int ind = shift - 3;
-        return 50 + (int) Math.floor(150 * (ind / 8));
+        return 50 + 150 * (ind / 8);
     }
 
     public final static int VERT_JITTER = (WINDOW_H - BANNER_H - HASH_H / 2) / 3;
@@ -153,6 +147,12 @@ public class Applet extends JFrame {
     private Surface canvas1;
     private Surface canvas2;
     private JTextArea psiDisplay;
+    private JComboBox<DMODE> modeSelector;
+
+    public void setMode(DMODE mode){
+        MODE = mode;
+        modeSelector.setSelectedIndex(mode.ordinal());
+    }
 
     public Applet() {
 
@@ -161,7 +161,6 @@ public class Applet extends JFrame {
 
 
     private void initUI() {
-        MODE = DMODE.FourierDModRPhase256;
         setLayout(new BorderLayout());
         // This has to be defined here to have element from left half update elements on
         // right half
@@ -194,124 +193,53 @@ public class Applet extends JFrame {
         });
         psiDisplay = new JTextArea("psi = ");
         JButton distButtonOnce = new JButton("Psi");
-        distButtonOnce.addActionListener(l -> {
-            psiDist(inputL.getText(), inputR.getText());
+        distButtonOnce.addActionListener(l -> psiDist(inputL.getText(), inputR.getText()));
 
-//        String dist;
-//        double maxdist = 0;
-//            for (int i = 0; i < 256; i++) {
-//                dist = psiDist(inputL.getText(), TransformHash.flipBit(inputL.getText(), i));
-//                //System.out.println(dist);
-//                int jaj = Integer.parseInt(dist, 2, 5, 10);
-//                if (jaj != 999 && jaj > 500) {
-//                    System.out.println("bit " + i + ", dist = " + dist);
-//                    if(jaj > maxdist) maxdist = jaj;
-//                }
-//            }
-        });
-
-        JButton distButton = new JButton("Plot");
+        JButton distButton = new JButton("Comp");
         distButton.addActionListener(l -> {
             String path = "/Users/laya/Documents/VisualHashApplet/applet_env/Scripts/python";
             ProcessBuilder pB = new ProcessBuilder(path, ("code/haar_psi.py"));
             pB.redirectErrorStream(true);
-            StringBuilder sb = new StringBuilder();
-            int NB_CORR = 10;
-            String[][] similarities = new String[7][NB_CORR];
-            BufferedImage res = new BufferedImage(HASH_W, HASH_H, BufferedImage.TYPE_INT_RGB);
-            int[] pixels1, pixels2;
-            int bitMin = 0;
-            int sim;
-            for (int dist = 0; dist < similarities.length; dist++) {
-                System.out.println("dist =" + dist);
-                for (int corr = 0; corr < NB_CORR; corr++) {
 
-                    sim = 0;
-                    double corrD = corr / 10.0;
-                    for (int iter = 0; iter < 10; iter++) {
-                        sb = new StringBuilder();
-                        pixels1 = canvas1.drawFourierHash(res.createGraphics(), Crypto.getHash(corr + "" + iter), 0,
-                                MODE, prng);
-                        pixels2 = canvas2.drawFourierHash(
-                                res.createGraphics(), Crypto.getHash(corr + "" + iter + "" + "prime"), 0,
-                                MODE, prng);
-                        // PSI DISTANCE
-                        try {
+            JFrame frame = new JFrame("Test");
+            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            JLayeredPane pane = new JLayeredPane();
 
-                            Process proc = pB.start();
-                            byte[] results = proc.getInputStream().readAllBytes();
-                            for (int i = 0; i < results.length; i++) {
-                                sb.append((char) results[i]);
-                            }
-                            String out = sb.toString();
-                            // phiDisplay.setText(out);
-                            sim += Integer.parseInt(out, 2, 7, 10); // 5 first decimals
-                            // System.out.println(similarities[dist][bit]);
-                        } catch (Exception e) {
-                            System.out.println("ERROR OULALA PANIC" + e);
+            Surface canvasComp = new Surface();
+            canvasComp.setPreferredSize(new Dimension(1200, 600));
+            //pane.add(canvasComp, Integer.valueOf(1));
+            pane.setPreferredSize(canvasComp.getPreferredSize());
+            //pane.add(jaj);
+
+            JButton runButton = new JButton("Run");
+            runButton.addActionListener(e -> {
+                        String in;
+                        for (int i = 1; i < 9; i++) {
+                            setMode(DMODE.values()[DMODE.FourierDModRPhase256.ordinal() + (i - 1)/2]);
+                            in = i % 2 == 1 ? inputL.getText() : TransformHash.flipBits(inputL.getText(), Arrays.asList(MODE.worstBit(), 255));
+                            canvasComp.drawHash(frame.getGraphics(), in, -i, MODE, prng);
+                            JLabel jaj = new JLabel(i % 2 == 1 ? MODE.toString() : psiDist(inputL.getText(), TransformHash.flipBits(inputL.getText(), Arrays.asList(MODE.worstBit(), 255))));
+                            jaj.setLocation(getShiftX(-i),getShiftY(-i) + HASH_H - 20);
+                            jaj.setPreferredSize(new Dimension(HASH_W,20));
+                            jaj.setSize(jaj.getPreferredSize());
+                            jaj.setVisible(true);
+                            pane.add(jaj);
                         }
                     }
-                    similarities[dist][corr] = dist + "," + corrD + "," + (sim / 100_000.0);
-                    // COMPRESSION
-                    // try {
-                    // int[] bitMasks = new int[]{0xFF0000, 0xFF00, 0xFF};
-                    // SinglePixelPackedSampleModel sm = new SinglePixelPackedSampleModel(
-                    // DataBuffer.TYPE_INT, HASH_W, HASH_H, bitMasks);
-                    // DataBufferInt db = new DataBufferInt(pixels1, pixels1.length);
-                    // WritableRaster wr = Raster.createWritableRaster(sm, db, new Point());
-                    // //System.out.println(ColorModel.getRGBdefault().hasAlpha());
-                    // res = new BufferedImage(new DirectColorModel(24,bitMasks[0], bitMasks[1],
-                    // bitMasks[2]), wr, false, null);
+            );
 
-                    // File compressedImageFile = new File("compress.jpg");
-                    // OutputStream os = new FileOutputStream(compressedImageFile);
-                    // Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpg");
-                    // ImageWriter writer = (ImageWriter) writers.next();
-
-                    // File notcompressedImageFile = new File("notcompress.jpg");
-                    // OutputStream notos = new FileOutputStream(notcompressedImageFile);
-
-                    // ImageOutputStream nios = ImageIO.createImageOutputStream(notos);
-                    // writer.setOutput(nios);
-                    // writer.write(null, new IIOImage(res, null, null), null);
-
-                    // ImageOutputStream ios = ImageIO.createImageOutputStream(os);
-                    // writer.setOutput(ios);
-
-                    // ImageWriteParam param = writer.getDefaultWriteParam();
-
-                    // param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-                    // param.setCompressionQuality(0.05f);
-                    // writer.write(null, new IIOImage(res, null, null), param);
-                    // ios.close();
-
-                    // //System.out.println((double) compressedImageFile.length() /
-                    // notcompressedImageFile.length());
-
-                    // } catch (FileNotFoundException e) {
-                    // System.out.println(e);
-                    // } catch (IOException e) {
-                    // System.out.println(e);
-                    // }
-                }
-            }
-
-            try {
-                File csvOutputFile = new File("code/simvsCorr" + bitMin + "" + (bitMin + 5) + ".csv");
-                PrintWriter pw = new PrintWriter(csvOutputFile);
-                for (int i = 0; i < similarities.length; i++) {
-                    for (int k = 0; k < similarities[0].length; k++) {
-                        pw.println(similarities[i][k]);
-                    }
-
-                }
-
-                pw.close();
-            } catch (Exception e) {
-                System.err.println("final output error \n" + e);
-            }
+            frame.getContentPane().add(BorderLayout.CENTER, pane);
+            frame.getContentPane().add(BorderLayout.SOUTH, runButton);
+            frame.pack();
+            frame.setLocation(0,0);
+            frame.setVisible(true);
 
         });
+
+        JCheckBox checkBoxFiltered = new JCheckBox();
+        checkBoxFiltered.setSelected(filtered);
+        checkBoxFiltered.addActionListener(l -> filtered = checkBoxFiltered.isSelected());
+
         JButton saveButtonL = new JButton("Save");
         saveButtonL.addActionListener(l -> save(inputL));
 
@@ -335,21 +263,22 @@ public class Applet extends JFrame {
             }
         });
 
-        JComboBox<DMODE> modeSelector = new JComboBox<DMODE>(DMODE.values());
+        modeSelector = new JComboBox<>(DMODE.values());
         modeSelector.addActionListener(l -> {
             DMODE nextMode = (DMODE) modeSelector.getSelectedItem();
+            if(nextMode == null) return;
             if (getHashLength(MODE) != getHashLength(nextMode)) {
                 inputL.setText(newHash(getHashLength(nextMode) / 4));
                 updateHashes(canvas1, inputL, 1, hamDistDisplay);
-                ;
             }
-            MODE = nextMode;
+            setMode(nextMode);
 
         });
 
         topRowL.add(newButtonL, BorderLayout.WEST);
         topRowL.add(inputL, BorderLayout.CENTER);
         topRowL.add(valButtonL, BorderLayout.EAST);
+        topRowL.add(checkBoxFiltered, BorderLayout.EAST);
         botRowL.add(saveButtonL);
         botRowL.add(modeSelector);
 
@@ -395,7 +324,7 @@ public class Applet extends JFrame {
         saveButtonR.addActionListener(l -> save(inputR));
 
         hamDistDisplay.setBackground(southR.getBackground());
-        inputR = new JTextField(newHash(getHashLength(MODE) / 4), 25);
+        inputR = new JTextField(25);
         inputR.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
                 changed();
@@ -434,6 +363,7 @@ public class Applet extends JFrame {
                     flipIndex.setVisible(e.getDocument().getText(0, 1).equals("1") && e.getDocument().getLength() == 1);
                     botRowR.repaint();
                 } catch (BadLocationException err) {
+                    System.out.println("error " + err);
                 }
             }
         });
@@ -479,14 +409,14 @@ public class Applet extends JFrame {
             frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             JPanel panel = new JPanel();
             panel.setPreferredSize(new Dimension(1200, 600));
-            Surface canv = new Surface();
-            canv.setPreferredSize(new Dimension(1200, 600));
+            Surface canvasDemo = new Surface();
+            canvasDemo.setPreferredSize(new Dimension(1200, 600));
 
             JButton runButton = new JButton("Run");
             runButton.addActionListener(e -> {
                 // canv.setLocation(200, 200);
                 for (int i = 3; i < 35; i++) {
-                    canv.drawHash(frame.getGraphics(),
+                    canvasDemo.drawHash(frame.getGraphics(),
                             TransformHash.flipBit(inputL.getText(), (i - 3)),
                             i, MODE, prng);
                 }
@@ -497,7 +427,7 @@ public class Applet extends JFrame {
             // panel.add(runButton);
 
             // frame.getContentPane().add(BorderLayout.CENTER, panel);
-            frame.getContentPane().add(BorderLayout.CENTER, canv);
+            frame.getContentPane().add(BorderLayout.CENTER, canvasDemo);
             frame.getContentPane().add(BorderLayout.SOUTH, runButton);
             frame.pack();
             frame.setLocationByPlatform(true);
@@ -536,6 +466,9 @@ public class Applet extends JFrame {
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+
+        setMode(DMODE.FourierDModRPhase256);
+
     }
 
     public String psiDist(String in1, String in2) {
@@ -547,10 +480,10 @@ public class Applet extends JFrame {
         int[] pixels1, pixels2;
 
         pixels1 = canvas1.drawFourierHash(res.createGraphics(), in1, 0,
-                MODE, prng);
-        pixels2 = canvas2.drawFourierHash(
+                MODE);
+        pixels2 = canvas1.drawFourierHash(
                 res.createGraphics(), in2, 0,
-                MODE, prng);
+                MODE);
 
         try {
             File csvOutputFile = new File("code/image1.csv");
@@ -563,8 +496,8 @@ public class Applet extends JFrame {
             pw.close();
             Process proc = pB.start();
             byte[] results = proc.getInputStream().readAllBytes();
-            for (int i = 0; i < results.length; i++) {
-                sb.append((char) results[i]);
+            for (byte result : results) {
+                sb.append((char) result);
             }
         } catch (Exception e) {
             System.out.println("Ah non pas une erreur oh non " + e);
@@ -598,13 +531,9 @@ public class Applet extends JFrame {
 
     public static void main(String[] args) {
 
-        EventQueue.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                Applet app = new Applet();
-                app.setVisible(true);
-            }
+        EventQueue.invokeLater(() -> {
+            Applet app = new Applet();
+            app.setVisible(true);
         });
     }
 
@@ -638,7 +567,7 @@ public class Applet extends JFrame {
             if (ImageIO.write(bImg, "png", new File("outputs/" + fileName + ".png"))) {
                 Writer output;
                 output = new BufferedWriter(new FileWriter("outputs/names.txt", true)); // clears file every time
-                output.append(fileName + " -> " + input.getText() + "\r\n");
+                output.append(fileName).append(" -> ").append(input.getText()).append("\r\n");
                 output.close();
                 System.out.println("-- saved");
             }
