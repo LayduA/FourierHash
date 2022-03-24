@@ -45,19 +45,45 @@ public class Applet extends JFrame {
     public enum DMODE {
         Antoine256, AntoineShift256, Adjacency1_256, Adjacency2_256, GridLines256, GridLines128, GridLines64,
         GridLines32, Landscape32,
-        Blockies128, Random128, Fourier256, FourierB256;
+        Blockies128, Random128, FourierDModRPhase256, FourierRModDPhase256, FourierDModDPhase256, FourierRModRPhase256;
 
         public int modeDist() {
             switch (this) {
-                case Fourier256:
+                case FourierDModRPhase256:
                     return Surface.CUBIC;
-                case FourierB256:
-                    return Surface.CUBIC;
+                case FourierDModDPhase256:
+                    return Surface.SIGMOID;
                 default:
                     return 0;
             }
         }
+
+        public double modeCorr() {
+            switch (this) {
+                case FourierDModRPhase256:
+                    return 0.505;
+                case FourierDModDPhase256:
+                    return 0.6;
+                default:
+                    return 0.5;
+            }
         }
+
+        public int modeCut() {
+            switch (this) {
+                case FourierDModRPhase256:
+                case FourierRModDPhase256:
+                    return 6;
+                case FourierDModDPhase256:
+                    return 4;
+                case FourierRModRPhase256:
+                    return 8;
+                default:
+                    return 0;
+            }
+        }
+
+    }
 
     private int getHashLength(DMODE m) {
         String digits = m.name().substring(m.name().length() - 3);
@@ -135,7 +161,7 @@ public class Applet extends JFrame {
 
 
     private void initUI() {
-        MODE = DMODE.FourierB256;
+        MODE = DMODE.FourierDModRPhase256;
         setLayout(new BorderLayout());
         // This has to be defined here to have element from left half update elements on
         // right half
@@ -204,11 +230,11 @@ public class Applet extends JFrame {
                     double corrD = corr / 10.0;
                     for (int iter = 0; iter < 10; iter++) {
                         sb = new StringBuilder();
-                        pixels1 = canvas1.drawFourierHashRandomPhase(res.createGraphics(), Crypto.getHash(corr + "" + iter), 0,
-                                MODE, prng, dist, corrD);
-                        pixels2 = canvas2.drawFourierHashRandomPhase(
+                        pixels1 = canvas1.drawFourierHash(res.createGraphics(), Crypto.getHash(corr + "" + iter), 0,
+                                MODE, prng);
+                        pixels2 = canvas2.drawFourierHash(
                                 res.createGraphics(), Crypto.getHash(corr + "" + iter + "" + "prime"), 0,
-                                MODE, prng, dist, corrD);
+                                MODE, prng);
                         // PSI DISTANCE
                         try {
 
@@ -461,7 +487,7 @@ public class Applet extends JFrame {
                 // canv.setLocation(200, 200);
                 for (int i = 3; i < 35; i++) {
                     canv.drawHash(frame.getGraphics(),
-                            TransformHash.flipBit(inputL.getText(), (MODE == DMODE.Fourier256 ? 3 : 1) * (i - 3) + 16),
+                            TransformHash.flipBit(inputL.getText(), (i - 3)),
                             i, MODE, prng);
                 }
             });
@@ -519,21 +545,13 @@ public class Applet extends JFrame {
         StringBuilder sb = new StringBuilder();
         BufferedImage res = new BufferedImage(HASH_W, HASH_H, BufferedImage.TYPE_INT_RGB);
         int[] pixels1, pixels2;
-        if (MODE == DMODE.FourierB256) {
-            pixels1 = canvas1.drawFourierHashDetPhase(res.createGraphics(), in1, 0,
-                    MODE, prng, Surface.CUBIC, 1.7);
-            pixels2 = canvas2.drawFourierHashDetPhase(
-                    res.createGraphics(), in2, 0,
-                    MODE, prng, Surface.CUBIC, 1.7);
-        } else if (MODE == DMODE.Fourier256) {
-            pixels1 = canvas1.drawFourierHashRandomPhase(res.createGraphics(), in1, 0,
-                    MODE, prng, Surface.SIGMOID, 1.0);
-            pixels2 = canvas2.drawFourierHashRandomPhase(
-                    res.createGraphics(), in2, 0,
-                    MODE, prng, Surface.SIGMOID, 1.0);
-        } else {
-            return null;
-        }
+
+        pixels1 = canvas1.drawFourierHash(res.createGraphics(), in1, 0,
+                MODE, prng);
+        pixels2 = canvas2.drawFourierHash(
+                res.createGraphics(), in2, 0,
+                MODE, prng);
+
         try {
             File csvOutputFile = new File("code/image1.csv");
             PrintWriter pw = new PrintWriter(csvOutputFile);
