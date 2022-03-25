@@ -11,14 +11,16 @@ Last updated on 08/01/2018 by David Neumann.
 from __future__ import print_function
 from __future__ import division
 
+import sys
 import os
 import numpy
 from scipy import signal
 import csv
 
-data1 = numpy.genfromtxt('code/image1.csv', delimiter='\n')
-data2 = numpy.genfromtxt('code/image2.csv', delimiter='\n')
+data1 = numpy.genfromtxt(sys.argv[1], delimiter='\n')
+data2 = numpy.genfromtxt(sys.argv[2], delimiter='\n')
 
+#print(data1.shape)
 data1 = numpy.array([numpy.array([(int(x) >> 16) & 0b11111111, (int(x) >> 8) & 0b11111111, int(x) & 0b11111111]) for x in data1])
 data1 = data1.reshape((256,256,3))
 
