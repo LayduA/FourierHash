@@ -163,7 +163,7 @@ public class Applet extends JFrame {
         psiDisplay = new JTextArea("psi = ");
         JButton distButtonOnce = new JButton("Psi");
         distButtonOnce.addActionListener(l ->
-                psiDisplay.setText(Double.toString(psiDist(canvas, inputL.getText(), inputR.getText(), MODE, "image"))) );
+                psiDisplay.setText(Double.toString(psiDist(canvas, inputL.getText(), inputR.getText(), MODE, "image"))));
 
         JButton distButton = new JButton("Comp");
         distButton.addActionListener(l -> {
@@ -303,7 +303,7 @@ public class Applet extends JFrame {
             reset(right, southR.getHeight());
             inputR.setText(
                     flipIndex.isVisible()
-                            ? TransformHash.flipBit(inputL.getText(), Integer.parseInt(flipIndex.getText(), 10))
+                            ? flipBits(inputL.getText(), Integer.parseInt(flipIndex.getText(), 10), 255)
                             : flipBitsRandom(inputL.getText(), Integer.parseInt(flipValue.getText(), 10),
                             getHashLength(MODE)));
 
@@ -402,20 +402,21 @@ public class Applet extends JFrame {
 
     }
 
-    private void plotHashes(String refHash){
+    private void plotHashes(String refHash) {
         double[] averages = new double[255];
         int nHash = 10;
         int[] ref;
         AvgRunnable[] tasks = new AvgRunnable[11];
         Thread[] threads = new Thread[11];
         BufferedImage res = new BufferedImage(HASH_W, HASH_H, BufferedImage.TYPE_INT_RGB);
-
+        String newRefHash;
         for (int hashItr = 0; hashItr < nHash; hashItr++) {
-            System.out.println("Iteration "  + hashItr + " started.");
-            ref = canvas.drawFourierHash(res.createGraphics(), newHash(256/4), 0, MODE);
+            System.out.println("Iteration " + hashItr + " started.");
+            newRefHash = newHash(256 / 4);
+            ref = canvas.drawFourierHash(res.createGraphics(), newRefHash, 0, MODE);
 
             for (int i = 0; i < threads.length; i++) {
-                tasks[i] = new AvgRunnable(averages, i * 25, i == threads.length - 1 ? 5 : 25,refHash, ref, canvas, MODE);
+                tasks[i] = new AvgRunnable(averages, i * 25, i == threads.length - 1 ? 5 : 25, newRefHash, ref, canvas, MODE);
                 threads[i] = new Thread(tasks[i], "Thread " + i);
                 threads[i].start();
             }
@@ -431,7 +432,7 @@ public class Applet extends JFrame {
         try {
             File csvOutputFile = new File("code/" + MODE + ".csv");
             PrintWriter pw = new PrintWriter(csvOutputFile);
-            DoubleStream.of(averages).map(d -> d/nHash).forEach(pw::println);
+            DoubleStream.of(averages).map(d -> d / nHash).forEach(pw::println);
             pw.close();
         } catch (Exception e) {
             System.out.println(e);

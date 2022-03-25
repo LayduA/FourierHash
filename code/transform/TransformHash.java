@@ -4,8 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.PrintWriter;
 import java.math.BigInteger;
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 import code.enums.DrawMode;
@@ -43,6 +42,14 @@ public interface TransformHash {
             flipped = flipped.substring(0, i) + (flipped.charAt(i) == '0' ? "1" : "0") + flipped.substring(i + 1);
         }
         return binToHex(flipped);
+    }
+
+    static String flipBits(String hexString, int ... indices){
+        List<Integer> l = new ArrayList<>();
+        for(int ind : indices){
+            l.add(ind);
+        }
+        return flipBits(hexString, l);
     }
 
     /**
