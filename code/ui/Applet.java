@@ -1,12 +1,15 @@
 package code.ui;
 
 import code.Crypto;
-import code.enums.DrawMode;
-import code.transform.AvgRunnable;
 import code.transform.Blockies;
+import code.transform.CompressPairRunnable;
 import code.transform.TransformHash;
+import code.types.Distance;
+import code.types.DrawMode;
+import code.types.Result;
 
 import javax.imageio.ImageIO;
+import javax.sound.midi.SysexMessage;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -15,11 +18,15 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.math.BigInteger;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 import java.util.stream.DoubleStream;
-import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static code.transform.TransformHash.*;
 
@@ -84,7 +91,6 @@ public class Applet extends JFrame {
 
 
     public Applet() {
-        System.out.println(Integer.toBinaryString(-16711936));
         initUI();
     }
 
@@ -225,6 +231,18 @@ public class Applet extends JFrame {
             setMode(nextMode);
 
         });
+        Distance[] distances = new Distance[Distance.values().length + 1];
+        for (int i = 1; i < distances.length; i++) {
+            distances[i] = Distance.values()[i - 1];
+        }
+        JComboBox<Distance> distSelector = new JComboBox<>(distances);
+        distSelector.addActionListener(l -> {
+            if (distSelector.getSelectedItem() != null) MODE.setDist((Distance) distSelector.getSelectedItem());
+        });
+        Double[] corrs = new Double[19];
+        for (int i = 0; i < 19; i++) corrs[i] = (double)Math.round((i * 0.1 + 0.1) * 10d) / 10d ;
+        JComboBox<Double> corrSelector = new JComboBox<>(corrs);
+        corrSelector.addActionListener(l -> MODE.setCorr((Double) corrSelector.getSelectedItem()));
 
         topRowL.add(newButtonL, BorderLayout.WEST);
         topRowL.add(inputL, BorderLayout.CENTER);
@@ -232,6 +250,8 @@ public class Applet extends JFrame {
         topRowL.add(checkBoxFiltered, BorderLayout.EAST);
         botRowL.add(saveButtonL);
         botRowL.add(modeSelector);
+        botRowL.add(distSelector);
+        botRowL.add(corrSelector);
 
         southL.add(topRowL, BorderLayout.NORTH);
         southL.add(distButtonOnce, BorderLayout.CENTER);
@@ -398,26 +418,48 @@ public class Applet extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 
-        setMode(DrawMode.FourierDModRPhase256);
+        setMode(DrawMode.FourierDModDPhase256);
 
     }
 
     private void plotHashes(String refHash) {
         double[] averages = new double[255];
-        int nHash = 10;
-        int[] ref;
-        AvgRunnable[] tasks = new AvgRunnable[11];
-        Thread[] threads = new Thread[11];
+        int nHash = 1;
+        //int[] ref;
+
+        Path path = Paths.get("/Users/laya/Documents/VisualHashApplet/code/temp/");
+
+        // read java doc, Files.walk need close the resources.
+        // try-with-resources to ensure that the stream's open directories are closed
+        try (Stream<Path> walk = Files.walk(path)) {
+            walk
+                    .sorted(Comparator.reverseOrder())
+                    .forEach(l -> {
+                        try {
+                            Files.delete(l);
+                        } catch (Exception e) {
+                            System.out.println(e);
+                        }
+                    });
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        new File("/Users/laya/Documents/VisualHashApplet/code/temp").mkdirs();
+        CompressPairRunnable[] tasks = new CompressPairRunnable[Distance.values().length];
+        Thread[] threads = new Thread[tasks.length];
         BufferedImage res = new BufferedImage(HASH_W, HASH_H, BufferedImage.TYPE_INT_RGB);
         String newRefHash;
+        Result[][] results = new Result[tasks.length][19];
         for (int hashItr = 0; hashItr < nHash; hashItr++) {
-            System.out.println("Iteration " + hashItr + " started.");
-            newRefHash = newHash(256 / 4);
-            ref = canvas.drawFourierHash(res.createGraphics(), newRefHash, 0, MODE);
+            System.out.println("Iteration " + hashItr + " started....");
+            //newRefHash = newHash(256 / 4);
+            //ref = canvas.drawFourierHash(res.createGraphics(), newRefHash, 0, MODE);
 
             for (int i = 0; i < threads.length; i++) {
-                tasks[i] = new AvgRunnable(averages, i * 25, i == threads.length - 1 ? 5 : 25, newRefHash, ref, canvas, MODE);
-                threads[i] = new Thread(tasks[i], "Thread " + i);
+                //tasks[i] = new AvgRunnable(averages, i * 25, i == threads.length - 1 ? 5 : 25, newRefHash, ref, canvas, MODE);
+                //tasks[i] = new AvgRunnable(averages, 0, i, newRefHash, ref, canvas, MODE);
+                tasks[i] = new CompressPairRunnable(results[i], Distance.values()[i], refHash, canvas, MODE);
+                threads[i] = new Thread(tasks[i], "Thread " + tasks[i].hashCode());
                 threads[i].start();
             }
             for (Thread thread : threads) {
@@ -427,16 +469,24 @@ public class Applet extends JFrame {
                     System.out.println(e);
                 }
             }
+            System.out.println("...done.");
         }
 
         try {
-            File csvOutputFile = new File("code/" + MODE + ".csv");
+//            File csvOutputFile = new File("code/data/" + MODE + "2bitsPhaseSimVSSize.csv");
+//            PrintWriter pw = new PrintWriter(csvOutputFile);
+//            DoubleStream.of(averages).map(d -> d / nHash).forEach(pw::println);
+//            pw.close();
+            File csvOutputFile = new File("code/data/paramsSearch" + MODE + ".json");
             PrintWriter pw = new PrintWriter(csvOutputFile);
-            DoubleStream.of(averages).map(d -> d / nHash).forEach(pw::println);
+            pw.print("{ \n \t \"values\": \n");
+            Stream.of(results).map(Arrays::deepToString).forEach(pw::print);
+            pw.print("\n}");
             pw.close();
         } catch (Exception e) {
             System.out.println(e);
         }
+        System.out.println("Data ready.");
     }
 
     private void updateHashes(Surface canvas, JTextField inputChanged, JTextField inputOther, int shift, JTextArea display) {

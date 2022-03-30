@@ -1,7 +1,12 @@
 package code.ui;
 
 import code.*;
-import code.enums.DrawMode;
+import code.types.Distance;
+import code.types.DrawMode;
+import code.fourier.ComplexNumber;
+import code.fourier.FFT;
+import code.fourier.InverseFFT;
+import code.fourier.TwoDArray;
 import code.transform.Blockies;
 import code.transform.TransformHash;
 
@@ -16,7 +21,7 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static code.ImgMod30.shiftOrigin;
+import static code.fourier.ImgMod30.shiftOrigin;
 import static code.ui.Applet.*;
 
 public class Surface extends JPanel {
@@ -181,7 +186,10 @@ public class Surface extends JPanel {
         }
     }
 
-    public int[] drawFourierHash(Graphics g, String hash, int shift, DrawMode drawMode) {
+    public int[] drawFourierHash(Graphics g, String hash, int shift, DrawMode drawMode){
+        return drawFourierHash(g, hash, shift, drawMode, drawMode.getDist(), drawMode.corr());
+    }
+    public int[] drawFourierHash(Graphics g, String hash, int shift, DrawMode drawMode, Distance dist, double corr) {
         int spectrumWidth = Integer.parseInt(drawMode.name().substring(drawMode.name().length() - 3), 10);
         String binHash = TransformHash.hexToBin(hash);
         assert binHash.length() == spectrumWidth;
@@ -206,7 +214,7 @@ public class Surface extends JPanel {
         for (int i = 0; i < spectrumWidth; i++) {
             for (int j = 0; j < spectrumWidth / 2; j++) {
 
-                frequencyCoeff = drawMode.dist(i, j);
+                frequencyCoeff = dist.dist(i, j, drawMode.cut());
                 if (drawMode == DrawMode.FourierRModDPhase256 || drawMode == DrawMode.FourierRModRPhase256) {
                     modulusR = frequencyCoeff * randomMod.nextDouble();
                     modulusG = frequencyCoeff * randomMod.nextDouble();
@@ -228,10 +236,10 @@ public class Surface extends JPanel {
                     phiG = (randomPhase.nextDouble() - 0.5) * Math.PI;
                     phiB = (randomPhase.nextDouble() - 0.5) * Math.PI;
                 } else {
-                    phiR = Math.PI * (binHash.charAt(ind % spectrumWidth) - '0');
-                    phiG = Math.PI * (binHash.charAt((ind + 1) % spectrumWidth) - '0');
-                    phiB = Math.PI * (binHash.charAt((ind + 2) % spectrumWidth) - '0');
-                    //if (frequencyCoeff > 0 && !(0 < i && i < spectrumWidth / 2 && j == 0)) ind += 3;
+                    phiR = Math.PI / 2.0 * (1 - 2 * binHash.charAt(ind % spectrumWidth) - '0');
+                    phiG = Math.PI / 2.0 * (1 - 2 * binHash.charAt((ind + 1) % spectrumWidth) - '0');
+                    phiB = Math.PI / 2.0 * (1 - 2 * binHash.charAt((ind + 2) % spectrumWidth) - '0');
+                    //if ((drawMode == DrawMode.FourierDModDPhase256 || frequencyCoeff > 0) && !(0 < i && i < spectrumWidth / 2 && j == 0)) ind += 4;
                 }
 
                 setValues(i, j, datSpecR, modulusR, phiR, spectrumWidth);
@@ -272,7 +280,7 @@ public class Surface extends JPanel {
         double[] bigMagG = new double[magG.length];
         double[] bigMagB = new double[magB.length];
         int sum = binHash.chars().map(c -> c - '0').sum() % 2;
-        double corr = drawMode.corr();
+
         for (int i = 0; i < spectrumWidth; i++) {
             for (int j = 0; j < spectrum.getHeight(); j++) {
                 coordY = i > spectrumWidth / 2 ? j == 0 || sum == 1 ? j : spectrum.getHeight() - j : j;

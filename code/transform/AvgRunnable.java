@@ -1,16 +1,13 @@
 package code.transform;
 
-import code.enums.DrawMode;
+import code.types.DrawMode;
 import code.ui.Applet;
 import code.ui.Surface;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.Arrays;
-import java.util.logging.Logger;
 
-import static code.transform.TransformHash.flipBits;
-import static code.transform.TransformHash.psiDist;
+import static code.transform.TransformHash.*;
 
 public class AvgRunnable implements Runnable {
     double[] out;
@@ -35,9 +32,16 @@ public class AvgRunnable implements Runnable {
     public void run() {
         BufferedImage res = new BufferedImage(Applet.HASH_W, Applet.HASH_H, BufferedImage.TYPE_INT_RGB);
         Graphics g = res.createGraphics();
-        for (int i = 0; i < size; i++) {
-            double d = psiDist(refHashPixels, drawer.drawFourierHash(g, flipBits(refHash, Arrays.asList(from + i, 255)), 0, mode), "imageThread" + from/10);
-            out[from + i] += d;
-        }
+        //for (int i = 0; i < size; i++) {
+            //double d = psiDist(refHashPixels, drawer.drawFourierHash(g, flipBits(refHash, Arrays.asList(from + i, 255)), 0, mode), "imageThread" + from/10);
+
+            //out[from + i] += d;
+        //}
+        double d;
+        if (size % 2 == 1)
+            d = psiDist(refHashPixels, drawer.drawFourierHash(g, flipBit(flipBitsRandom(refHash, size, 256), 255), 0, mode) , "imageThread" + size);
+        else
+            d = psiDist(refHashPixels, drawer.drawFourierHash(g, flipBitsRandom(refHash, size, 256), 0, mode) , "imageThread" + size);
+        out[size] += d;
     }
 }

@@ -7,7 +7,7 @@ import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
-import code.enums.DrawMode;
+import code.types.DrawMode;
 import code.ui.Applet;
 import code.ui.Surface;
 
@@ -235,8 +235,8 @@ public interface TransformHash {
         StringBuilder sb = new StringBuilder();
         assert(pixels1.length == 256 * 256 && pixels2.length == 256 *256);
         try {
-            String path1 = "code/" + fileName + "_1.csv";
-            String path2 = "code/" + fileName + "_2.csv";
+            String path1 = "code/temp/" + fileName + "_1.csv";
+            String path2 = "code/temp/" + fileName + "_2.csv";
             File csvOutputFile = new File(path1);
             PrintWriter pw = new PrintWriter(csvOutputFile);
             IntStream.of(pixels1).forEach(pw::println);
@@ -267,7 +267,7 @@ public interface TransformHash {
     }
 
     /**
-     * Build a wheel of n colors such that all colors are evenly spaced on the hsv space.
+     * Build a wheel of n colors such that all colors are evenly spaced in the hsv space.
      * @param n the number of colors
      * @return an array of evenly spaced colors
      */
