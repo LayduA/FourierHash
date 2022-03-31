@@ -30,7 +30,7 @@ public enum Distance {
             double cube = (Math.abs(x) * x * x + Math.abs(y) * y * y);
             return cube == 0 ? 4 : 2 / cube;
         }
-        double squareDist = (x*x + y*y);
+        double squareDist = (x * x + y * y);
         if (this == SQUARE) return squareDist == 0 ? 4 : 2 / squareDist;
         if (this == XY) return squareDist == 0 ? 4 : x * y * 2.0 / squareDist;
         return 0;

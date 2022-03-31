@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import json
 
-json_file_path = "../code/data/paramsSearchFourierDModDPhase256.json"
+json_file_path = "../code/data/paramsSearchFourierDModDPhase128.json"
 
 with open(json_file_path, 'r') as j:
      contents = json.loads(j.read())
@@ -10,11 +10,14 @@ with open(json_file_path, 'r') as j:
 arr = np.array(contents['values'])
 
 for dist in ['MANHATTAN', 'CUBIC', 'SIGMOID', 'SQUARE', 'XY', 'MULT', 'SQRTMIN', 'EUCLIDEAN', 'BELL']:
-    compSimDict = {}
+    simDict = {}
+    compDict = {}
     for o in arr:
         if o['distance'] == dist:
-            compSimDict.update({o['correction']: o['compressionRate']/o['similarity']})
-    plt.plot(compSimDict.keys(), compSimDict.values(), label = dist.lower())
+            simDict.update({o['correction']:o['similarity']})#o['compressionRate']/
+            compDict.update({o['correction']: o['compressionRate']})
+    #plt.plot(compDict.keys(), compDict.values(), label = dist.lower() + " compression")
+    plt.plot(simDict.keys(), simDict.values(), "--", label = dist.lower() + " similarity")
 #thresh = np.zeros(len(compSimDict.keys())) + 0.5
 #plt.plot(compSimDict.keys(), thresh, "r--", label = "Threshold value")
 

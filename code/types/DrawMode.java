@@ -14,7 +14,9 @@ public enum DrawMode {
     Landscape32,
     Blockies128,
     Random128,
-    FourierDModRPhase256, FourierRModDPhase256, FourierDModDPhase256, FourierRModRPhase256;
+    FourierDModRPhase256, FourierRModDPhase256, FourierDModDPhase256, FourierRModRPhase256,
+    FourierDModRPhase128, FourierRModDPhase128, FourierDModDPhase128, FourierRModRPhase128,
+    FourierCartesian256;
 
     private final static Distance[] DISTS = {
             null, null,
@@ -23,7 +25,9 @@ public enum DrawMode {
             null,
             null,
             null,
-            CUBIC, SIGMOID, BELL, SQUARE
+            CUBIC, CUBIC, CUBIC, SQUARE,
+            CUBIC, CUBIC, SQUARE, SQUARE,
+            CUBIC
     };
     private final static double[] CORRS = {
             1, 1,
@@ -32,7 +36,9 @@ public enum DrawMode {
             1,
             1,
             1,
-            0.5,0.5,0.5,0.5
+            0.5, 0.5, 0.5, 0.5,
+            0.5, 0.5, 0.5, 0.5,
+            0.6
     };
 
     public double dist(int x, int y) {
@@ -43,7 +49,7 @@ public enum DrawMode {
         return DISTS[ordinal()];
     }
 
-    public void setDist(Distance dist){
+    public void setDist(Distance dist) {
         DISTS[ordinal()] = dist;
     }
 
@@ -53,6 +59,8 @@ public enum DrawMode {
             case FourierRModDPhase256:
             case FourierDModDPhase256:
                 return 147;
+            case FourierDModDPhase128:
+                return 72;
             default:
                 return 0;
         }
@@ -61,20 +69,21 @@ public enum DrawMode {
     public double corr() {
         return CORRS[ordinal()];
     }
-    public void setCorr(double newCorr){
+
+    public void setCorr(double newCorr) {
         CORRS[ordinal()] = newCorr;
     }
 
     public int cut() {
         switch (this) {
-            case FourierDModRPhase256:
-            case FourierRModDPhase256:
-            case FourierDModDPhase256:
-                return 6;
             case FourierRModRPhase256:
                 return 127;
+            case FourierRModRPhase128:
+                return 63;
+            case FourierDModDPhase128:
+                return 3;
             default:
-                return 0;
+                return 6;
         }
     }
 
@@ -89,6 +98,10 @@ public enum DrawMode {
         front = prng.createColor();
         back = prng.createColor();
         spots = prng.createColor();
+    }
+
+    public int length(){
+        return Integer.parseInt(toString().substring(toString().length()-3));
     }
 
     public Color[] palette() {

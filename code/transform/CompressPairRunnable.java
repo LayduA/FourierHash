@@ -28,29 +28,32 @@ public class CompressPairRunnable implements Runnable {
     Surface drawer;
     DrawMode mode;
     Result[] out;
+    int iter;
 
-    public CompressPairRunnable(Result[] out, Distance dist, String refHash, Surface drawer, DrawMode mode) {
+    public CompressPairRunnable(Result[] out, Distance dist, String refHash, Surface drawer, DrawMode mode, int iter) {
         this.out = out;
         this.refHash = refHash;
         this.drawer = drawer;
         this.mode = mode;
         this.dist = dist;
+        this.iter = iter;
     }
 
     @Override
     public void run() {
-        BufferedImage res = new BufferedImage(HASH_W, HASH_H, BufferedImage.TYPE_INT_RGB);
+        int size = Integer.parseInt(mode.toString().substring(mode.toString().length() - 3));
+        BufferedImage res = new BufferedImage(size, size, BufferedImage.TYPE_INT_RGB);
         Graphics g = res.createGraphics();
         double similarity;
         int[] refHashPixels;
-        for (int i = 4; i < out.length; i++) {
-            refHashPixels = drawer.drawFourierHash(g, refHash, 0, mode, dist, (1+i) / 10.0);
-            similarity = psiDist(refHashPixels, drawer.drawFourierHash(g, flipBit(flipBit(refHash, mode.worstBit()), 255), 0, mode, dist, i / 10.0), "imageThread" + this.hashCode());
+        for (int i = 0; i < out.length; i++) {
+            refHashPixels = drawer.drawFourierHash(g, refHash, 0, mode, dist, (i + 5) / 10.0);
+            similarity = psiDist(refHashPixels, drawer.drawFourierHash(g, flipBit(refHash, mode.worstBit()), 0, mode, dist, (i + 5) / 10.0), "imageThread" + this.hashCode());
             // COMPRESSION
             try {
                 int[] bitMasks = new int[]{0xFF0000, 0xFF00, 0xFF};
                 SinglePixelPackedSampleModel sm = new SinglePixelPackedSampleModel(
-                        DataBuffer.TYPE_INT, HASH_W, HASH_H, bitMasks);
+                        DataBuffer.TYPE_INT, size, size, bitMasks);
                 DataBufferInt db = new DataBufferInt(refHashPixels, refHashPixels.length);
                 WritableRaster wr = Raster.createWritableRaster(sm, db, new Point());
                 //System.out.println(ColorModel.getRGBdefault().hasAlpha());
@@ -73,9 +76,10 @@ public class CompressPairRunnable implements Runnable {
                 writer.write(null, new IIOImage(res, null, null), param);
                 ios.close();
                 double compression = (double) compressedImageFile.length() / notcompressedImageFile.length();
-                out[i] = new Result(dist, (i+1) / 10.0, compression, similarity);
+                out[i] = (out[i] == null) ? new Result(dist, (i + 5) / 10.0, compression, similarity) :
+                        out[i].plus(new Result(dist, (i + 5) / 10.0, compression, similarity), iter);
             } catch (Exception e) {
-                System.err.println(e);
+                System.err.println("Error in compresspair runnable :" + e);
             }
         }
 

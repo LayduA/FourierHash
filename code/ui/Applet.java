@@ -187,12 +187,13 @@ public class Applet extends JFrame {
             JButton runButton = new JButton("Run");
             runButton.addActionListener(e -> {
                         String in;
+                        DrawMode ref = MODE.toString().contains("128") ? DrawMode.FourierDModRPhase128 : DrawMode.FourierDModRPhase256;
                         for (int i = 1; i < 9; i++) {
-                            setMode(DrawMode.values()[DrawMode.FourierDModRPhase256.ordinal() + (i - 1) / 2]);
-                            in = i % 2 == 1 ? inputL.getText() : TransformHash.flipBits(inputL.getText(), Arrays.asList(MODE.worstBit(), 255));
+                            setMode(DrawMode.values()[ref.ordinal() + (i - 1) / 2]);
+                            in = i % 2 == 1 ? inputL.getText() : TransformHash.flipBits(inputL.getText(), Arrays.asList(MODE.worstBit(), ref.length()-1));
                             canvasComp.drawHash(frame.getGraphics(), in, -i, MODE, prng);
                             JLabel jaj = new JLabel(i % 2 == 1 ? MODE.toString() :
-                                    Double.toString(psiDist(canvas, inputL.getText(), TransformHash.flipBits(inputL.getText(), Arrays.asList(MODE.worstBit(), 255)), MODE, "image")));
+                                    Double.toString(psiDist(canvas, inputL.getText(), TransformHash.flipBits(inputL.getText(), Arrays.asList(MODE.worstBit(), ref.length()-1)), MODE, "image")));
                             jaj.setLocation(getShiftX(-i), getShiftY(-i) + HASH_H - 20);
                             jaj.setPreferredSize(new Dimension(HASH_W, 20));
                             jaj.setSize(jaj.getPreferredSize());
@@ -240,7 +241,7 @@ public class Applet extends JFrame {
             if (distSelector.getSelectedItem() != null) MODE.setDist((Distance) distSelector.getSelectedItem());
         });
         Double[] corrs = new Double[19];
-        for (int i = 0; i < 19; i++) corrs[i] = (double)Math.round((i * 0.1 + 0.1) * 10d) / 10d ;
+        for (int i = 0; i < 19; i++) corrs[i] = (double) Math.round((i * 0.1 + 0.1) * 10d) / 10d;
         JComboBox<Double> corrSelector = new JComboBox<>(corrs);
         corrSelector.addActionListener(l -> MODE.setCorr((Double) corrSelector.getSelectedItem()));
 
@@ -321,10 +322,16 @@ public class Applet extends JFrame {
         JButton flipButton = new JButton("Flip");
         flipButton.addActionListener(e -> {
             reset(right, southR.getHeight());
+            String in = inputL.getText();
+            String nBitsToFlip = flipValue.getText();
+            String index = flipIndex.getText();
             inputR.setText(
-                    flipIndex.isVisible()
-                            ? flipBits(inputL.getText(), Integer.parseInt(flipIndex.getText(), 10), 255)
-                            : flipBitsRandom(inputL.getText(), Integer.parseInt(flipValue.getText(), 10),
+                    flipIndex.isVisible() && !index.contains("r")
+                            ? flipBit(in, Integer.parseInt(index, 10))
+                            //Integer.parseInt(MODE.toString().substring(MODE.toString().length() - 3), 10) - 1)
+                            : flipBitsRandom(Integer.parseInt(nBitsToFlip) == 1 ?
+                                    flipBit(in, Integer.parseInt(MODE.toString().substring(MODE.toString().length() - 3), 10) - 1)
+                                    : in, Integer.parseInt(nBitsToFlip, 10),
                             getHashLength(MODE)));
 
             reset(right, southR.getHeight());
@@ -424,7 +431,7 @@ public class Applet extends JFrame {
 
     private void plotHashes(String refHash) {
         double[] averages = new double[255];
-        int nHash = 1;
+        int nHash = 25;
         //int[] ref;
 
         Path path = Paths.get("/Users/laya/Documents/VisualHashApplet/code/temp/");
@@ -449,16 +456,16 @@ public class Applet extends JFrame {
         Thread[] threads = new Thread[tasks.length];
         BufferedImage res = new BufferedImage(HASH_W, HASH_H, BufferedImage.TYPE_INT_RGB);
         String newRefHash;
-        Result[][] results = new Result[tasks.length][19];
+        Result[][] results = new Result[tasks.length][15];
         for (int hashItr = 0; hashItr < nHash; hashItr++) {
             System.out.println("Iteration " + hashItr + " started....");
-            //newRefHash = newHash(256 / 4);
+            newRefHash = newHash(256 / 4);
             //ref = canvas.drawFourierHash(res.createGraphics(), newRefHash, 0, MODE);
 
             for (int i = 0; i < threads.length; i++) {
                 //tasks[i] = new AvgRunnable(averages, i * 25, i == threads.length - 1 ? 5 : 25, newRefHash, ref, canvas, MODE);
                 //tasks[i] = new AvgRunnable(averages, 0, i, newRefHash, ref, canvas, MODE);
-                tasks[i] = new CompressPairRunnable(results[i], Distance.values()[i], refHash, canvas, MODE);
+                tasks[i] = new CompressPairRunnable(results[i], Distance.values()[i], newRefHash, canvas, MODE, hashItr);
                 threads[i] = new Thread(tasks[i], "Thread " + tasks[i].hashCode());
                 threads[i].start();
             }

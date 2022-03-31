@@ -178,19 +178,20 @@ public class Surface extends JPanel {
         target.values[i][j] = ComplexNumber.rPhi(modulus, phi);
 
         if (j == 0 && i != 0) {
-            target.values[size - i][j] = ComplexNumber.rPhi(modulus, phi);
+            target.values[size - i][j] = ComplexNumber.rPhi(modulus, -phi);
         } else if (i == 0 && j != 0) {
-            target.values[i][size - j] = ComplexNumber.rPhi(modulus, phi);
+            target.values[i][size - j] = ComplexNumber.rPhi(modulus, -phi);
         } else if (i != 0) {
-            target.values[size - i][size - j] = ComplexNumber.rPhi(modulus, phi);
+            target.values[size - i][size - j] = ComplexNumber.rPhi(modulus, -phi);
         }
     }
 
-    public int[] drawFourierHash(Graphics g, String hash, int shift, DrawMode drawMode){
+    public int[] drawFourierHash(Graphics g, String hash, int shift, DrawMode drawMode) {
         return drawFourierHash(g, hash, shift, drawMode, drawMode.getDist(), drawMode.corr());
     }
+
     public int[] drawFourierHash(Graphics g, String hash, int shift, DrawMode drawMode, Distance dist, double corr) {
-        int spectrumWidth = Integer.parseInt(drawMode.name().substring(drawMode.name().length() - 3), 10);
+        int spectrumWidth = HASH_W;
         String binHash = TransformHash.hexToBin(hash);
         assert binHash.length() == spectrumWidth;
         long moduloMod = new BigInteger(hash, 16).mod(new BigInteger("ffffffffffffffad", 16)).longValue();
@@ -211,46 +212,71 @@ public class Surface extends JPanel {
         TwoDArray datSpecG = new TwoDArray(spectrumWidth, spectrum.getHeight());
         TwoDArray datSpecR = new TwoDArray(spectrumWidth, spectrum.getHeight());
 
-        for (int i = 0; i < spectrumWidth; i++) {
-            for (int j = 0; j < spectrumWidth / 2; j++) {
+        for (int i = 0; i < HASH_W; i++) {
+            for (int j = 0; j < HASH_H / 2; j++) {
 
                 frequencyCoeff = dist.dist(i, j, drawMode.cut());
-                if (drawMode == DrawMode.FourierRModDPhase256 || drawMode == DrawMode.FourierRModRPhase256) {
+                if (drawMode.toString().contains("RMod")) {
                     modulusR = frequencyCoeff * randomMod.nextDouble();
                     modulusG = frequencyCoeff * randomMod.nextDouble();
                     modulusB = frequencyCoeff * randomMod.nextDouble();
-                } else if (drawMode == DrawMode.FourierDModRPhase256){
-                    modulusR = frequencyCoeff * (binHash.charAt(ind % spectrumWidth) - '0');
-                    modulusG = frequencyCoeff * (binHash.charAt((ind + 1) % spectrumWidth) - '0');
-                    modulusB = frequencyCoeff * (binHash.charAt((ind + 2) % spectrumWidth) - '0');
+                } else if (drawMode.toString().contains("DModRPhase")) {
+                    modulusR = frequencyCoeff * (binHash.charAt(ind % binHash.length()) - '0');
+                    modulusG = frequencyCoeff * (binHash.charAt((ind + 1) % binHash.length()) - '0');
+                    modulusB = frequencyCoeff * (binHash.charAt((ind + 2) % binHash.length()) - '0');
+                    if (frequencyCoeff > 0 && !(0 < i && i < spectrumWidth / 2 && j == 0)) {
+                        ind += 3;
+                    }
+                } else if (drawMode.toString().contains("Cartesian")) {
+                    modulusR = Math.sqrt(2) * frequencyCoeff;
+                    modulusG = Math.sqrt(2) * frequencyCoeff;
+                    modulusB = Math.sqrt(2) * frequencyCoeff;
+                    //if (frequencyCoeff > 0 && !(0 < i && i < spectrumWidth / 2 && j == 0)) ind += 3;
+                } else if (drawMode.toString().contains("DModDPhase")) {
+                    modulusR = frequencyCoeff * 0.5 * (binHash.charAt((ind) % binHash.length()) - '0' + 1);
+                    modulusG = frequencyCoeff * 0.5 * (binHash.charAt((ind + 1) % binHash.length()) - '0' + 1);
+                    modulusB = frequencyCoeff * 0.5 * (binHash.charAt((ind + 2) % binHash.length()) - '0' + 1);
                     if (frequencyCoeff > 0 && !(0 < i && i < spectrumWidth / 2 && j == 0)) ind += 3;
                 } else {
-                    modulusR = frequencyCoeff * 0.5 * (binHash.charAt(ind % spectrumWidth) - '0' + 1);
-                    modulusG = frequencyCoeff * 0.5 * (binHash.charAt((ind + 1) % spectrumWidth) - '0' + 1);
-                    modulusB = frequencyCoeff * 0.5 * (binHash.charAt((ind + 2) % spectrumWidth) - '0' + 1);
-                    if (frequencyCoeff > 0 && !(0 < i && i < spectrumWidth / 2 && j == 0)) ind += 3;
+                    modulusR = 0;
+                    modulusG = 0;
+                    modulusB = 0;
                 }
 
-                if (drawMode == DrawMode.FourierDModRPhase256 || drawMode == DrawMode.FourierRModRPhase256) {
+                if (drawMode.toString().contains("RPhase")) {
                     phiR = (randomPhase.nextDouble() - 0.5) * Math.PI;
                     phiG = (randomPhase.nextDouble() - 0.5) * Math.PI;
                     phiB = (randomPhase.nextDouble() - 0.5) * Math.PI;
+                } else if (drawMode.toString().contains("Cartesian")) {
+                    //I swear this makes sense, it's for when the index is 255, java is not Python
+                    phiR = Math.PI / 4.0 + (Math.PI / 2.0 * Integer.parseInt((binHash + binHash).substring(ind % binHash.length(), ind % binHash.length() + 2), 2));
+                    ind += 2;
+                    phiG = Math.PI / 4.0 + (Math.PI / 2.0 * Integer.parseInt((binHash + binHash).substring(ind % binHash.length(), ind % binHash.length() + 2), 2));
+                    ind += 2;
+                    phiB = Math.PI / 4.0 + (Math.PI / 2.0 * Integer.parseInt((binHash + binHash).substring(ind % binHash.length(), ind % binHash.length() + 2), 2));
+                    ind += 2;
                 } else {
-                    phiR = Math.PI / 2.0 * (1 - 2 * binHash.charAt(ind % spectrumWidth) - '0');
-                    phiG = Math.PI / 2.0 * (1 - 2 * binHash.charAt((ind + 1) % spectrumWidth) - '0');
-                    phiB = Math.PI / 2.0 * (1 - 2 * binHash.charAt((ind + 2) % spectrumWidth) - '0');
+                    phiR = Math.PI * binHash.charAt(ind % binHash.length()) - '0';
+                    //ind++;
+                    phiG = Math.PI * binHash.charAt((ind+1) % binHash.length()) - '0';
+                    //ind++;
+                    phiB = Math.PI * binHash.charAt((ind+2) % binHash.length()) - '0';
+                    //ind++;
+                    if (frequencyCoeff > 0 && !(0 < i && i < spectrumWidth / 2 && j == 0)) ind += 3;
                     //if ((drawMode == DrawMode.FourierDModDPhase256 || frequencyCoeff > 0) && !(0 < i && i < spectrumWidth / 2 && j == 0)) ind += 4;
                 }
 
                 setValues(i, j, datSpecR, modulusR, phiR, spectrumWidth);
                 setValues(i, j, datSpecG, modulusG, phiG, spectrumWidth);
                 setValues(i, j, datSpecB, modulusB, phiB, spectrumWidth);
+                //if(frequencyCoeff != 0) System.out.println(phiR);
 
             }
         }
-        if (ind < 256 && drawMode != DrawMode.FourierRModRPhase256) {
+        if (ind < 256 && drawMode.toString().contains("RModRPhase")) {
             //System.out.println("ind = " + ind + ", MUST BE >= 256");
         }
+
         TwoDArray inverseFFTR = new InverseFFT().transform(datSpecR);
         TwoDArray inverseFFTG = new InverseFFT().transform(datSpecG);
         TwoDArray inverseFFTB = new InverseFFT().transform(datSpecB);
@@ -283,7 +309,7 @@ public class Surface extends JPanel {
 
         for (int i = 0; i < spectrumWidth; i++) {
             for (int j = 0; j < spectrum.getHeight(); j++) {
-                coordY = i > spectrumWidth / 2 ? j == 0 || sum == 1 ? j : spectrum.getHeight() - j : j;
+                coordY = j;
                 pixelLoc = j * spectrumWidth + i;
                 pixelLocMod = getPixelLocSpectrum(i, j, spectrumWidth, drawMode);
                 spectrum.setRGB(i, j, (Math.min(255, (int) (magR[pixelLocMod] * 255)) << 16) | (Math.min(255, (int) (magG[pixelLocMod] * 255)) << 8) | Math.min(255, (int) (magB[pixelLocMod] * 255)));
@@ -524,7 +550,7 @@ public class Surface extends JPanel {
     public void drawLineHashIndices(Graphics g, int index1, int index2, int cornerX, int cornerY, int sideLength, int shift) {
         int[] startCoords = getCoordFromIndex(index1, cornerX, cornerY, sideLength, sideLength / 6);
         if (index1 == index2) {
-            drawLineHash(g, startCoords[0], startCoords[1], cornerX + sideLength / 2, cornerY + sideLength / 2, new Color(0, 0, 0) , shift);
+            drawLineHash(g, startCoords[0], startCoords[1], cornerX + sideLength / 2, cornerY + sideLength / 2, new Color(0, 0, 0), shift);
         } else {
 
             int[] endCoords = getCoordFromIndex(index2, cornerX, cornerY, sideLength, sideLength / 6);

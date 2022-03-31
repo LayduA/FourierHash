@@ -1,0 +1,679 @@
+{ 
+ 	 "values": 
+[{
+	"distance": "BELL", 
+	"correction": 0.5,
+	"compressionRate": 0.219749591951353,
+	"similarity": 0.11661409918244503
+}, {
+	"distance": "BELL", 
+	"correction": 0.6,
+	"compressionRate": 0.22542837542755334,
+	"similarity": 0.14118972218089837
+}, {
+	"distance": "BELL", 
+	"correction": 0.7,
+	"compressionRate": 0.23785223202087324,
+	"similarity": 0.1604683203327974
+}, {
+	"distance": "BELL", 
+	"correction": 0.8,
+	"compressionRate": 0.24187639167632244,
+	"similarity": 0.17015427207097295
+}, {
+	"distance": "BELL", 
+	"correction": 0.9,
+	"compressionRate": 0.25008966207757755,
+	"similarity": 0.18398661293595697
+}, {
+	"distance": "BELL", 
+	"correction": 1.0,
+	"compressionRate": 0.26346182233205395,
+	"similarity": 0.19593575295707932
+}, {
+	"distance": "BELL", 
+	"correction": 1.1,
+	"compressionRate": 0.28049281535080295,
+	"similarity": 0.21522985569328207
+}, {
+	"distance": "BELL", 
+	"correction": 1.2,
+	"compressionRate": 0.29668860218849713,
+	"similarity": 0.244106381552804
+}, {
+	"distance": "BELL", 
+	"correction": 1.3,
+	"compressionRate": 0.3118561679483123,
+	"similarity": 0.2679632246339926
+}, {
+	"distance": "BELL", 
+	"correction": 1.4,
+	"compressionRate": 0.32243414435530027,
+	"similarity": 0.28367206623160324
+}, {
+	"distance": "BELL", 
+	"correction": 1.5,
+	"compressionRate": 0.32901544203144223,
+	"similarity": 0.2966321982714465
+}, {
+	"distance": "BELL", 
+	"correction": 1.6,
+	"compressionRate": 0.34178956917422326,
+	"similarity": 0.31345861120450774
+}, {
+	"distance": "BELL", 
+	"correction": 1.7,
+	"compressionRate": 0.3476697302216387,
+	"similarity": 0.32140667951663704
+}, {
+	"distance": "BELL", 
+	"correction": 1.8,
+	"compressionRate": 0.3580746747927338,
+	"similarity": 0.3293269342198344
+}, {
+	"distance": "BELL", 
+	"correction": 1.9,
+	"compressionRate": 0.3576335023240244,
+	"similarity": 0.3354085682507607
+} , {
+	"distance": "MANHATTAN", 
+	"correction": 0.5,
+	"compressionRate": 0.17751666703770214,
+	"similarity": 0.1272279441619196
+}, {
+	"distance": "MANHATTAN", 
+	"correction": 0.6,
+	"compressionRate": 0.1792522098810983,
+	"similarity": 0.14623603493856535
+}, {
+	"distance": "MANHATTAN", 
+	"correction": 0.7,
+	"compressionRate": 0.1835854430004213,
+	"similarity": 0.15611974275457377
+}, {
+	"distance": "MANHATTAN", 
+	"correction": 0.8,
+	"compressionRate": 0.1849997974090748,
+	"similarity": 0.1615978228269519
+}, {
+	"distance": "MANHATTAN", 
+	"correction": 0.9,
+	"compressionRate": 0.1934120013767417,
+	"similarity": 0.15860727997507645
+}, {
+	"distance": "MANHATTAN", 
+	"correction": 1.0,
+	"compressionRate": 0.20019509970289706,
+	"similarity": 0.1659079728269187
+}, {
+	"distance": "MANHATTAN", 
+	"correction": 1.1,
+	"compressionRate": 0.20635385818687257,
+	"similarity": 0.1723111114334314
+}, {
+	"distance": "MANHATTAN", 
+	"correction": 1.2,
+	"compressionRate": 0.21626560040945553,
+	"similarity": 0.18195956748364028
+}, {
+	"distance": "MANHATTAN", 
+	"correction": 1.3,
+	"compressionRate": 0.22526541304607922,
+	"similarity": 0.18759788266009997
+}, {
+	"distance": "MANHATTAN", 
+	"correction": 1.4,
+	"compressionRate": 0.23250102622081187,
+	"similarity": 0.1929932314423371
+}, {
+	"distance": "MANHATTAN", 
+	"correction": 1.5,
+	"compressionRate": 0.23965027748147574,
+	"similarity": 0.19895106013197988
+}, {
+	"distance": "MANHATTAN", 
+	"correction": 1.6,
+	"compressionRate": 0.24304665029386896,
+	"similarity": 0.20551019132490672
+}, {
+	"distance": "MANHATTAN", 
+	"correction": 1.7,
+	"compressionRate": 0.24836639895233914,
+	"similarity": 0.2134387998731136
+}, {
+	"distance": "MANHATTAN", 
+	"correction": 1.8,
+	"compressionRate": 0.2542794304794227,
+	"similarity": 0.22281927435801446
+}, {
+	"distance": "MANHATTAN", 
+	"correction": 1.9,
+	"compressionRate": 0.2605213014614336,
+	"similarity": 0.23122964242876687
+} , {
+	"distance": "EUCLIDEAN", 
+	"correction": 0.5,
+	"compressionRate": 0.17517206742991454,
+	"similarity": 0.12549667712375712
+}, {
+	"distance": "EUCLIDEAN", 
+	"correction": 0.6,
+	"compressionRate": 0.17405976831917083,
+	"similarity": 0.14217947893939004
+}, {
+	"distance": "EUCLIDEAN", 
+	"correction": 0.7,
+	"compressionRate": 0.17596988136008665,
+	"similarity": 0.1550098810245351
+}, {
+	"distance": "EUCLIDEAN", 
+	"correction": 0.8,
+	"compressionRate": 0.17760112907879133,
+	"similarity": 0.15708285561229807
+}, {
+	"distance": "EUCLIDEAN", 
+	"correction": 0.9,
+	"compressionRate": 0.18222296095815194,
+	"similarity": 0.15829849433296678
+}, {
+	"distance": "EUCLIDEAN", 
+	"correction": 1.0,
+	"compressionRate": 0.18805893595423356,
+	"similarity": 0.16526745293155354
+}, {
+	"distance": "EUCLIDEAN", 
+	"correction": 1.1,
+	"compressionRate": 0.19333048475820905,
+	"similarity": 0.17006373976287026
+}, {
+	"distance": "EUCLIDEAN", 
+	"correction": 1.2,
+	"compressionRate": 0.19920677849639257,
+	"similarity": 0.17657170139446166
+}, {
+	"distance": "EUCLIDEAN", 
+	"correction": 1.3,
+	"compressionRate": 0.21036102844775206,
+	"similarity": 0.18528509339639382
+}, {
+	"distance": "EUCLIDEAN", 
+	"correction": 1.4,
+	"compressionRate": 0.21573848660219946,
+	"similarity": 0.19432572062074965
+}, {
+	"distance": "EUCLIDEAN", 
+	"correction": 1.5,
+	"compressionRate": 0.22253421857857586,
+	"similarity": 0.20338181821497778
+}, {
+	"distance": "EUCLIDEAN", 
+	"correction": 1.6,
+	"compressionRate": 0.2270730081134025,
+	"similarity": 0.21504864570194043
+}, {
+	"distance": "EUCLIDEAN", 
+	"correction": 1.7,
+	"compressionRate": 0.23260833250757051,
+	"similarity": 0.22553269728066788
+}, {
+	"distance": "EUCLIDEAN", 
+	"correction": 1.8,
+	"compressionRate": 0.24043355493695168,
+	"similarity": 0.23676333740044544
+}, {
+	"distance": "EUCLIDEAN", 
+	"correction": 1.9,
+	"compressionRate": 0.24960870429053061,
+	"similarity": 0.24813440122946817
+} , {
+	"distance": "CUBIC", 
+	"correction": 0.5,
+	"compressionRate": 0.2227838966259394,
+	"similarity": 0.1259413237353604
+}, {
+	"distance": "CUBIC", 
+	"correction": 0.6,
+	"compressionRate": 0.26975931745013065,
+	"similarity": 0.18097226560428772
+}, {
+	"distance": "CUBIC", 
+	"correction": 0.7,
+	"compressionRate": 0.3121133013136731,
+	"similarity": 0.2261598345984686
+}, {
+	"distance": "CUBIC", 
+	"correction": 0.8,
+	"compressionRate": 0.3328488067806734,
+	"similarity": 0.24125610709592082
+}, {
+	"distance": "CUBIC", 
+	"correction": 0.9,
+	"compressionRate": 0.34976109011415335,
+	"similarity": 0.24399043110697344
+}, {
+	"distance": "CUBIC", 
+	"correction": 1.0,
+	"compressionRate": 0.36807460741154246,
+	"similarity": 0.25403235659592754
+}, {
+	"distance": "CUBIC", 
+	"correction": 1.1,
+	"compressionRate": 0.40400646532645046,
+	"similarity": 0.28167722774200793
+}, {
+	"distance": "CUBIC", 
+	"correction": 1.2,
+	"compressionRate": 0.4190353395867365,
+	"similarity": 0.2947985412594673
+}, {
+	"distance": "CUBIC", 
+	"correction": 1.3,
+	"compressionRate": 0.43398492941106515,
+	"similarity": 0.31403184785379845
+}, {
+	"distance": "CUBIC", 
+	"correction": 1.4,
+	"compressionRate": 0.44813957416411476,
+	"similarity": 0.32723691216501133
+}, {
+	"distance": "CUBIC", 
+	"correction": 1.5,
+	"compressionRate": 0.4708960594134576,
+	"similarity": 0.33946568460440657
+}, {
+	"distance": "CUBIC", 
+	"correction": 1.6,
+	"compressionRate": 0.4833118017298053,
+	"similarity": 0.35043941853869415
+}, {
+	"distance": "CUBIC", 
+	"correction": 1.7,
+	"compressionRate": 0.49520670952220536,
+	"similarity": 0.36579790101563536
+}, {
+	"distance": "CUBIC", 
+	"correction": 1.8,
+	"compressionRate": 0.5048313602859057,
+	"similarity": 0.3823954768992407
+}, {
+	"distance": "CUBIC", 
+	"correction": 1.9,
+	"compressionRate": 0.5180600494601867,
+	"similarity": 0.39834448320038784
+} , {
+	"distance": "MULT", 
+	"correction": 0.5,
+	"compressionRate": 0.16739831721956377,
+	"similarity": 0.1368546988702848
+}, {
+	"distance": "MULT", 
+	"correction": 0.6,
+	"compressionRate": 0.1650946219652742,
+	"similarity": 0.15966963801776957
+}, {
+	"distance": "MULT", 
+	"correction": 0.7,
+	"compressionRate": 0.16611343577635712,
+	"similarity": 0.17850330431340072
+}, {
+	"distance": "MULT", 
+	"correction": 0.8,
+	"compressionRate": 0.16783577559117424,
+	"similarity": 0.1826368714149399
+}, {
+	"distance": "MULT", 
+	"correction": 0.9,
+	"compressionRate": 0.16971867424269083,
+	"similarity": 0.18477214622121663
+}, {
+	"distance": "MULT", 
+	"correction": 1.0,
+	"compressionRate": 0.17239315292161075,
+	"similarity": 0.18502897733619345
+}, {
+	"distance": "MULT", 
+	"correction": 1.1,
+	"compressionRate": 0.17385645651424847,
+	"similarity": 0.18738253658703335
+}, {
+	"distance": "MULT", 
+	"correction": 1.2,
+	"compressionRate": 0.17738570201172432,
+	"similarity": 0.1946822472363975
+}, {
+	"distance": "MULT", 
+	"correction": 1.3,
+	"compressionRate": 0.17853840039395663,
+	"similarity": 0.2036001078549135
+}, {
+	"distance": "MULT", 
+	"correction": 1.4,
+	"compressionRate": 0.18089147929589341,
+	"similarity": 0.21133872081048383
+}, {
+	"distance": "MULT", 
+	"correction": 1.5,
+	"compressionRate": 0.18228452811476592,
+	"similarity": 0.21729121441007704
+}, {
+	"distance": "MULT", 
+	"correction": 1.6,
+	"compressionRate": 0.1850314941096562,
+	"similarity": 0.2237772782977532
+}, {
+	"distance": "MULT", 
+	"correction": 1.7,
+	"compressionRate": 0.18611771389862874,
+	"similarity": 0.23181461008978022
+}, {
+	"distance": "MULT", 
+	"correction": 1.8,
+	"compressionRate": 0.1895680984135389,
+	"similarity": 0.23993154672650052
+}, {
+	"distance": "MULT", 
+	"correction": 1.9,
+	"compressionRate": 0.1942269902030191,
+	"similarity": 0.2493544231256475
+} , {
+	"distance": "SQUARE", 
+	"correction": 0.5,
+	"compressionRate": 0.2076336986125618,
+	"similarity": 0.1221897044837431
+}, {
+	"distance": "SQUARE", 
+	"correction": 0.6,
+	"compressionRate": 0.2252639504122816,
+	"similarity": 0.15294302506163354
+}, {
+	"distance": "SQUARE", 
+	"correction": 0.7,
+	"compressionRate": 0.24207520606810945,
+	"similarity": 0.17536793137873846
+}, {
+	"distance": "SQUARE", 
+	"correction": 0.8,
+	"compressionRate": 0.26334841984997576,
+	"similarity": 0.19195410873001423
+}, {
+	"distance": "SQUARE", 
+	"correction": 0.9,
+	"compressionRate": 0.2785195163027997,
+	"similarity": 0.20482502821547904
+}, {
+	"distance": "SQUARE", 
+	"correction": 1.0,
+	"compressionRate": 0.28573159014324645,
+	"similarity": 0.21199606149751815
+}, {
+	"distance": "SQUARE", 
+	"correction": 1.1,
+	"compressionRate": 0.31108625519031197,
+	"similarity": 0.21826013102273195
+}, {
+	"distance": "SQUARE", 
+	"correction": 1.2,
+	"compressionRate": 0.3380771781069415,
+	"similarity": 0.2354778580751477
+}, {
+	"distance": "SQUARE", 
+	"correction": 1.3,
+	"compressionRate": 0.3712377590468822,
+	"similarity": 0.25898965836764676
+}, {
+	"distance": "SQUARE", 
+	"correction": 1.4,
+	"compressionRate": 0.3913340965272286,
+	"similarity": 0.2794127948194194
+}, {
+	"distance": "SQUARE", 
+	"correction": 1.5,
+	"compressionRate": 0.4039739030375122,
+	"similarity": 0.3022099122800236
+}, {
+	"distance": "SQUARE", 
+	"correction": 1.6,
+	"compressionRate": 0.4271334900075347,
+	"similarity": 0.3324255919351073
+}, {
+	"distance": "SQUARE", 
+	"correction": 1.7,
+	"compressionRate": 0.44554900593178765,
+	"similarity": 0.3633757356140506
+}, {
+	"distance": "SQUARE", 
+	"correction": 1.8,
+	"compressionRate": 0.45947652565299624,
+	"similarity": 0.37763428388102327
+}, {
+	"distance": "SQUARE", 
+	"correction": 1.9,
+	"compressionRate": 0.47289786908301146,
+	"similarity": 0.3934193130872401
+} , {
+	"distance": "XY", 
+	"correction": 0.5,
+	"compressionRate": 0.1595463115580328,
+	"similarity": 0.1585938513602997
+}, {
+	"distance": "XY", 
+	"correction": 0.6,
+	"compressionRate": 0.15920184074884347,
+	"similarity": 0.17878569151163762
+}, {
+	"distance": "XY", 
+	"correction": 0.7,
+	"compressionRate": 0.15721021651273864,
+	"similarity": 0.18754045742128353
+}, {
+	"distance": "XY", 
+	"correction": 0.8,
+	"compressionRate": 0.1571004740768488,
+	"similarity": 0.18839687784289813
+}, {
+	"distance": "XY", 
+	"correction": 0.9,
+	"compressionRate": 0.1569448262247929,
+	"similarity": 0.18879071737455352
+}, {
+	"distance": "XY", 
+	"correction": 1.0,
+	"compressionRate": 0.15718361257242142,
+	"similarity": 0.19093108241530515
+}, {
+	"distance": "XY", 
+	"correction": 1.1,
+	"compressionRate": 0.1575133261204037,
+	"similarity": 0.19443863728757285
+}, {
+	"distance": "XY", 
+	"correction": 1.2,
+	"compressionRate": 0.15846111912188454,
+	"similarity": 0.1984499034418452
+}, {
+	"distance": "XY", 
+	"correction": 1.3,
+	"compressionRate": 0.15961333766256114,
+	"similarity": 0.2025795696787881
+}, {
+	"distance": "XY", 
+	"correction": 1.4,
+	"compressionRate": 0.1611516691297197,
+	"similarity": 0.2081968572453888
+}, {
+	"distance": "XY", 
+	"correction": 1.5,
+	"compressionRate": 0.16309325113176462,
+	"similarity": 0.21454652964279153
+}, {
+	"distance": "XY", 
+	"correction": 1.6,
+	"compressionRate": 0.16370045450561188,
+	"similarity": 0.2213434575251558
+}, {
+	"distance": "XY", 
+	"correction": 1.7,
+	"compressionRate": 0.1659508233454749,
+	"similarity": 0.2273560911400782
+}, {
+	"distance": "XY", 
+	"correction": 1.8,
+	"compressionRate": 0.16744496697443442,
+	"similarity": 0.23685142581896695
+}, {
+	"distance": "XY", 
+	"correction": 1.9,
+	"compressionRate": 0.16967944614322655,
+	"similarity": 0.2452496472315439
+} , {
+	"distance": "SQRTMIN", 
+	"correction": 0.5,
+	"compressionRate": 0.1603643427851435,
+	"similarity": 0.14271757942058777
+}, {
+	"distance": "SQRTMIN", 
+	"correction": 0.6,
+	"compressionRate": 0.15897892616435635,
+	"similarity": 0.16210121491701057
+}, {
+	"distance": "SQRTMIN", 
+	"correction": 0.7,
+	"compressionRate": 0.15954035249347426,
+	"similarity": 0.172088972403234
+}, {
+	"distance": "SQRTMIN", 
+	"correction": 0.8,
+	"compressionRate": 0.15865640034561324,
+	"similarity": 0.1764577185167472
+}, {
+	"distance": "SQRTMIN", 
+	"correction": 0.9,
+	"compressionRate": 0.15987552878469868,
+	"similarity": 0.18473758643479907
+}, {
+	"distance": "SQRTMIN", 
+	"correction": 1.0,
+	"compressionRate": 0.1607925450056227,
+	"similarity": 0.1887535413026687
+}, {
+	"distance": "SQRTMIN", 
+	"correction": 1.1,
+	"compressionRate": 0.1611078422983808,
+	"similarity": 0.19430658989203764
+}, {
+	"distance": "SQRTMIN", 
+	"correction": 1.2,
+	"compressionRate": 0.16244624058514878,
+	"similarity": 0.2002153279155836
+}, {
+	"distance": "SQRTMIN", 
+	"correction": 1.3,
+	"compressionRate": 0.16484907783870084,
+	"similarity": 0.2060458187234384
+}, {
+	"distance": "SQRTMIN", 
+	"correction": 1.4,
+	"compressionRate": 0.16600237304050483,
+	"similarity": 0.21275948282796311
+}, {
+	"distance": "SQRTMIN", 
+	"correction": 1.5,
+	"compressionRate": 0.16911339382184684,
+	"similarity": 0.21978000312776597
+}, {
+	"distance": "SQRTMIN", 
+	"correction": 1.6,
+	"compressionRate": 0.17162694761303465,
+	"similarity": 0.22776715998661076
+}, {
+	"distance": "SQRTMIN", 
+	"correction": 1.7,
+	"compressionRate": 0.1725603379208664,
+	"similarity": 0.23479526795449057
+}, {
+	"distance": "SQRTMIN", 
+	"correction": 1.8,
+	"compressionRate": 0.17676646360804227,
+	"similarity": 0.2431394437427046
+}, {
+	"distance": "SQRTMIN", 
+	"correction": 1.9,
+	"compressionRate": 0.17912169838638314,
+	"similarity": 0.25044613909572716
+} , {
+	"distance": "SIGMOID", 
+	"correction": 0.5,
+	"compressionRate": 0.16936425640104147,
+	"similarity": 0.1267381587844388
+}, {
+	"distance": "SIGMOID", 
+	"correction": 0.6,
+	"compressionRate": 0.16713188954510866,
+	"similarity": 0.14238430520675002
+}, {
+	"distance": "SIGMOID", 
+	"correction": 0.7,
+	"compressionRate": 0.16610007793594928,
+	"similarity": 0.15106674712947543
+}, {
+	"distance": "SIGMOID", 
+	"correction": 0.8,
+	"compressionRate": 0.16666058196679642,
+	"similarity": 0.15607777342463322
+}, {
+	"distance": "SIGMOID", 
+	"correction": 0.9,
+	"compressionRate": 0.17009584585148574,
+	"similarity": 0.1606666828937173
+}, {
+	"distance": "SIGMOID", 
+	"correction": 1.0,
+	"compressionRate": 0.17339370428490167,
+	"similarity": 0.16505423830527358
+}, {
+	"distance": "SIGMOID", 
+	"correction": 1.1,
+	"compressionRate": 0.17689675534370236,
+	"similarity": 0.16789611041997166
+}, {
+	"distance": "SIGMOID", 
+	"correction": 1.2,
+	"compressionRate": 0.18004716877454974,
+	"similarity": 0.17480343650076136
+}, {
+	"distance": "SIGMOID", 
+	"correction": 1.3,
+	"compressionRate": 0.18758567199937792,
+	"similarity": 0.18145546503731252
+}, {
+	"distance": "SIGMOID", 
+	"correction": 1.4,
+	"compressionRate": 0.19118020370671845,
+	"similarity": 0.18976633901569467
+}, {
+	"distance": "SIGMOID", 
+	"correction": 1.5,
+	"compressionRate": 0.19596087287488456,
+	"similarity": 0.19809429986889537
+}, {
+	"distance": "SIGMOID", 
+	"correction": 1.6,
+	"compressionRate": 0.19948846783302815,
+	"similarity": 0.20731555569375446
+}, {
+	"distance": "SIGMOID", 
+	"correction": 1.7,
+	"compressionRate": 0.20417061781755025,
+	"similarity": 0.21633846312286276
+}, {
+	"distance": "SIGMOID", 
+	"correction": 1.8,
+	"compressionRate": 0.2103378094685375,
+	"similarity": 0.22504991007450437
+}, {
+	"distance": "SIGMOID", 
+	"correction": 1.9,
+	"compressionRate": 0.2141602803160998,
+	"similarity": 0.23251704098647552
+}]
+}

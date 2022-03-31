@@ -246,7 +246,7 @@ public interface TransformHash {
             IntStream.of(pixels2).forEach(pw::println);
             pw.close();
 
-            pB = new ProcessBuilder(path, "-u", "code/haar_psi.py", path1, path2);
+            pB = new ProcessBuilder(path, "-u", "code/haar_psi.py", path1, path2, Integer.toString((int)Math.floor(Math.sqrt(pixels1.length))));
             pB.redirectErrorStream(true);
             Process proc = pB.start();
             byte[] results = proc.getInputStream().readAllBytes();

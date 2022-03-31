@@ -27,9 +27,16 @@ public class Result {
         return correction;
     }
 
+    public Result plus(Result other, int n) {
+        if (other == null || n == 0) return this;
+        assert (other.distance == distance && other.correction == correction);
+        return new Result(distance, correction, (compressionRate * n + other.compressionRate) / (n + 1),
+                (similarity * n + other.similarity) / (n + 1));
+    }
+
     @Override
     public String toString() {
-        return  "{\n" +
+        return "{\n" +
                 "\t\"distance\": \"" + distance + "\", \n" +
                 "\t\"correction\": " + correction + ",\n" +
                 "\t\"compressionRate\": " + compressionRate + ",\n" +
