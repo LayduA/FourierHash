@@ -1,6 +1,7 @@
 package code.ui;
 
 import code.Crypto;
+import code.transform.AvgRunnable;
 import code.transform.Blockies;
 import code.transform.CompressPairRunnable;
 import code.transform.TransformHash;
@@ -190,10 +191,10 @@ public class Applet extends JFrame {
                         DrawMode ref = MODE.toString().contains("128") ? DrawMode.FourierDModRPhase128 : DrawMode.FourierDModRPhase256;
                         for (int i = 1; i < 9; i++) {
                             setMode(DrawMode.values()[ref.ordinal() + (i - 1) / 2]);
-                            in = i % 2 == 1 ? inputL.getText() : TransformHash.flipBits(inputL.getText(), Arrays.asList(MODE.worstBit(), ref.length()-1));
+                            in = i % 2 == 1 ? inputL.getText() : TransformHash.flipBits(inputL.getText(), Arrays.asList(MODE.worstBit(), ref.length() - 1));
                             canvasComp.drawHash(frame.getGraphics(), in, -i, MODE, prng);
                             JLabel jaj = new JLabel(i % 2 == 1 ? MODE.toString() :
-                                    Double.toString(psiDist(canvas, inputL.getText(), TransformHash.flipBits(inputL.getText(), Arrays.asList(MODE.worstBit(), ref.length()-1)), MODE, "image")));
+                                    Double.toString(psiDist(canvas, inputL.getText(), TransformHash.flipBits(inputL.getText(), Arrays.asList(MODE.worstBit(), ref.length() - 1)), MODE, "image")));
                             jaj.setLocation(getShiftX(-i), getShiftY(-i) + HASH_H - 20);
                             jaj.setPreferredSize(new Dimension(HASH_W, 20));
                             jaj.setSize(jaj.getPreferredSize());
@@ -430,14 +431,15 @@ public class Applet extends JFrame {
     }
 
     private void plotHashes(String refHash) {
-        double[] averages = new double[255];
-        int nHash = 25;
+
+        int nHash = 20;
+        double[][] averages = new double[nHash][MODE.length()];
+
         //int[] ref;
 
         Path path = Paths.get("/Users/laya/Documents/VisualHashApplet/code/temp/");
 
-        // read java doc, Files.walk need close the resources.
-        // try-with-resources to ensure that the stream's open directories are closed
+        // reset temp folder
         try (Stream<Path> walk = Files.walk(path)) {
             walk
                     .sorted(Comparator.reverseOrder())
@@ -452,20 +454,21 @@ public class Applet extends JFrame {
             System.out.println(e);
         }
         new File("/Users/laya/Documents/VisualHashApplet/code/temp").mkdirs();
-        CompressPairRunnable[] tasks = new CompressPairRunnable[Distance.values().length];
+        AvgRunnable[] tasks = new AvgRunnable[4];//[Distance.values().length];
         Thread[] threads = new Thread[tasks.length];
         BufferedImage res = new BufferedImage(HASH_W, HASH_H, BufferedImage.TYPE_INT_RGB);
         String newRefHash;
-        Result[][] results = new Result[tasks.length][15];
+        //Result[][] results = new Result[tasks.length][15];
+        MODE.setDist(Distance.SQUARE);
         for (int hashItr = 0; hashItr < nHash; hashItr++) {
             System.out.println("Iteration " + hashItr + " started....");
-            newRefHash = newHash(256 / 4);
-            //ref = canvas.drawFourierHash(res.createGraphics(), newRefHash, 0, MODE);
+            newRefHash = newHash(MODE.length() / 4);
+            int[] ref = canvas.drawFourierHash(res.createGraphics(), newRefHash, 0, MODE);
 
-            for (int i = 0; i < threads.length; i++) {
+            for (int i = 0; i < tasks.length; i++) {
                 //tasks[i] = new AvgRunnable(averages, i * 25, i == threads.length - 1 ? 5 : 25, newRefHash, ref, canvas, MODE);
-                //tasks[i] = new AvgRunnable(averages, 0, i, newRefHash, ref, canvas, MODE);
-                tasks[i] = new CompressPairRunnable(results[i], Distance.values()[i], newRefHash, canvas, MODE, hashItr);
+                tasks[i] = new AvgRunnable(averages[hashItr], i * MODE.length()/tasks.length, MODE.length()/tasks.length, newRefHash, ref, canvas, MODE);
+                //tasks[i] = new CompressPairRunnable(results[i], Distance.values()[i], newRefHash, canvas, MODE, hashItr);
                 threads[i] = new Thread(tasks[i], "Thread " + tasks[i].hashCode());
                 threads[i].start();
             }
@@ -480,16 +483,16 @@ public class Applet extends JFrame {
         }
 
         try {
-//            File csvOutputFile = new File("code/data/" + MODE + "2bitsPhaseSimVSSize.csv");
-//            PrintWriter pw = new PrintWriter(csvOutputFile);
-//            DoubleStream.of(averages).map(d -> d / nHash).forEach(pw::println);
-//            pw.close();
-            File csvOutputFile = new File("code/data/paramsSearch" + MODE + ".json");
+            File csvOutputFile = new File("code/data/" + MODE + "changing1bit.csv");
             PrintWriter pw = new PrintWriter(csvOutputFile);
-            pw.print("{ \n \t \"values\": \n");
-            Stream.of(results).map(Arrays::deepToString).forEach(pw::print);
-            pw.print("\n}");
+            Stream.of(averages).map(Arrays::toString).forEach(pw::println);
             pw.close();
+            //File csvOutputFile = new File("code/data/paramsSearch" + MODE + ".json");
+//            PrintWriter pw = new PrintWriter(csvOutputFile);
+//            pw.print("{ \n \t \"values\": \n");
+//            Stream.of().map(Arrays::deepToString).forEach(pw::print);
+//            pw.print("\n}");
+//            pw.close();
         } catch (Exception e) {
             System.out.println(e);
         }

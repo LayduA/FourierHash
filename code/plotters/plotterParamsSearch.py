@@ -16,8 +16,8 @@ for dist in ['MANHATTAN', 'CUBIC', 'SIGMOID', 'SQUARE', 'XY', 'MULT', 'SQRTMIN',
         if o['distance'] == dist:
             simDict.update({o['correction']:o['similarity']})#o['compressionRate']/
             compDict.update({o['correction']: o['compressionRate']})
-    #plt.plot(compDict.keys(), compDict.values(), label = dist.lower() + " compression")
-    plt.plot(simDict.keys(), simDict.values(), "--", label = dist.lower() + " similarity")
+    #plt.plot(compDict.keys(), compDict.values(), "--", label = dist.lower() + " compression")
+    plt.plot(simDict.keys(), simDict.values(), label = dist.lower() )#+ " similarity")
 #thresh = np.zeros(len(compSimDict.keys())) + 0.5
 #plt.plot(compSimDict.keys(), thresh, "r--", label = "Threshold value")
 
