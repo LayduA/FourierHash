@@ -6,18 +6,18 @@ import src.ui.Applet;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-import static src.hashops.TransformHash.*;
+import static src.hashops.HashTransform.*;
 
-public class AvgRunnable implements Runnable {
+public class AvgDistRunnable implements Runnable {
     double[] out;
     int from;
     int size;
     String refHash;
     int[] refHashPixels;
-    Surface drawer;
+    HashDrawer drawer;
     DrawParams params;
 
-    public AvgRunnable(double[] out, int from, int size, String refHash, int[] refHashPixels, Surface drawer, DrawParams params) {
+    public AvgDistRunnable(double[] out, int from, int size, String refHash, int[] refHashPixels, HashDrawer drawer, DrawParams params) {
         this.out = out;
         this.refHash = refHash;
         this.refHashPixels = refHashPixels;

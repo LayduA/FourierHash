@@ -4,7 +4,7 @@ import src.crypto.PRNG128BitsInsecure;
 
 import java.awt.*;
 
-import static src.hashops.TransformHash.buildHSVWheel;
+import static src.hashops.HashTransform.buildHSVWheel;
 
 public class DrawParams {
 
@@ -17,6 +17,7 @@ public class DrawParams {
     private Deter phaseDet;
     private boolean filtered;
     private int cut;
+    private boolean seePhase;
 
     private static Color back;
     private static Color front;
@@ -36,6 +37,7 @@ public class DrawParams {
         phaseDet = Deter.DET;
         filtered = true;
         cut = default_cut(mode);
+        seePhase = false;
     }
 
     public DrawParams(DrawParams other){
@@ -48,6 +50,7 @@ public class DrawParams {
         phaseDet = other.phaseDet;
         filtered = other.filtered;
         cut = other.cut;
+        seePhase = other.seePhase;
     }
 
     public DrawParams(DrawMode mode){
@@ -175,6 +178,14 @@ public class DrawParams {
     }
     public void setDistMode(Distance.Shape newDistMode){
         distMode = newDistMode;
+    }
+
+    public boolean isSeePhase() {
+        return seePhase;
+    }
+
+    public void setSeePhase(boolean seePhase) {
+        this.seePhase = seePhase;
     }
 
     public PRNG128BitsInsecure prng(){

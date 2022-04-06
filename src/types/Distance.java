@@ -1,7 +1,7 @@
 package src.types;
 
 public enum Distance {
-    CONST, MANHATTAN, EUCLIDEAN, CUBIC, MULT, SQUARE, XY, SQRTMIN, BELL,  SIGMOID;
+    CONST, MIN, MANHATTAN, EUCLIDEAN, CUBIC, MULT, SQUARE, XY, SQRTMIN, BELL,  SIGMOID;
 
     public enum Shape{
         RECTANGLE, RHOMBUS
@@ -18,6 +18,7 @@ public enum Distance {
         //square
         if (params.getDistMode() == Shape.RECTANGLE && maxXY > params.cut()) return 0;
         if (params.getDistMode() == Shape.RHOMBUS && sumXY > params.cut()) return 0;
+        if(this == MIN) return minXY == 0 ? 4 : 2 / minXY;
         if(this == CONST) return 2.0;
         if (this == SQRTMIN) {
             if (x == 0 && y == 0) return 1.0;

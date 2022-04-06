@@ -1,10 +1,11 @@
 package src.ui;
 
 import src.crypto.SecureCrypto;
-import src.hashops.AvgRunnable;
+import src.hashops.AvgDistRunnable;
 import src.crypto.PRNG128BitsInsecure;
-import src.hashops.Surface;
-import src.hashops.TransformHash;
+import src.hashops.HashDrawer;
+import src.hashops.HashTransform;
+import src.hashops.SimpleHashRunnable;
 import src.types.*;
 
 import javax.imageio.ImageIO;
@@ -23,16 +24,17 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static src.hashops.TransformHash.*;
+import static src.hashops.HashTransform.*;
 
 public class Applet extends JFrame {
 
     public final static Logger LOGGER = Logger.getLogger(Applet.class.getName());
 
     public DrawParams params;
-    
+
 
     public final static int WINDOW_W = 1100;
     public final static int WINDOW_H = 650;
@@ -63,11 +65,7 @@ public class Applet extends JFrame {
         return 50 + 150 * (ind / 8);
     }
 
-    public final static int VERT_JITTER = (WINDOW_H - BANNER_H - HASH_H / 2) / 3;
-
-    //private JTextField inputL;
-    //private JTextField inputR;
-    private Surface canvas;
+    private HashDrawer canvas;
     private JTextArea psiDisplay;
     private JComboBox<DrawMode> modeSelector;
 
@@ -111,7 +109,6 @@ public class Applet extends JFrame {
             }
 
             public void changed() {
-                reset(left, BANNER_H);
                 updateHashes(canvas, inputL, inputR, 1, hamDistDisplay);
             }
         });
@@ -129,11 +126,10 @@ public class Applet extends JFrame {
             }
 
             public void changed() {
-                reset(right, BANNER_H);
                 updateHashes(canvas, inputR, inputL, 2, hamDistDisplay);
             }
         });
-        canvas = new Surface();
+        canvas = new HashDrawer();
         canvas.setPreferredSize(new Dimension(HASH_W, HASH_H));
 
         JPanel southL = new JPanel();
@@ -168,7 +164,7 @@ public class Applet extends JFrame {
             frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             JLayeredPane pane = new JLayeredPane();
 
-            Surface canvasComp = new Surface();
+            HashDrawer canvasComp = new HashDrawer();
             canvasComp.setPreferredSize(new Dimension(1200, 600));
             //pane.add(canvasComp, Integer.valueOf(1));
             pane.setPreferredSize(canvasComp.getPreferredSize());
@@ -181,10 +177,10 @@ public class Applet extends JFrame {
                         for (int i = 1; i < 9; i++) {
                             params.setModDet((i - 1) % 4 < 2 ? DrawParams.Deter.DET : DrawParams.Deter.RAND);
                             params.setPhaseDet(i <= 4 ? DrawParams.Deter.DET : DrawParams.Deter.RAND);
-                            in = i % 2 == 1 ? inputL.getText() : TransformHash.flipBit(inputL.getText(), params.worstBit());
+                            in = i % 2 == 1 ? inputL.getText() : HashTransform.flipBit(inputL.getText(), params.worstBit());
                             canvasComp.drawHash(frame.getGraphics(), in, -i, params);
                             JLabel jaj = new JLabel(i % 2 == 1 ? "Modulus : " + params.getModDet() + ", Phase : " + params.getPhaseDet() :
-                                    Double.toString(psiDist(canvas, inputL.getText(), TransformHash.flipBits(inputL.getText(), params.worstBit()), params, "image")));
+                                    Double.toString(psiDist(canvas, inputL.getText(), HashTransform.flipBit(inputL.getText(), params.worstBit()), params, "image")));
                             jaj.setLocation(getShiftX(-i), getShiftY(-i) + HASH_H - 20);
                             jaj.setPreferredSize(new Dimension(HASH_W, 20));
                             jaj.setSize(jaj.getPreferredSize());
@@ -202,12 +198,17 @@ public class Applet extends JFrame {
 
         });
 
-        JButton plotButton = new JButton("Plot");
-        plotButton.addActionListener(l -> plotHashes(inputL.getText()));
+        JButton plotButton = new JButton("Get Data");
+        plotButton.addActionListener(l -> getHashesDataPairs());
 
         JCheckBox checkBoxFiltered = new JCheckBox();
         checkBoxFiltered.setSelected(params.isFiltered());
         checkBoxFiltered.addActionListener(l -> params.setFiltered(checkBoxFiltered.isSelected()));
+
+        JCheckBox checkBoxModPhase = new JCheckBox("Phase");
+        checkBoxModPhase.addActionListener(l -> {
+            params.setSeePhase(checkBoxModPhase.isSelected());
+        });
 
         JButton saveButtonL = new JButton("Save");
         saveButtonL.addActionListener(l -> save(inputL));
@@ -232,7 +233,9 @@ public class Applet extends JFrame {
         distSelector.setSelectedItem(params.getDist());
 
         JTextField corrSelector = new JTextField(4);
-        corrSelector.addActionListener(l -> params.setCorr(Double.parseDouble(corrSelector.getText())));
+        corrSelector.addActionListener(l -> {
+            params.setCorr(Double.parseDouble(corrSelector.getText()));
+        });
         corrSelector.setText(Double.toString(params.getCorr()));
 
         DrawParams.Deter[] moduli = new DrawParams.Deter[]{DrawParams.Deter.DET, DrawParams.Deter.RAND, DrawParams.Deter.FIXED};
@@ -262,7 +265,7 @@ public class Applet extends JFrame {
             }
 
             public void changed() {
-                if(cutValue.getText().length() > 0) params.setCut(Integer.parseInt(cutValue.getText()));
+                if (cutValue.getText().length() > 0) params.setCut(Integer.parseInt(cutValue.getText()));
             }
         });
 
@@ -270,7 +273,7 @@ public class Applet extends JFrame {
         JButton checkButton = new JButton("Check bits");
         checkButton.addActionListener(l -> {
             BufferedImage b = new BufferedImage(HASH_W, HASH_H, BufferedImage.TYPE_INT_RGB);
-            bitsUsed.setText(Integer.toString(canvas.drawFourierHash(b.createGraphics(), inputL.getText(), 0, params)[256*256]));
+            bitsUsed.setText(Integer.toString(canvas.drawFourierHash(b.createGraphics(), inputL.getText(), 0, params)[256 * 256]));
         });
 
         JButton paramsButton = new JButton("Params");
@@ -278,7 +281,7 @@ public class Applet extends JFrame {
             JFrame frame = new JFrame("Params selection");
             frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             JPanel pane = new JPanel();
-            pane.setPreferredSize(new Dimension(200,400));
+            pane.setPreferredSize(new Dimension(200, 400));
             pane.add(new JLabel("Distance"));
             pane.add(distSelector);
             pane.add(new JLabel("Correction factor"));
@@ -315,6 +318,7 @@ public class Applet extends JFrame {
         topRowL.add(valButtonL, BorderLayout.EAST);
         topRowL.add(checkBoxFiltered, BorderLayout.EAST);
         botRowL.add(paramsButton);
+        botRowL.add(checkBoxModPhase);
 
         southL.add(topRowL, BorderLayout.NORTH);
         southL.add(distButtonOnce, BorderLayout.CENTER);
@@ -333,7 +337,7 @@ public class Applet extends JFrame {
         // -----------RIGHT HALF------------------------
 
 
-        canvas = new Surface();
+        canvas = new HashDrawer();
         canvas.setPreferredSize(new Dimension(HASH_W, HASH_H));
 
         JPanel southR = new JPanel();
@@ -343,7 +347,6 @@ public class Applet extends JFrame {
         JButton valButtonR = new JButton("See hash");
         valButtonR.addActionListener(l -> {
             params.sampleColors();
-            reset(right, southR.getHeight());
             canvas.drawHash(this.getGraphics(), inputR.getText(), 2, params);
         });
         JButton newButtonR = new JButton("New hash");
@@ -382,7 +385,6 @@ public class Applet extends JFrame {
         });
         JButton flipButton = new JButton("Flip");
         flipButton.addActionListener(e -> {
-            reset(right, southR.getHeight());
             String in = inputL.getText();
             String nBitsToFlip = flipValue.getText();
             String index = flipIndex.getText();
@@ -390,12 +392,8 @@ public class Applet extends JFrame {
                     flipIndex.isVisible() && !index.contains("r")
                             ? flipBit(in, Integer.parseInt(index, 10))
                             //Integer.parseInt(params.getMode().toString().substring(params.getMode().toString().length() - 3), 10) - 1)
-                            : flipBitsRandom(Integer.parseInt(nBitsToFlip) == 1 ?
-                                    flipBit(in, Integer.parseInt(params.getMode().toString().substring(params.getMode().toString().length() - 3), 10) - 1)
-                                    : in, Integer.parseInt(nBitsToFlip, 10),
-                            params.getMode().length()));
+                            : flipBitsRandom(in, Integer.parseInt(nBitsToFlip, 10), params.getMode().length()));
 
-            reset(right, southR.getHeight());
             params.sampleColors();
             canvas.drawHash(getGraphics(), inputR.getText(), 2, params);
 
@@ -405,7 +403,6 @@ public class Applet extends JFrame {
         shiftButton.addActionListener(e -> {
             inputR.setText(shiftRBits(inputL.getText()));
 
-            reset(right, southR.getHeight());
             params.sampleColors();
             canvas.drawHash(getGraphics(), inputR.getText(), 2, params);
         });
@@ -414,7 +411,6 @@ public class Applet extends JFrame {
         copyButton.addActionListener(e -> {
             inputR.setText(inputL.getText());
 
-            reset(right, southR.getHeight());
             params.sampleColors();
             canvas.drawHash(getGraphics(), inputR.getText(), 2, params);
         });
@@ -425,7 +421,7 @@ public class Applet extends JFrame {
             frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             JPanel panel = new JPanel();
             panel.setPreferredSize(new Dimension(1200, 600));
-            Surface canvasDemo = new Surface();
+            HashDrawer canvasDemo = new HashDrawer();
             canvasDemo.setPreferredSize(new Dimension(1200, 600));
 
             JButton runButton = new JButton("Run");
@@ -433,7 +429,7 @@ public class Applet extends JFrame {
                 // canv.setLocation(200, 200);
                 for (int i = 3; i < 35; i++) {
                     canvasDemo.drawHash(frame.getGraphics(),
-                            TransformHash.flipBit(inputL.getText(), (i - 3)),
+                            HashTransform.flipBit(inputL.getText(), (i - 3)),
                             i, params);
                 }
             });
@@ -484,14 +480,64 @@ public class Applet extends JFrame {
 
     }
 
-    private void plotHashes(String refHash) {
+    private void getHashesDataPairs() {
+        int nHash = params.getMode().length() * 10;
+        int[][][] images = new int[nHash][2][params.getMode().length() * params.getMode().length()];
+
+        int nThreads = 4;
+        SimpleHashRunnable[] tasks = new SimpleHashRunnable[nThreads];//[Distance.values().length];
+        Thread[] threads = new Thread[nThreads];
+        BufferedImage res = new BufferedImage(HASH_W, HASH_H, BufferedImage.TYPE_INT_RGB);
+        String[] hashes = new String[nHash];
+        //Result[][] results = new Result[tasks.length][15];
+
+
+        for (int hashItr = 0; hashItr < nHash; hashItr++) {
+            hashes[hashItr] = newHash(params.getMode().length() / 4);
+        }
+        System.out.println("Threads running...");
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < tasks.length; i++) {
+            tasks[i] = new SimpleHashRunnable(canvas, hashes, params, images, i * nHash / nThreads, nHash / nThreads);
+            //tasks[i] = new CompressPairRunnable(results[i], Distance.values()[i], newRefHash, canvas, params.getMode(), hashItr);
+            threads[i] = new Thread(tasks[i], "Thread " + tasks[i].hashCode());
+            threads[i].start();
+        }
+        for (Thread thread : threads) {
+            try {
+                thread.join();
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+        }
+        System.out.println("...done (Time elapsed : " + (System.currentTimeMillis()-start) / 1000.0 + "s)");
+
+        try {
+            File csvOutputFile = new File("src/data/" + params + "_hashesPair.csv");
+            PrintWriter pw = new PrintWriter(csvOutputFile);
+            IntStream.range(0, nHash).mapToObj(i -> hashes[i] + "," + Arrays.deepToString(images[i])).forEach(pw::println);
+            pw.close();
+            //File csvOutputFile = new File("src/data/paramsSearch" + params.getMode() + ".json");
+//            PrintWriter pw = new PrintWriter(csvOutputFile);
+//            pw.print("{ \n \t \"values\": \n");
+//            Stream.of().map(Arrays::deepToString).forEach(pw::print);
+//            pw.print("\n}");
+//            pw.close();
+        } catch (
+                Exception e) {
+            System.out.println(e);
+        }
+        System.out.println("Data ready.");
+    }
+
+    private void getHashesDataDists(String refHash) {
 
         int nHash = 10;
         double[][] averages = new double[nHash][params.getMode().length()];
 
         //int[] ref;
 
-        Path path = Paths.get("/Users/laya/Documents/VisualHashApplet/code/temp/");
+        Path path = Paths.get("/Users/laya/Documents/VisualHashApplet/src/temp/");
 
         // reset temp folder
         try (Stream<Path> walk = Files.walk(path)) {
@@ -507,24 +553,24 @@ public class Applet extends JFrame {
         } catch (Exception e) {
             System.out.println(e);
         }
-        new File("/Users/laya/Documents/VisualHashApplet/code/temp").mkdirs();
-        AvgRunnable[] tasks = new AvgRunnable[4];//[Distance.values().length];
+        new File("/Users/laya/Documents/VisualHashApplet/src/temp").mkdirs();
+        AvgDistRunnable[] tasks = new AvgDistRunnable[4];//[Distance.values().length];
         Thread[] threads = new Thread[tasks.length];
         BufferedImage res = new BufferedImage(HASH_W, HASH_H, BufferedImage.TYPE_INT_RGB);
         String newRefHash;
         //Result[][] results = new Result[tasks.length][15];
         try {
-            File csvOutputFile = new File("code/data/" + params + "_changing1bit.csv");
+            File csvOutputFile = new File("src/data/" + params + "_changing1bit.csv");
             PrintWriter pw = new PrintWriter(csvOutputFile);
 
             for (int hashItr = 0; hashItr < nHash; hashItr++) {
                 System.out.println("Iteration " + hashItr + " started....");
                 newRefHash = newHash(params.getMode().length() / 4);
-                pw.print(newRefHash+", ");
+                pw.print(newRefHash + ", ");
                 int[] ref = canvas.drawFourierHash(res.createGraphics(), newRefHash, 0, params);
 
                 for (int i = 0; i < tasks.length; i++) {
-                    tasks[i] = new AvgRunnable(averages[hashItr], i * params.getMode().length() / tasks.length, params.getMode().length() / tasks.length, newRefHash, ref, canvas, params);
+                    tasks[i] = new AvgDistRunnable(averages[hashItr], i * params.getMode().length() / tasks.length, params.getMode().length() / tasks.length, newRefHash, ref, canvas, params);
                     //tasks[i] = new CompressPairRunnable(results[i], Distance.values()[i], newRefHash, canvas, params.getMode(), hashItr);
                     threads[i] = new Thread(tasks[i], "Thread " + tasks[i].hashCode());
                     threads[i].start();
@@ -541,7 +587,7 @@ public class Applet extends JFrame {
 
             Stream.of(averages).map(Arrays::toString).forEach(pw::println);
             pw.close();
-            //File csvOutputFile = new File("code/data/paramsSearch" + params.getMode() + ".json");
+            //File csvOutputFile = new File("src/data/paramsSearch" + params.getMode() + ".json");
 //            PrintWriter pw = new PrintWriter(csvOutputFile);
 //            pw.print("{ \n \t \"values\": \n");
 //            Stream.of().map(Arrays::deepToString).forEach(pw::print);
@@ -553,7 +599,7 @@ public class Applet extends JFrame {
         System.out.println("Data ready.");
     }
 
-    private void updateHashes(Surface canvas, JTextField inputChanged, JTextField inputOther, int shift, JTextArea display) {
+    private void updateHashes(HashDrawer canvas, JTextField inputChanged, JTextField inputOther, int shift, JTextArea display) {
         // int[] colors = new int[PALETTES[Math.min(mode.getName().ordinal(), 3)].length];
         // for (int i = 0; i < colors.length; i++) {
         // colors[i] = i;
@@ -619,9 +665,4 @@ public class Applet extends JFrame {
         }
     }
 
-    private void reset(JPanel pan, int heightLim) {
-        Graphics g = pan.getGraphics();
-        g.setColor(pan.getBackground());
-        g.fillRect(0, 0, pan.getWidth(), pan.getHeight() - heightLim);
-    }
 }

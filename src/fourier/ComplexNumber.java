@@ -60,7 +60,7 @@ public class ComplexNumber {
     if (real == 0 && imaginary == 0)
       return 0;
     else
-      return Math.atan(imaginary / real);
+      return Math.atan2(imaginary, real);
   }
 
   double cNorm() {
@@ -70,7 +70,7 @@ public class ComplexNumber {
   /**
    * Method to obtain the exp of a complex number.
    *
-   * @param ComplexNumber input.
+   * @param  ComplexNumber input.
    * @return ComplexNumber output.
    */
   public static ComplexNumber cExp(ComplexNumber z) {

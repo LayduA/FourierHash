@@ -17,16 +17,17 @@ import numpy
 from scipy import signal
 import csv
 
-data1 = numpy.genfromtxt(sys.argv[1], delimiter='\n')
-data2 = numpy.genfromtxt(sys.argv[2], delimiter='\n')
-size = int(sys.argv[3])
+if len(sys.argv) > 1 :
+    data1 = numpy.genfromtxt(sys.argv[1], delimiter='\n')
+    data2 = numpy.genfromtxt(sys.argv[2], delimiter='\n')
+    size = int(sys.argv[3])
 
-#print(data1.shape)
-data1 = numpy.array([numpy.array([(int(x) >> 16) & 0b11111111, (int(x) >> 8) & 0b11111111, int(x) & 0b11111111]) for x in data1])
-data1 = data1[:-1].reshape((size,size,3))
+    #print(data1.shape)
+    data1 = numpy.array([numpy.array([(int(x) >> 16) & 0b11111111, (int(x) >> 8) & 0b11111111, int(x) & 0b11111111]) for x in data1])
+    data1 = data1[:-1].reshape((size,size,3))
 
-data2 = numpy.array([numpy.array([(int(x) >> 16) & 0b11111111, (int(x) >> 8) & 0b11111111, int(x) & 0b11111111]) for x in data2])
-data2 = data2[:-1].reshape((size,size,3))
+    data2 = numpy.array([numpy.array([(int(x) >> 16) & 0b11111111, (int(x) >> 8) & 0b11111111, int(x) & 0b11111111]) for x in data2])
+    data2 = data2[:-1].reshape((size,size,3))
 
 is_tensorflow_available = False
 
@@ -685,5 +686,6 @@ def is_tensorflow(value):
         )
 
     return type(value).__module__.split(".")[0] == "tensorflow"
-print(haar_psi(data1, data2)[0])
+if len(sys.argv) > 1:
+    print(haar_psi(data1, data2)[0])
 

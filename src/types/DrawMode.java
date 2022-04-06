@@ -7,8 +7,9 @@ public enum DrawMode {
     Landscape32,
     Blockies128,
     Random128,
-    Fourier256,
     Fourier128,
+    Fourier256,
+    FourierCartesian128,
     FourierCartesian256;
 
 

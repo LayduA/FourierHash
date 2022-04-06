@@ -15,16 +15,16 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
 
-import static src.hashops.TransformHash.*;
+import static src.hashops.HashTransform.*;
 
-public class CompressPairRunnable implements Runnable {
+public class CompressDistRunnable implements Runnable {
     String refHash;
-    Surface drawer;
+    HashDrawer drawer;
     Result[] out;
     int iter;
     DrawParams params;
 
-    public CompressPairRunnable(Result[] out, DrawParams params, String refHash, Surface drawer, int iter) {
+    public CompressDistRunnable(Result[] out, DrawParams params, String refHash, HashDrawer drawer, int iter) {
         this.out = out;
         this.refHash = refHash;
         this.drawer = drawer;

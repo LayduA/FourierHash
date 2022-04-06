@@ -14,7 +14,7 @@ import src.ui.Applet;
 import java.awt.Color;
 import java.util.stream.IntStream;
 
-public interface TransformHash {
+public interface HashTransform {
 
     /**
      * Flips the bit of given index in the input hash and outputs the result as a hex string.
@@ -231,8 +231,9 @@ public interface TransformHash {
         StringBuilder sb = new StringBuilder();
         assert(pixels1.length == 256 * 256 && pixels2.length == 256 *256);
         try {
-            String path1 = "code/temp/" + fileName + "_1.csv";
-            String path2 = "code/temp/" + fileName + "_2.csv";
+            long time = System.currentTimeMillis();
+            String path1 = "src/temp/" + fileName + "_1.csv";
+            String path2 = "src/temp/" + fileName + "_2.csv";
             File csvOutputFile = new File(path1);
             PrintWriter pw = new PrintWriter(csvOutputFile);
             IntStream.of(pixels1).forEach(pw::println);
@@ -242,13 +243,14 @@ public interface TransformHash {
             IntStream.of(pixels2).forEach(pw::println);
             pw.close();
 
-            pB = new ProcessBuilder(path, "-u", "code/haar_psi.py", path1, path2, Integer.toString((int)Math.floor(Math.sqrt(pixels1.length))));
+            pB = new ProcessBuilder(path, "-u", "src/haar_psi.py", path1, path2, Integer.toString((int)Math.floor(Math.sqrt(pixels1.length))));
             pB.redirectErrorStream(true);
             Process proc = pB.start();
             byte[] results = proc.getInputStream().readAllBytes();
             for (byte result : results) {
                 sb.append((char) result);
             }
+            //System.out.println((System.currentTimeMillis() - time) / 1000.0 + "s elapsed.");
         } catch (Exception e) {
             System.out.println("Ah non pas une error oh non " + e);
         }
@@ -256,7 +258,7 @@ public interface TransformHash {
 
         return Double.parseDouble(result);
     }
-    static double psiDist(Surface canvas, String input1, String input2, DrawParams params, String fileName){
+    static double psiDist(HashDrawer canvas, String input1, String input2, DrawParams params, String fileName){
         BufferedImage res = new BufferedImage(Applet.HASH_W, Applet.HASH_H, BufferedImage.TYPE_INT_RGB);
         int[] pixels1 = canvas.drawFourierHash(res.createGraphics(), input1, 0, params);
         int[] pixels2 = canvas.drawFourierHash(res.createGraphics(), input2, 0, params);
