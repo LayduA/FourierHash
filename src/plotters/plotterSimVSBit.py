@@ -2,14 +2,14 @@ from cmath import phase
 import numpy as np
 import matplotlib.pyplot as plt
 
-path = 'src/data/FourierDModDPhase128_MANHATTAN_RHOMBUS_changing1bit.csv'
+path = 'src/data/FourierCartesian128_MANRHOM_035_changing1bit.csv'
 arr = np.genfromtxt(path, delimiter = ',')
 print(arr)
-arr = np.mean(arr, axis=0)
+arr = np.mean(arr, axis=0)[:-8]
 
 oneColor = np.array([])
-oneColor = arr[0::6]
-onePhase = arr[3::6]
+oneColor = arr[0::12]
+onePhase = arr[3::12]
 dataPlot = np.zeros((13,7)) if '256' in path else np.zeros((8,5))
 
 rhombus128 = np.array(
@@ -27,11 +27,21 @@ rhombus128 = np.array(
 rhombus256 = np.array([
     []
 ])
-rhombus = rhombus128 if '128' in path else rhombus256
+horribleMagic = np.array([
+            [-1, 10, -1, -1, -1],
+            [-1, 6, 11, -1, -1],
+            [-1, 5, 7, 12, -1],
+            [-2, 1, 4, 8, 13],
+            [0, 3, 9, 14, -1],
+            [2, 19, 15, -1, -1],
+            [18, 16, -1, -1, -1],
+            [17, -1, -1, -1, -1]
+    ])
+rhombus = horribleMagic if '128' in path else rhombus256
 phasePlot = np.zeros(dataPlot.shape)
-if 'RHOMBUS' in path:
+if 'RHOM' in path:
     
-    for ind, el in enumerate(oneColor[:21]):
+    for ind, el in enumerate(oneColor[:20]):
         dataPlot[np.where(rhombus == ind)[0][0]][np.where(rhombus == ind)[1][0]] = el
         phasePlot[np.where(rhombus == ind)[0][0]][np.where(rhombus == ind)[1][0]] = onePhase[ind]
     

@@ -12,7 +12,6 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.BadLocationException;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -79,7 +78,7 @@ public class Applet extends JFrame {
     }
 
     private void initUI() {
-        params = new DrawParams(DrawMode.Fourier128);
+        params = new DrawParams(DrawMode.FourierCartesian128);
         setLayout(new BorderLayout());
         // This has to be defined here to have element from left half update elements on
         // right half
@@ -92,8 +91,8 @@ public class Applet extends JFrame {
         JPanel right = new JPanel(new BorderLayout());
         right.setPreferredSize(new Dimension(WINDOW_W / 2, WINDOW_H));
 
-        JTextField inputL = new JTextField(DEFAULT_HASH, 25);
-        JTextField inputR = new JTextField(DEFAULT_HASH, 25);
+        JTextField inputL = new JTextField(DEFAULT_HASH.substring(0, params.getMode().length()/4), 25);
+        JTextField inputR = new JTextField(DEFAULT_HASH.substring(0, params.getMode().length()/4), 25);
 
         inputL.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
@@ -199,7 +198,7 @@ public class Applet extends JFrame {
         });
 
         JButton plotButton = new JButton("Get Data");
-        plotButton.addActionListener(l -> getHashesDataPairs());
+        plotButton.addActionListener(l -> getHashesDataDists(inputL.getText()));
 
         JCheckBox checkBoxFiltered = new JCheckBox();
         checkBoxFiltered.setSelected(params.isFiltered());
@@ -361,41 +360,20 @@ public class Applet extends JFrame {
         hamDistDisplay.setBackground(southR.getBackground());
         JTextField flipIndex = new JTextField("27", 3);
         JTextField flipValue = new JTextField("1", 3);
-        flipValue.getDocument().addDocumentListener(new DocumentListener() {
-            public void changedUpdate(DocumentEvent e) {
-                changed(e);
-            }
 
-            public void removeUpdate(DocumentEvent e) {
-                changed(e);
-            }
-
-            public void insertUpdate(DocumentEvent e) {
-                changed(e);
-            }
-
-            public void changed(DocumentEvent e) {
-                try {
-                    flipIndex.setVisible(e.getDocument().getText(0, 1).equals("1") && e.getDocument().getLength() == 1);
-                    botRowR.repaint();
-                } catch (BadLocationException err) {
-                    System.out.println("error " + err);
-                }
-            }
-        });
         JButton flipButton = new JButton("Flip");
         flipButton.addActionListener(e -> {
             String in = inputL.getText();
-            String nBitsToFlip = flipValue.getText();
-            String index = flipIndex.getText();
-            inputR.setText(
-                    flipIndex.isVisible() && !index.contains("r")
-                            ? flipBit(in, Integer.parseInt(index, 10))
-                            //Integer.parseInt(params.getMode().toString().substring(params.getMode().toString().length() - 3), 10) - 1)
-                            : flipBitsRandom(in, Integer.parseInt(nBitsToFlip, 10), params.getMode().length()));
-
+            int nBitsToFlip = Integer.parseInt(flipValue.getText());
+            String indexString = flipIndex.getText();
+            int index = !indexString.contains("r") ? Integer.parseInt(indexString, 10) : -1;
+            int randIndex = (int) Math.floor(Math.random() * params.getMode().length());
             params.sampleColors();
-            canvas.drawHash(getGraphics(), inputR.getText(), 2, params);
+            inputR.setText(
+                    !indexString.contains("r")
+                            ? flipBits(in, IntStream.range(index, index + nBitsToFlip).toArray())
+                            //Integer.parseInt(params.getMode().toString().substring(params.getMode().toString().length() - 3), 10) - 1)
+                            : flipBits(in, IntStream.range(randIndex, randIndex + nBitsToFlip).toArray()));
 
         });
 
@@ -510,10 +488,10 @@ public class Applet extends JFrame {
                 System.out.println(e);
             }
         }
-        System.out.println("...done (Time elapsed : " + (System.currentTimeMillis()-start) / 1000.0 + "s)");
+        System.out.println("...done (Time elapsed : " + (System.currentTimeMillis() - start) / 1000.0 + "s)");
 
         try {
-            File csvOutputFile = new File("src/data/" + params + "_hashesPair.csv");
+            File csvOutputFile = new File("src/data/" + params + "_hashesPairDistVar.csv");
             PrintWriter pw = new PrintWriter(csvOutputFile);
             IntStream.range(0, nHash).mapToObj(i -> hashes[i] + "," + Arrays.deepToString(images[i])).forEach(pw::println);
             pw.close();
@@ -570,7 +548,7 @@ public class Applet extends JFrame {
                 int[] ref = canvas.drawFourierHash(res.createGraphics(), newRefHash, 0, params);
 
                 for (int i = 0; i < tasks.length; i++) {
-                    tasks[i] = new AvgDistRunnable(averages[hashItr], i * params.getMode().length() / tasks.length, params.getMode().length() / tasks.length, newRefHash, ref, canvas, params);
+                    tasks[i] = new AvgDistRunnable(averages[hashItr], i * 120 / tasks.length, 120 / tasks.length, newRefHash, ref, canvas, params);
                     //tasks[i] = new CompressPairRunnable(results[i], Distance.values()[i], newRefHash, canvas, params.getMode(), hashItr);
                     threads[i] = new Thread(tasks[i], "Thread " + tasks[i].hashCode());
                     threads[i].start();

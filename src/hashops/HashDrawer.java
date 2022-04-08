@@ -1,11 +1,11 @@
 package src.hashops;
 
-import src.types.DrawMode;
+import src.crypto.PRNG128BitsInsecure;
 import src.fourier.ComplexNumber;
 import src.fourier.FFT;
 import src.fourier.InverseFFT;
 import src.fourier.TwoDArray;
-import src.crypto.PRNG128BitsInsecure;
+import src.types.DrawMode;
 import src.types.DrawParams;
 
 import javax.swing.*;
@@ -14,10 +14,11 @@ import java.awt.geom.Arc2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
 import java.math.BigInteger;
 import java.util.Arrays;
-import java.util.stream.DoubleStream;
+import java.util.Random;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static src.fourier.ImgMod30.shiftOrigin;
 import static src.types.DrawParams.Deter.*;
@@ -26,6 +27,24 @@ import static src.ui.Applet.*;
 public class HashDrawer extends JPanel {
 
     private static final int DEPTH = 4;
+    public static int[][] horribleMagic = new int[][]{
+            {-1, 10, -1, -1, -1},
+            {-1, 6, 11, -1, -1},
+            {-1, 5, 7, 12, -1},
+            {-2, 1, 4, 8, 13},
+            {0, 3, 9, 14, -1},
+            {2, 19, 15, -1, -1},
+            {18, 16, -1, -1, -1},
+            {17, -1, -1, -1, -1}
+    };
+    public static int[][] horribleMagicIndex = new int[][]{
+            //i,j
+            {0, 1}, {1, 0}, {0, 2}, {1, 1}, {2, 0}, {HASH_W - 1, 1}, {HASH_W - 1, 2}, {HASH_W - 2, 1},
+            {3, 0}, {2, 1}, {HASH_W - 1, 3}, {HASH_W - 2, 2}, {HASH_W - 3, 1}, {4, 0},
+            {3, 1}, {2, 2}, {1, 3}, {0, 4}, {0, 3}, {1, 2}
+    };
+    private final double[] reals = new double[]{-0.5, -0.5, 1.0, 1.0, 0.5, 0.5, -1.0, -1.0, 1.0, 1.0, -0.5, -0.5, -1.0, -1.0, 0.5, 0.5};
+    private final double[] ims = new double[]{0.5, -1.0, -0.5, 1.0, -1.0, 0.5, 1.0, -0.5, 0.5, -1.0, -0.5, 1.0, -1.0, 0.5, 1.0, 0.5};
 
     public static BufferedImage scale(BufferedImage src, int w, int h) {
         BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
@@ -82,7 +101,7 @@ public class HashDrawer extends JPanel {
         } else if (drawMode.toString().startsWith("GridLines")) {
             drawGridLinesHash(g, hash, shift, params);
         } else if (drawMode == DrawMode.Landscape32) {
-            drawLandscapeHash(g, hash, shift);
+            drawLandscapeHash(g, hash, shift, params);
         } else if (drawMode == DrawMode.Random128) {
             drawFuncHash(g, hash, shift, DEPTH);
         } else if (drawMode.name().startsWith("Fourier")) {
@@ -182,20 +201,8 @@ public class HashDrawer extends JPanel {
         }
     }
 
-    private double mapToMod(int bits) {
-        switch (bits) {
-            case 0b00:
-                return 0.5;
-            case 0b11:
-                return 1.0;
-            case 0b10:
-                return -0.5;
-            case 0b01:
-                return -1.0;
-            default:
-                System.out.println("MapToMod should not receive something > 4");
-                return 0;
-        }
+    private double[] mapToComplex(int bits) {
+        return new double[]{reals[bits], ims[bits]};
     }
 
     public int[] drawFourierHash(Graphics g, String hash, int shift, DrawParams params) {
@@ -210,15 +217,13 @@ public class HashDrawer extends JPanel {
         double phiR, phiG, phiB;
         double frequencyCoeff;
 
-        double realPartR = 0, imPartR = 0;
-        double realPartG = 0, imPartG = 0;
-        double realPartB = 0, imPartB = 0;
+        double[] complexR = new double[2], complexG = new double[2], complexB = new double[2];
 
         int ind = 0;
         PRNG128BitsInsecure randomPhase = new PRNG128BitsInsecure();
         randomPhase.seedrand(hash);
         PRNG128BitsInsecure randomMod = new PRNG128BitsInsecure();
-        randomMod.seedrand(hash);
+        randomMod.seedrand(new StringBuilder(hash).reverse().toString());
 
         TwoDArray datSpecB = new TwoDArray(spectrumWidth, spectrum.getHeight());
         TwoDArray datSpecG = new TwoDArray(spectrumWidth, spectrum.getHeight());
@@ -229,17 +234,43 @@ public class HashDrawer extends JPanel {
 
                 frequencyCoeff = params.dist(i, j);
 
+                if (i == 0 && j == 0) {
+                    setValues(i, j, datSpecR, frequencyCoeff, 0, spectrumWidth);
+                    setValues(i, j, datSpecG, frequencyCoeff, 0, spectrumWidth);
+                    setValues(i, j, datSpecB, frequencyCoeff, 0, spectrumWidth);
+                    continue;
+                }
+
                 if (params.getMode().name().contains("Cartesian")) {
-                    realPartR = mapToMod(Integer.parseInt(binHash.charAt(ind % binHash.length()) + Character.toString(binHash.charAt((ind + 1) % binHash.length())), 2));
-                    imPartR = mapToMod(Integer.parseInt(binHash.charAt((ind + 2) % binHash.length()) + Character.toString(binHash.charAt((ind + 3) % binHash.length())), 2));
-                    realPartG = mapToMod(Integer.parseInt(binHash.charAt((ind + 4) % binHash.length()) + Character.toString(binHash.charAt((ind + 5) % binHash.length())), 2));
-                    imPartG = mapToMod(Integer.parseInt(binHash.charAt((ind + 6) % binHash.length()) + Character.toString(binHash.charAt((ind + 7) % binHash.length())), 2));
-                    realPartB = mapToMod(Integer.parseInt(binHash.charAt((ind + 8) % binHash.length()) + Character.toString(binHash.charAt((ind + 9) % binHash.length())), 2));
-                    imPartB = mapToMod(Integer.parseInt(binHash.charAt((ind + 10) % binHash.length()) + Character.toString(binHash.charAt((ind + 11) % binHash.length())), 2));
-                    modulusR = frequencyCoeff * Math.sqrt(realPartR * realPartR + imPartR * imPartR);
-                    modulusG = frequencyCoeff * Math.sqrt(realPartG * realPartG + imPartG * imPartG);
-                    modulusB = frequencyCoeff * Math.sqrt(realPartB * realPartB + imPartB * imPartB);
-                    if (frequencyCoeff > 0 && !(0 < i && i < spectrumWidth / 2 && j == 0)) ind += 12;
+                    if (ind < 240) {
+                        if (ind == 120) ind += 8;
+                        if (ind + 12 > binHash.length()) binHash = binHash + binHash;
+                        int x = horribleMagicIndex[ind / 12][0];
+                        int y = horribleMagicIndex[ind / 12][1];
+
+                        frequencyCoeff = params.dist(x, y);
+
+                        complexR = mapToComplex(Integer.parseInt(binHash.substring(ind, ind + 4), 2));
+                        complexG = mapToComplex(Integer.parseInt(binHash.substring(ind + 4, ind + 8), 2));
+                        complexB = mapToComplex(Integer.parseInt(binHash.substring(ind + 8, ind + 12), 2));
+
+                        modulusR = frequencyCoeff * Math.sqrt(complexR[0] * complexR[0] + complexR[1] * complexR[1]);
+                        modulusG = frequencyCoeff * Math.sqrt(complexG[0] * complexG[0] + complexG[1] * complexG[1]);
+                        modulusB = frequencyCoeff * Math.sqrt(complexB[0] * complexB[0] + complexB[1] * complexB[1]);
+
+                        phiR = Math.atan2(complexR[1], complexR[0]);
+                        phiG = Math.atan2(complexG[1], complexG[0]);
+                        phiB = Math.atan2(complexB[1], complexB[0]);
+
+
+                        setValues(x, y, datSpecR, modulusR, phiR, spectrumWidth);
+                        setValues(x, y, datSpecG, modulusG, phiG, spectrumWidth);
+                        setValues(x, y, datSpecB, modulusB, phiB, spectrumWidth);
+
+                        ind += 12;
+                    }
+
+                    continue;
                 } else if (params.getModDet() == RAND) {
                     modulusR = frequencyCoeff * randomMod.rand();
                     modulusG = frequencyCoeff * randomMod.rand();
@@ -260,13 +291,7 @@ public class HashDrawer extends JPanel {
                     modulusG = 0;
                     modulusB = 0;
                 }
-
-                if (params.getMode().name().contains("Cartesian")) {
-                    //The guy that implemented Math.atan2 decided it would be nice to get y first. I hate that guy.
-                    phiR = Math.atan2(imPartR, realPartR);
-                    phiG = Math.atan2(imPartG, realPartG);
-                    phiB = Math.atan2(imPartB, realPartB);
-                } else if (params.getPhaseDet() == RAND) {
+                if (params.getPhaseDet() == RAND) {
                     phiR = (randomPhase.rand() - 0.5) * Math.PI;
                     phiG = (randomPhase.rand() - 0.5) * Math.PI;
                     phiB = (randomPhase.rand() - 0.5) * Math.PI;
@@ -326,6 +351,32 @@ public class HashDrawer extends JPanel {
 
         resint[resint.length - 1] = ind;
 
+        int[] colors = new int[]{0, 0xc5e4, 0xff00, 0xffff, 0xff0000, 0xffc5e4, 0xffff00, 0xffffff};
+
+        if (params.isSeePhase()) {
+            Boolean[] pouet = new Boolean[16];
+            for (int i = 0; i < 12; i++) {
+                StringBuilder sb = new StringBuilder();
+                for (int j = i; j < 120; j += 12) {
+                    sb.append(binHash.charAt(j));
+                }
+                pouet[4 + i] = sb.toString().chars().map(c -> c - '0').sum() % 2 == 0;
+            }
+            for (int i = 0; i < 4; i++) {
+                pouet[i] = ((binHash.charAt(120 + i) - '0') + (binHash.charAt(124 + i) - '0')) % 2 == 0;
+            }
+            //System.out.println(Arrays.toString(pouet));
+            Random jaj = new Random();
+            Random jouj = new Random();
+            jaj.setSeed(Long.parseUnsignedLong(hash.substring(0, 16), 16));
+            jouj.setSeed(Long.parseUnsignedLong(hash.substring(16), 16));
+            int[] palette = params.paletteRGB(32, jaj);
+            for (int i = 0; i < colors.length; i++) {
+                colors[i] = palette[4 * i + (pouet[2 * i] ? 2 : 0) + (pouet[2 * i + 1] ? 1 : 0)];
+            }
+            //int rotat = new BigInteger(new StringBuilder(hash).reverse().toString(), 16).mod(BigInteger.valueOf(16)).intValue();
+            colors = rotate(colors, (Stream.of(pouet)).mapToInt(b -> b ? 1 : 0).sum(), 1); //(int) Math.floor(8 * jouj.nextDouble()));
+        }
         for (int i = 0; i < spectrumWidth; i++) {
             for (int j = 0; j < spectrum.getHeight(); j++) {
                 coordY = j;
@@ -340,7 +391,7 @@ public class HashDrawer extends JPanel {
 
                 bigPhaseR[i + j * spectrumWidth] = phaseR[pixelLocMod];
 
-                res.setRGB(i, coordY, getRGBCorr(imageValuesR[pixelLoc], imageValuesG[pixelLoc], imageValuesB[pixelLoc], params));
+                res.setRGB(i, coordY, getRGBCorr(binHash, params, colors, imageValuesR[pixelLoc], imageValuesG[pixelLoc], imageValuesB[pixelLoc]));
             }
         }
         //Here to ensure the return int array is what we see on the screen
@@ -377,13 +428,31 @@ public class HashDrawer extends JPanel {
 
     }
 
-    private int getRGBCorr(double red, double green, double blue, DrawParams params) {
+    private int[] rotate(int[] arr, int n, int from) {
+        if (from == 0) {
+            int[] out = new int[arr.length];
+            for (int i = 0; i < arr.length; i++) {
+                out[i] = arr[(i + n) % (arr.length)];
+            }
+            return out;
+        }else{
+            return IntStream.concat(Arrays.stream(Arrays.copyOf(arr, from)),
+                    Arrays.stream(rotate(Arrays.copyOfRange(arr, from, arr.length), n, 0))).toArray();
+        }
+    }
+
+    private int getRGBCorr(String hash, DrawParams params, int[] colors, double... funcs) {
+        if ((1 << funcs.length) != colors.length)
+            throw new IllegalArgumentException("number of functions vs number of colors");
         double corr = params.getCorr();
-        if (params.isFiltered()) return (corr * red > 0.5 ? 255 : 0) << 16
-                | (corr * green > 0.5 ? 235 : 0) << 8
-                | (corr * blue > 0.5 ? 0xc5e4 : 0);
-        else
-            return (int) (255 * corr * red) % 255 << 16 | (int) (220 * corr * green) % 235 << 8 | (int) (255 * corr * blue) % 255;
+        int color = 0;
+        for (int i = 0; i < funcs.length; i++) {
+            color += ((funcs[i] * corr > 0.5) ? 1 : 0) << (funcs.length - 1 - i);
+        }
+        if (params.isFiltered()) {
+            return colors[color];
+        } else
+            return (int) (255 * corr * funcs[0]) % 255 << 16 | (int) (220 * corr * funcs[1]) % 255 << 8 | (int) (255 * corr * funcs[2]) % 255;
     }
 
     private int getPixelLocSpectrum(int i, int j, int spectrumWidth, DrawParams params) {
@@ -424,10 +493,10 @@ public class HashDrawer extends JPanel {
     }
 
 
-    public void drawLandscapeHash(Graphics g, String hex, int shift) {
+    public void drawLandscapeHash(Graphics g, String hex, int shift, DrawParams params) {
         long info = Long.parseLong(hex, 16);
 
-        Color[] palette = HashTransform.buildHSVWheel(16);
+        Color[] palette = HashTransform.buildHSVWheel(16, params);
         Graphics2D g2d = (Graphics2D) g.create();
         int obj, curr_ind;
         // Obj = sky
@@ -563,7 +632,7 @@ public class HashDrawer extends JPanel {
             cornerX = (i % tileSide) * sideLength;
             cornerY = (i / tileSide) * sideLength;
 
-            drawRectHash(g, HashTransform.buildHSVWheel(16)[colors.and(BigInteger.valueOf(0b1111).shiftLeft(colorsmaskLength - (i + 1) * 4)).shiftRight(colorsmaskLength - (i + 1) * 4).intValue()], cornerX, cornerY, sideLength, sideLength, shift);
+            drawRectHash(g, HashTransform.buildHSVWheel(16, params)[colors.and(BigInteger.valueOf(0b1111).shiftLeft(colorsmaskLength - (i + 1) * 4)).shiftRight(colorsmaskLength - (i + 1) * 4).intValue()], cornerX, cornerY, sideLength, sideLength, shift);
 
             linesInfo = lines.and(BigInteger.valueOf(0b111_111_111_111).shiftLeft(lineMaskLength - 12 * (i + 1))).shiftRight(lineMaskLength - 12 * (i + 1)).intValue();
             drawLineHashIndices(g, (linesInfo & (0b111 << 9)) >> 9, (linesInfo & (0b111 << 6)) >> 6, cornerX, cornerY, sideLength, shift);

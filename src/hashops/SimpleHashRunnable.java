@@ -16,6 +16,7 @@ public class SimpleHashRunnable implements Runnable {
     private final int[][][] out;
     private final int from;
     private final int size;
+    //private final int bitsFlipped;
 
     public SimpleHashRunnable(HashDrawer drawer, String[] hashes, DrawParams params, int[][][] out, int from, int size){
         this.drawer = drawer;

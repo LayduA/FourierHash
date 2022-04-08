@@ -1,3 +1,4 @@
 applet_env/
-out/*
-code/temp/
+out/
+src/temp/
+src/data/*.csv

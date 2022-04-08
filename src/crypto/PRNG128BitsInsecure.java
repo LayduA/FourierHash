@@ -5,7 +5,7 @@ import java.util.Arrays;
 
 public class PRNG128BitsInsecure {
     
-    private int[] randseed;
+    private final int[] randseed;
     private String seed;
 
     public PRNG128BitsInsecure(String seed){
@@ -24,9 +24,7 @@ public class PRNG128BitsInsecure {
 
     public void seedrand(String seed) {
         this.seed = seed;
-        for (var i = 0; i < randseed.length; i++) {
-            randseed[i] = 0;
-        }
+        Arrays.fill(randseed, 0);
         for (var i = 0; i < seed.length(); i++) {
             randseed[i%4] = ((randseed[i%4] << 5) - randseed[i%4]) + seed.charAt(i);
         }

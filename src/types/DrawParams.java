@@ -3,6 +3,8 @@ package src.types;
 import src.crypto.PRNG128BitsInsecure;
 
 import java.awt.*;
+import java.util.Random;
+import java.util.stream.Stream;
 
 import static src.hashops.HashTransform.buildHSVWheel;
 
@@ -59,7 +61,7 @@ public class DrawParams {
 
     public static Distance getDefaultDist(DrawMode mode, Deter modDet, Deter phaseDet){
         if (modDet == Deter.RAND && phaseDet == Deter.RAND) return Distance.SQUARE;
-        else if(mode == DrawMode.Fourier128 && (modDet == Deter.FIXED || modDet == Deter.DET) && (phaseDet == Deter.DET || phaseDet == Deter.DOUBLE)){
+        else if(mode.toString().contains("Cart") || mode == DrawMode.Fourier128 && (modDet == Deter.FIXED || modDet == Deter.DET) && (phaseDet == Deter.DET || phaseDet == Deter.DOUBLE)){
             return Distance.MANHATTAN;
         }
         else{
@@ -70,7 +72,7 @@ public class DrawParams {
         if(mode == DrawMode.Fourier128 && (modDet == Deter.FIXED || modDet == Deter.DET) && (phaseDet == Deter.DET || phaseDet == Deter.DOUBLE)){
             return 0.4;
         }
-        return 0.5;
+        return 0.4;
     }
     public static int worstBit(DrawMode mode){
         if(mode == DrawMode.Fourier256) return 147;
@@ -105,19 +107,25 @@ public class DrawParams {
             else{
                 return 6;
             }
-        } else {
+        } else if (drawMode == DrawMode.Fourier256){
             if(modDet == Deter.RAND && phaseDet == Deter.RAND){
                 return 127;
             }else{
                 return 6;
             }
+        } else {
+            return 4;
         }
     }
 
     @Override
     public String toString() {
         if(drawMode.toString().startsWith("Fourier")){
-            return drawMode + "_" + modDet + "Mod_" + phaseDet + "_Phase_" + dist.toString().substring(0,3) + "_" + distMode.toString().substring(0,4) + "_" + Double.toString(corr).replace(".", "").substring(0,2);
+            if(drawMode.toString().contains("Cartesian")){
+                return drawMode + "_" + dist.toString().substring(0,3) + distMode.toString().substring(0,4) + "_" + (corr + "000").replace(".", "").substring(0,3);
+            }else{
+                return drawMode + "_" + modDet + "Mod_" + phaseDet + "_Phase_" + dist.toString().substring(0,3) + "_" + distMode.toString().substring(0,4) + "_" + (corr + "000").replace(".", "").substring(0,3);
+            }
         }else{
             return drawMode.toString();
         }
@@ -204,6 +212,15 @@ public class DrawParams {
         spots = prng.createColor();
     }
 
+    public int[] paletteRGB(int length, Random r){
+        Color[] palette = buildHSVWheel(length, this, r);
+        return Stream.of(palette).mapToInt(col -> (col.getRGB() & 0xffffff)).toArray();
+    }
+    public int[] paletteRGB(int length){
+        Color[] palette = buildHSVWheel(length, this);
+        return Stream.of(palette).mapToInt(col -> (col.getRGB() & 0xffffff)).toArray();
+    }
+
     public Color[] palette() {
         switch (drawMode) {
             case Antoine256:
@@ -215,7 +232,7 @@ public class DrawParams {
             case Blockies128:
                 return new Color[]{back, front, spots};
             default:
-                return buildHSVWheel(16);
+                return buildHSVWheel(16, this);
         }
     }
 }

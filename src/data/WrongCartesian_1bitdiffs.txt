@@ -1,0 +1,20 @@
+"WRONG"
+
+MANRH04.csv
+Avg dist :  0.24331025731350434 , standard dev: 0.07276801745868634 , percentage > 0.5: 1.40625 %,  > 0.4: 4.140625 %,  > 0.3: 16.640625 %
+Highest mean bit :  0.5217764954043839 , at index  6
+Highest min bit :  0.40584256811926345 at index  124
+SIGRH04.csv
+Avg dist :  0.25052960453667467 , standard dev: 0.0959472266752354 , percentage > 0.5: 3.515625 %,  > 0.4: 5.9375 %,  > 0.3: 16.71875 %
+Highest mean bit :  0.7200402738818974 , at index  6
+Highest min bit :  0.6139395617369087 at index  6
+BELRH035.csv
+Avg dist :  0.32973537571431144 , standard dev: 0.16881418247915098 , percentage > 0.5: 14.609375 %,  > 0.4: 22.34375 %,  > 0.3: 39.84375 %
+Highest mean bit :  0.9719009013837558 , at index  6
+Highest min bit :  0.9461255276114353 at index  6
+
+"RIGHT"
+MANRH04r.csv
+Avg dist :  0.34042737744839446 , standard dev: 0.13161710613303398 , percentage > 0.5: 14.140625 %,  > 0.4: 35.390625 %,  > 0.3: 52.1875 %
+Highest mean bit :  0.7104306246518253 , at index  125
+Highest min bit :  0.6447618508380975 at index  125
