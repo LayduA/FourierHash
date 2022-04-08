@@ -1,12 +1,14 @@
 package src.ui;
 
+import src.crypto.PRNG128BitsInsecure;
 import src.crypto.SecureCrypto;
 import src.hashops.AvgDistRunnable;
-import src.crypto.PRNG128BitsInsecure;
 import src.hashops.HashDrawer;
 import src.hashops.HashTransform;
 import src.hashops.SimpleHashRunnable;
-import src.types.*;
+import src.types.Distance;
+import src.types.DrawMode;
+import src.types.DrawParams;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -31,50 +33,56 @@ import static src.hashops.HashTransform.*;
 public class Applet extends JFrame {
 
     public final static Logger LOGGER = Logger.getLogger(Applet.class.getName());
-
-    public DrawParams params;
-
-
     public final static int WINDOW_W = 1100;
     public final static int WINDOW_H = 650;
     public final static int BANNER_H = 160;
     public final static int HASH_W = 256;
     public final static int HASH_H = 256;
-
     public final static int HASH_X_0 = (WINDOW_W / 2 - HASH_W) / 2;
     public final static int HASH_X_1 = (HASH_X_0 * 3) / 2 + WINDOW_W / 2;
+    private final static int[] SHIFTS_X = {0, HASH_X_0, HASH_X_1};
     public final static int HASH_Y = (WINDOW_H - HASH_H - BANNER_H) / 2;
+    public final static int[] SHIFTS_Y = {0, HASH_Y, HASH_Y * 3 / 2};
     public final static String DEFAULT_HASH = "e7e6bda1152ee0ec0f2082cd041e2cdc02f4b390b01bde55ae0abbb7cc99bc2c";
-    private final static int[] SHIFTS_X = {1, HASH_X_0, HASH_X_1};
-    public final static int[] SHIFTS_Y = {1, HASH_Y, HASH_Y * 3 / 2};
+    public DrawParams params;
+    private HashDrawer canvas;
+    private JTextArea psiDisplay;
+    private JComboBox<DrawMode> modeSelector;
+    public Applet() {
+        initUI();
+    }
 
     public static int getShiftX(int shift) {
-        if (0 < shift && shift < 3)
+        if (0 <= shift && shift < 3)
             return SHIFTS_X[shift];
         if (shift < 0) return 40 + 600 * (((-shift - 1) % 4) / 2) + (int) (HASH_W * 1.1 * ((-shift - 1) % 2));
+
         int ind = shift - 3;
         return 20 + 150 * (ind % 8);
     }
 
     public static int getShiftY(int shift) {
-        if (0 < shift && shift < 3)
+        if (0 <= shift && shift < 3)
             return SHIFTS_Y[shift];
         if (shift < 0) return 40 + 300 * ((-shift - 1) / 4);
         int ind = shift - 3;
+        if (shift == 1000) {
+            return 10;
+        }
         return 50 + 150 * (ind / 8);
     }
 
-    private HashDrawer canvas;
-    private JTextArea psiDisplay;
-    private JComboBox<DrawMode> modeSelector;
+    public static void main(String[] args) {
+
+        EventQueue.invokeLater(() -> {
+            Applet app = new Applet();
+            app.setVisible(true);
+        });
+    }
 
     public void setMode(DrawMode mode) {
         params.setMode(mode);
         modeSelector.setSelectedIndex(mode.ordinal());
-    }
-
-    public Applet() {
-        initUI();
     }
 
     private void initUI() {
@@ -91,8 +99,8 @@ public class Applet extends JFrame {
         JPanel right = new JPanel(new BorderLayout());
         right.setPreferredSize(new Dimension(WINDOW_W / 2, WINDOW_H));
 
-        JTextField inputL = new JTextField(DEFAULT_HASH.substring(0, params.getMode().length()/4), 25);
-        JTextField inputR = new JTextField(DEFAULT_HASH.substring(0, params.getMode().length()/4), 25);
+        JTextField inputL = new JTextField(DEFAULT_HASH.substring(0, params.getMode().length() / 4), 25);
+        JTextField inputR = new JTextField(DEFAULT_HASH.substring(0, params.getMode().length() / 4), 25);
 
         inputL.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
@@ -198,11 +206,11 @@ public class Applet extends JFrame {
         });
 
         JButton plotButton = new JButton("Get Data");
-        plotButton.addActionListener(l -> getHashesDataDists(inputL.getText()));
+        plotButton.addActionListener(l -> getHashesDataDists());
 
-        JCheckBox checkBoxFiltered = new JCheckBox();
-        checkBoxFiltered.setSelected(params.isFiltered());
-        checkBoxFiltered.addActionListener(l -> params.setFiltered(checkBoxFiltered.isSelected()));
+        JCheckBox checkBoxClassicRGB = new JCheckBox();
+        checkBoxClassicRGB.setSelected(params.isClassicRGB());
+        checkBoxClassicRGB.addActionListener(l -> params.setClassicRGB(checkBoxClassicRGB.isSelected()));
 
         JCheckBox checkBoxModPhase = new JCheckBox("Phase");
         checkBoxModPhase.addActionListener(l -> {
@@ -315,9 +323,18 @@ public class Applet extends JFrame {
         topRowL.add(newButtonL, BorderLayout.WEST);
         topRowL.add(inputL, BorderLayout.CENTER);
         topRowL.add(valButtonL, BorderLayout.EAST);
-        topRowL.add(checkBoxFiltered, BorderLayout.EAST);
+        topRowL.add(checkBoxClassicRGB, BorderLayout.EAST);
         botRowL.add(paramsButton);
         botRowL.add(checkBoxModPhase);
+        botRowL.add(modeSelector);
+        JComboBox<Integer> comboBoxNFunc = new JComboBox<>(new Integer[]{3, 4});
+        comboBoxNFunc.addActionListener(l -> {
+            Integer n = (Integer) comboBoxNFunc.getSelectedItem();
+            if (n != null) {
+                params.setNFunc(n);
+            }
+        });
+        botRowL.add(comboBoxNFunc);
 
         southL.add(topRowL, BorderLayout.NORTH);
         southL.add(distButtonOnce, BorderLayout.CENTER);
@@ -465,7 +482,6 @@ public class Applet extends JFrame {
         int nThreads = 4;
         SimpleHashRunnable[] tasks = new SimpleHashRunnable[nThreads];//[Distance.values().length];
         Thread[] threads = new Thread[nThreads];
-        BufferedImage res = new BufferedImage(HASH_W, HASH_H, BufferedImage.TYPE_INT_RGB);
         String[] hashes = new String[nHash];
         //Result[][] results = new Result[tasks.length][15];
 
@@ -485,7 +501,7 @@ public class Applet extends JFrame {
             try {
                 thread.join();
             } catch (Exception e) {
-                System.out.println(e);
+                System.out.println(e.getLocalizedMessage());
             }
         }
         System.out.println("...done (Time elapsed : " + (System.currentTimeMillis() - start) / 1000.0 + "s)");
@@ -503,12 +519,12 @@ public class Applet extends JFrame {
 //            pw.close();
         } catch (
                 Exception e) {
-            System.out.println(e);
+            System.out.println(e.getLocalizedMessage());
         }
         System.out.println("Data ready.");
     }
 
-    private void getHashesDataDists(String refHash) {
+    private void getHashesDataDists() {
 
         int nHash = 10;
         double[][] averages = new double[nHash][params.getMode().length()];
@@ -525,13 +541,14 @@ public class Applet extends JFrame {
                         try {
                             Files.delete(l);
                         } catch (Exception e) {
-                            System.out.println(e);
+                            System.out.println(e.getLocalizedMessage());
                         }
                     });
         } catch (Exception e) {
-            System.out.println(e);
+            System.out.println(e.getLocalizedMessage());
         }
-        new File("/Users/laya/Documents/VisualHashApplet/src/temp").mkdirs();
+        if (!new File("/Users/laya/Documents/VisualHashApplet/src/temp").mkdirs())
+            System.out.println("couldnt makedir");
         AvgDistRunnable[] tasks = new AvgDistRunnable[4];//[Distance.values().length];
         Thread[] threads = new Thread[tasks.length];
         BufferedImage res = new BufferedImage(HASH_W, HASH_H, BufferedImage.TYPE_INT_RGB);
@@ -557,7 +574,7 @@ public class Applet extends JFrame {
                     try {
                         thread.join();
                     } catch (Exception e) {
-                        System.out.println(e);
+                        System.out.println(e.getLocalizedMessage());
                     }
                 }
                 System.out.println("...done.");
@@ -572,7 +589,7 @@ public class Applet extends JFrame {
 //            pw.print("\n}");
 //            pw.close();
         } catch (Exception e) {
-            System.out.println(e);
+            System.out.println(e.getLocalizedMessage());
         }
         System.out.println("Data ready.");
     }
@@ -590,14 +607,6 @@ public class Applet extends JFrame {
         }
     }
 
-    public static void main(String[] args) {
-
-        EventQueue.invokeLater(() -> {
-            Applet app = new Applet();
-            app.setVisible(true);
-        });
-    }
-
     private String newHash(int length) {
         return SecureCrypto.getHash(
                         Integer.toHexString(ThreadLocalRandom.current().nextInt(Integer.MIN_VALUE, Integer.MAX_VALUE)))
@@ -613,17 +622,9 @@ public class Applet extends JFrame {
         BufferedImage bImg = new BufferedImage(HASH_W, HASH_H, BufferedImage.TYPE_INT_RGB);
 
         Graphics2D cg = bImg.createGraphics();
-        RenderingHints rh = new RenderingHints(
-                RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON);
 
-        rh.put(RenderingHints.KEY_RENDERING,
-                RenderingHints.VALUE_RENDER_QUALITY);
-        cg.setRenderingHints(rh);
         params.sampleColors();
         canvas.drawHash(cg, input.getText(), 0, params);
-        // cg.setColor(new Color (20, 254, 100));
-        // cg.fillRect(0, 0, HASH_W, HASH_H);
 
         try {
             BigInteger big = new BigInteger(input.getText(), 16);

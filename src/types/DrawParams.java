@@ -20,6 +20,8 @@ public class DrawParams {
     private boolean filtered;
     private int cut;
     private boolean seePhase;
+    private boolean classicRGB;
+    private int nFunc;
 
     private static Color back;
     private static Color front;
@@ -40,6 +42,8 @@ public class DrawParams {
         filtered = true;
         cut = default_cut(mode);
         seePhase = false;
+        classicRGB = false;
+        nFunc = 3;
     }
 
     public DrawParams(DrawParams other){
@@ -68,6 +72,23 @@ public class DrawParams {
             return Distance.CUBIC;
         }
     }
+
+    public boolean isClassicRGB() {
+        return classicRGB;
+    }
+
+    public void setClassicRGB(boolean classicRGB) {
+        this.classicRGB = classicRGB;
+    }
+
+    public int getNFunc() {
+        return nFunc;
+    }
+
+    public void setNFunc(int nFunc) {
+        this.nFunc = nFunc;
+    }
+
     public static double getDefaultCorr(DrawMode mode, Deter modDet, Deter phaseDet){
         if(mode == DrawMode.Fourier128 && (modDet == Deter.FIXED || modDet == Deter.DET) && (phaseDet == Deter.DET || phaseDet == Deter.DOUBLE)){
             return 0.4;

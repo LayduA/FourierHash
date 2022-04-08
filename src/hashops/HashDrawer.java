@@ -189,7 +189,6 @@ public class HashDrawer extends JPanel {
     }
 
     private void setValues(int i, int j, TwoDArray target, double modulus, double phi, int size) {
-        //if(i == 1 && j == 0) System.out.println("Set " + modulus + " at 1 0 ");
         target.values[i][j] = ComplexNumber.rPhi(modulus, phi);
 
         if (j == 0 && i != 0) {
@@ -201,230 +200,240 @@ public class HashDrawer extends JPanel {
         }
     }
 
+    private void setValues(int x, int y, TwoDArray[] targetArr, double[] moduli, double[] phis, int size) {
+        for (int i = 0; i < targetArr.length; i++) {
+            setValues(x, y, targetArr[i], moduli[i], phis[i], size);
+        }
+    }
+
+    private void setValues(int x, int y, TwoDArray[] targetArr, double modulus, double phi, int size) {
+        double[] moduli = new double[targetArr.length];
+        double[] phis = new double[targetArr.length];
+        Arrays.fill(moduli, modulus);
+        Arrays.fill(phis, phi);
+        setValues(x, y, targetArr, moduli, phis, size);
+    }
+
     private double[] mapToComplex(int bits) {
         return new double[]{reals[bits], ims[bits]};
     }
 
     public int[] drawFourierHash(Graphics g, String hash, int shift, DrawParams params) {
+
         int spectrumWidth = HASH_W;
         int spectrumHeight = HASH_H;
+        int nFunc = params.getNFunc();
+        int nBitsPerElement;
         String binHash = HashTransform.hexToBin(hash);
         assert binHash.length() == spectrumWidth;
 
         BufferedImage spectrum = new BufferedImage(spectrumWidth, spectrumHeight, BufferedImage.TYPE_INT_RGB);
 
-        double modulusR, modulusG, modulusB;
-        double phiR, phiG, phiB;
+        double[] moduli = new double[nFunc];
+        double[] phis = new double[nFunc];
+
         double frequencyCoeff;
 
-        double[] complexR = new double[2], complexG = new double[2], complexB = new double[2];
-
+        double[][] complexes = new double[nFunc][2];
+        for (int i = 0; i < complexes.length; i++) {
+            complexes[i] = new double[2];
+        }
         int ind = 0;
         PRNG128BitsInsecure randomPhase = new PRNG128BitsInsecure();
         randomPhase.seedrand(hash);
         PRNG128BitsInsecure randomMod = new PRNG128BitsInsecure();
         randomMod.seedrand(new StringBuilder(hash).reverse().toString());
 
-        TwoDArray datSpecB = new TwoDArray(spectrumWidth, spectrum.getHeight());
-        TwoDArray datSpecG = new TwoDArray(spectrumWidth, spectrum.getHeight());
-        TwoDArray datSpecR = new TwoDArray(spectrumWidth, spectrum.getHeight());
+        TwoDArray[] dataSpectrums = new TwoDArray[nFunc];
+        for (int i = 0; i < dataSpectrums.length; i++) {
+            dataSpectrums[i] = new TwoDArray(spectrumWidth, spectrumHeight);
+        }
 
-        for (int i = 0; i < HASH_W; i++) {
-            for (int j = 0; j < HASH_H / 2; j++) {
+        int[] colors = nFunc == 3 ? new int[]{0, 0xc5e4, 0xff00, 0xffff, 0xff0000, 0xffc5e4, 0xffff00, 0xffffff} :
+                new int[]{0, 0x80, 0xff, 0x8000, 0xff00, 0x8080, 0xffff, 0x800000, 0xff0000, 0x800080, 0xff00ff, 0x808000, 0xffff00, 0x808080, 0xffffff, 0x123456};
 
-                frequencyCoeff = params.dist(i, j);
+        if (params.getMode().name().contains("Cartesian")) {
+            setValues(0, 0, dataSpectrums, params.dist(0,0), 0, spectrumWidth);
 
-                if (i == 0 && j == 0) {
-                    setValues(i, j, datSpecR, frequencyCoeff, 0, spectrumWidth);
-                    setValues(i, j, datSpecG, frequencyCoeff, 0, spectrumWidth);
-                    setValues(i, j, datSpecB, frequencyCoeff, 0, spectrumWidth);
-                    continue;
+            nBitsPerElement = 4;
+            //MAGIC BEGINS
+            int groupSize = nFunc * nBitsPerElement;
+            int nGroups = params.getMode().length() / groupSize;
+            int maxInd = nGroups * groupSize;
+            int remainder = params.getMode().length() - maxInd;
+            while(ind < 2 * maxInd) {
+                if(ind + groupSize > binHash.length()) binHash = binHash + binHash;
+                if(ind == maxInd) ind += remainder;
+                int x = horribleMagicIndex[ind / groupSize][0];
+                int y = horribleMagicIndex[ind / groupSize][1];
+                //MAGIC ENDS
+
+                //Going from bits to complex numbers (real in [-1,1], im in [-1,1]) according to encoding
+                for (int k = 0; k < complexes.length; k++) {
+                    complexes[k] = mapToComplex(Integer.parseInt(binHash.substring(ind + nBitsPerElement * k, ind + nBitsPerElement * (k + 1)), 2));
                 }
 
-                if (params.getMode().name().contains("Cartesian")) {
-                    if (ind < 240) {
-                        if (ind == 120) ind += 8;
-                        if (ind + 12 > binHash.length()) binHash = binHash + binHash;
-                        int x = horribleMagicIndex[ind / 12][0];
-                        int y = horribleMagicIndex[ind / 12][1];
+                //Getting coeff according to distance from origin to (x,y)
+                frequencyCoeff = params.dist(x, y);
+                final double f = frequencyCoeff;
 
-                        frequencyCoeff = params.dist(x, y);
+                //Translating cartesian coords into polar coords
+                moduli = Arrays.stream(complexes).mapToDouble(c -> f * Math.sqrt(c[0] * c[0] + c[1] * c[1])).toArray();
+                phis = Arrays.stream(complexes).mapToDouble(c -> Math.atan2(c[1], c[0])).toArray();
 
-                        complexR = mapToComplex(Integer.parseInt(binHash.substring(ind, ind + 4), 2));
-                        complexG = mapToComplex(Integer.parseInt(binHash.substring(ind + 4, ind + 8), 2));
-                        complexB = mapToComplex(Integer.parseInt(binHash.substring(ind + 8, ind + 12), 2));
+                setValues(x, y, dataSpectrums, moduli, phis, spectrumWidth);
 
-                        modulusR = frequencyCoeff * Math.sqrt(complexR[0] * complexR[0] + complexR[1] * complexR[1]);
-                        modulusG = frequencyCoeff * Math.sqrt(complexG[0] * complexG[0] + complexG[1] * complexG[1]);
-                        modulusB = frequencyCoeff * Math.sqrt(complexB[0] * complexB[0] + complexB[1] * complexB[1]);
-
-                        phiR = Math.atan2(complexR[1], complexR[0]);
-                        phiG = Math.atan2(complexG[1], complexG[0]);
-                        phiB = Math.atan2(complexB[1], complexB[0]);
-
-
-                        setValues(x, y, datSpecR, modulusR, phiR, spectrumWidth);
-                        setValues(x, y, datSpecG, modulusG, phiG, spectrumWidth);
-                        setValues(x, y, datSpecB, modulusB, phiB, spectrumWidth);
-
-                        ind += 12;
+                ind += groupSize;
+            }
+            if (!params.isClassicRGB()) {
+                Boolean[] groupParities = new Boolean[groupSize + remainder/2];
+                for (int i = 0; i < groupSize; i++) {
+                    StringBuilder sb = new StringBuilder();
+                    for (int j = i; j < maxInd; j += groupSize) {
+                        sb.append(binHash.charAt(j));
                     }
-
-                    continue;
-                } else if (params.getModDet() == RAND) {
-                    modulusR = frequencyCoeff * randomMod.rand();
-                    modulusG = frequencyCoeff * randomMod.rand();
-                    modulusB = frequencyCoeff * randomMod.rand();
-                } else if (params.getModDet() == FIXED) {
-                    modulusB = frequencyCoeff;
-                    modulusR = frequencyCoeff;
-                    modulusG = frequencyCoeff;
-
-                } else if (params.getModDet() == DET) {
-                    modulusR = frequencyCoeff * 0.5 * (binHash.charAt((ind) % binHash.length()) - '0' + 1);
-                    modulusG = frequencyCoeff * 0.5 * (binHash.charAt((ind + 1) % binHash.length()) - '0' + 1);
-                    modulusB = frequencyCoeff * 0.5 * (binHash.charAt((ind + 2) % binHash.length()) - '0' + 1);
-                    if (frequencyCoeff > 0 && !(0 < i && i < spectrumWidth / 2 && j == 0)) ind += 3;
-                } else {
-                    System.out.println("Erhm modulus should not really be double");
-                    modulusR = 0;
-                    modulusG = 0;
-                    modulusB = 0;
+                    groupParities[remainder/2 + i] = sb.toString().chars().map(c -> c - '0').sum() % 2 == 0;
                 }
-                if (params.getPhaseDet() == RAND) {
-                    phiR = (randomPhase.rand() - 0.5) * Math.PI;
-                    phiG = (randomPhase.rand() - 0.5) * Math.PI;
-                    phiB = (randomPhase.rand() - 0.5) * Math.PI;
-                } else if (params.getPhaseDet() == DOUBLE) {
-                    phiR = Math.PI / 2.0 * Integer.parseInt(binHash.charAt(ind % binHash.length()) + Character.toString(binHash.charAt((ind + 1) % binHash.length())), 2);
-                    phiG = Math.PI / 2.0 * Integer.parseInt(binHash.charAt((ind + 2) % binHash.length()) + Character.toString(binHash.charAt((ind + 3) % binHash.length())), 2);
-                    phiB = Math.PI / 2.0 * Integer.parseInt(binHash.charAt((ind + 4) % binHash.length()) + Character.toString(binHash.charAt((ind + 5) % binHash.length())), 2);
-                    if (frequencyCoeff > 0 && !(0 < i && i < spectrumWidth / 2 && j == 0)) ind += 6;
-                } else {
-                    phiR = Math.PI * binHash.charAt(ind % binHash.length()) - '0';
-                    phiG = Math.PI * binHash.charAt((ind + 1) % binHash.length()) - '0';
-                    phiB = Math.PI * binHash.charAt((ind + 2) % binHash.length()) - '0';
-                    if (frequencyCoeff > 0 && !(0 < i && i < spectrumWidth / 2 && j == 0)) ind += 3;
+                for (int i = 0; i < remainder/2; i++) {
+                    groupParities[i] = ((binHash.charAt(maxInd + i) - '0') + (binHash.charAt(maxInd + remainder/2 + i) - '0')) % 2 == 0;
                 }
+                //System.out.println(Arrays.toString(groupParities));
+                Random tempRand = new Random();
+                tempRand.setSeed(Long.parseUnsignedLong(hash.substring(0, 16), 16));
+                colors = new int[1 << nFunc];
+                int[] palette = params.paletteRGB(32, tempRand);
+                for (int i = 0; i < colors.length; i++) {
+                    if(colors.length == 8) {
+                        colors[i] = palette[4 * i + (groupParities[2 * i] ? 2 : 0) + (groupParities[2 * i + 1] ? 1 : 0)];
+                    }else if (colors.length == 16){
+                        colors[i] = palette[2 * i + (groupParities[i] ? 1 : 0)];
+                    }
+                }
+                //int rotat = new BigInteger(new StringBuilder(hash).reverse().toString(), 16).mod(BigInteger.valueOf(16)).intValue();
+                colors = rotate(colors, (Stream.of(groupParities)).mapToInt(b -> b ? 1 : 0).sum(), 1); //(int) Math.floor(8 * jouj.nextDouble()));
+            }
 
-                setValues(i, j, datSpecR, modulusR, phiR, spectrumWidth);
-                setValues(i, j, datSpecG, modulusG, phiG, spectrumWidth);
-                setValues(i, j, datSpecB, modulusB, phiB, spectrumWidth);
-                //if(frequencyCoeff != 0) System.out.println(phiR);
+            //System.out.println("Remainder = " + remainder + " bits");
+        } else {
+            for (int i = 0; i < HASH_W; i++) {
+                for (int j = 0; j < HASH_H / 2; j++) {
 
+                    frequencyCoeff = params.dist(i, j);
+
+                    if (i == 0 && j == 0) {
+                        setValues(i, j, dataSpectrums, frequencyCoeff, 0, spectrumWidth);
+                    } else {
+                        nBitsPerElement = 0;
+                        for (int k = 0; k < nFunc; k++) {
+
+                            if (params.getModDet() == RAND) {
+                                moduli[k] = frequencyCoeff * randomMod.rand();
+                            } else if (params.getModDet() == FIXED) {
+                                moduli[k] = frequencyCoeff;
+                            } else if (params.getModDet() == DET) {
+                                nBitsPerElement += 1;
+                                moduli[k] = frequencyCoeff * 0.5 * (binHash.charAt((ind + k) % binHash.length()) - '0' + 1);
+                            } else {
+                                System.out.println("Erhm modulus should not really be double");
+                            }
+                            if (params.getPhaseDet() == RAND) {
+                                phis[k] = (randomPhase.rand() - 0.5) * Math.PI;
+                            } else if (params.getPhaseDet() == DOUBLE) {
+                                nBitsPerElement += 2;
+                                phis[k] = Math.PI / 2.0 * Integer.parseInt(binHash.charAt((ind + 2 * k) % binHash.length()) + Character.toString(binHash.charAt((ind + 2 * k + 1) % binHash.length())), 2);
+                            } else {
+                                nBitsPerElement += 1;
+                                phis[k] = Math.PI * binHash.charAt((ind + k) % binHash.length()) - '0';
+                            }
+                        }
+                        if (frequencyCoeff > 0 && !(0 < i && i < spectrumWidth / 2 && j == 0)) ind += nBitsPerElement;
+                        setValues(i, j, dataSpectrums, moduli, phis, spectrumWidth);
+
+                    }
+                }
             }
         }
 
         //System.out.println("ind = " + ind);
 
-        TwoDArray inverseFFTR = new InverseFFT().transform(datSpecR);
-        TwoDArray inverseFFTG = new InverseFFT().transform(datSpecG);
-        TwoDArray inverseFFTB = new InverseFFT().transform(datSpecB);
+        Object[] inverseFFTsO = Arrays.stream(dataSpectrums).map(spec -> new InverseFFT().transform(spec)).toArray();
+        TwoDArray[] inverseFFTs = new TwoDArray[inverseFFTsO.length];
+        double[][] imageValues = new double[inverseFFTs.length][];
+        double[][] mags = new double[inverseFFTs.length][];
 
-        double[] imageValuesR = inverseFFTR.getMagnitude();
-        double[] imageValuesG = inverseFFTG.getMagnitude();
-        double[] imageValuesB = inverseFFTB.getMagnitude();
+        for (int i = 0; i < inverseFFTsO.length; i++) {
+            inverseFFTs[i] = (TwoDArray) inverseFFTsO[i];
+            imageValues[i] = inverseFFTs[i].DCToCentre(normalizeMean(inverseFFTs[i].getMagnitude()));
+            mags[i] = normalize(dataSpectrums[i].getMagnitude());
+        }
 
-        double[] magR = datSpecR.getMagnitude();
-        double[] magG = datSpecG.getMagnitude();
-        double[] magB = datSpecB.getMagnitude();
-
-        double[] phaseR = datSpecR.getPhase();
-        double[] bigPhaseR = new double[phaseR.length];
-
-        magR = normalize(magR);
-        magG = normalize(magG);
-        magB = normalize(magB);
-
-        imageValuesR = inverseFFTR.DCToCentre(normalizeMean(imageValuesR));
-        imageValuesG = inverseFFTG.DCToCentre(normalizeMean(imageValuesG));
-        imageValuesB = inverseFFTB.DCToCentre(normalizeMean(imageValuesB));
+        double[] phase = dataSpectrums[0].getPhase();
+        double[] bigPhase = new double[phase.length];
 
         BufferedImage res = new BufferedImage(spectrumWidth, spectrumHeight, BufferedImage.TYPE_INT_RGB);
-        int[] resint = new int[res.getWidth() * res.getHeight() + 1];
+        int[] fingerprintInt = new int[res.getWidth() * res.getHeight() + 1];
         int coordY;
         int pixelLoc, pixelLocMod;
 
-        double[] bigMagR = new double[magR.length];
-        double[] bigMagG = new double[magG.length];
-        double[] bigMagB = new double[magB.length];
+        double[][] bigMags = new double[mags.length][mags[0].length];
 
-        resint[resint.length - 1] = ind;
+        //Store somewhere the number of bits we read
+        fingerprintInt[fingerprintInt.length - 1] = ind;
 
-        int[] colors = new int[]{0, 0xc5e4, 0xff00, 0xffff, 0xff0000, 0xffc5e4, 0xffff00, 0xffffff};
 
-        if (params.isSeePhase()) {
-            Boolean[] pouet = new Boolean[16];
-            for (int i = 0; i < 12; i++) {
-                StringBuilder sb = new StringBuilder();
-                for (int j = i; j < 120; j += 12) {
-                    sb.append(binHash.charAt(j));
-                }
-                pouet[4 + i] = sb.toString().chars().map(c -> c - '0').sum() % 2 == 0;
-            }
-            for (int i = 0; i < 4; i++) {
-                pouet[i] = ((binHash.charAt(120 + i) - '0') + (binHash.charAt(124 + i) - '0')) % 2 == 0;
-            }
-            //System.out.println(Arrays.toString(pouet));
-            Random jaj = new Random();
-            Random jouj = new Random();
-            jaj.setSeed(Long.parseUnsignedLong(hash.substring(0, 16), 16));
-            jouj.setSeed(Long.parseUnsignedLong(hash.substring(16), 16));
-            int[] palette = params.paletteRGB(32, jaj);
-            for (int i = 0; i < colors.length; i++) {
-                colors[i] = palette[4 * i + (pouet[2 * i] ? 2 : 0) + (pouet[2 * i + 1] ? 1 : 0)];
-            }
-            //int rotat = new BigInteger(new StringBuilder(hash).reverse().toString(), 16).mod(BigInteger.valueOf(16)).intValue();
-            colors = rotate(colors, (Stream.of(pouet)).mapToInt(b -> b ? 1 : 0).sum(), 1); //(int) Math.floor(8 * jouj.nextDouble()));
-        }
+
         for (int i = 0; i < spectrumWidth; i++) {
             for (int j = 0; j < spectrum.getHeight(); j++) {
                 coordY = j;
                 pixelLoc = j * spectrumWidth + i;
                 pixelLocMod = getPixelLocSpectrum(i, j, spectrumWidth, params);
-                spectrum.setRGB(i, j, (Math.min(255, (int) (magR[pixelLocMod] * 255)) << 16) | (Math.min(255, (int) (magG[pixelLocMod] * 255)) << 8) | Math.min(255, (int) (magB[pixelLocMod] * 255)));
+                spectrum.setRGB(i, j, (Math.min(255, (int) (mags[0][pixelLocMod] * 255)) << 16) | (Math.min(255, (int) (mags[1][pixelLocMod] * 255)) << 8) | Math.min(255, (int) (mags[2][pixelLocMod] * 255)));
                 //res.setRGB(i, i > spectrumWidth / 2 ? j == 0 ? j : spectrum.getHeight() - j : j, (int) (255 * corrCoeff * imageValuesR[j * spectrumWidth + i] % 255) << 16 | (int) (255 * corrCoeff * imageValuesG[j * spectrumWidth + i] % 255) << 8 | (int) (255 * corrCoeff * imageValuesB[j * spectrumWidth + i] % 255));
 
-                bigMagR[i + j * spectrumWidth] = magR[pixelLocMod];
-                bigMagG[i + j * spectrumWidth] = magG[pixelLocMod];
-                bigMagB[i + j * spectrumWidth] = magB[pixelLocMod];
+                for (int k = 0; k < mags.length; k++) {
+                    bigMags[k][i + j * spectrumWidth] = mags[k][pixelLocMod];
+                }
 
-                bigPhaseR[i + j * spectrumWidth] = phaseR[pixelLocMod];
+                bigPhase[i + j * spectrumWidth] = phase[pixelLocMod];
 
-                res.setRGB(i, coordY, getRGBCorr(binHash, params, colors, imageValuesR[pixelLoc], imageValuesG[pixelLoc], imageValuesB[pixelLoc]));
+                res.setRGB(i, coordY, getRGBCorr(binHash, params, colors, pixelLoc, imageValues));
             }
         }
         //Here to ensure the return int array is what we see on the screen
         for (int i = 0; i < spectrumWidth; i++) {
             for (int j = 0; j < spectrum.getHeight(); j++) {
-                resint[i + j * spectrumWidth] = res.getRGB(i, j) & (1 << 24) - 1;
+                fingerprintInt[i + j * spectrumWidth] = res.getRGB(i, j) & (1 << 24) - 1;
             }
         }
+        for (int i = 0; i < bigMags.length; i++) {
+            bigMags[i] = inverseFFTs[i].DCToCentre(bigMags[i]);
+        }
 
-        bigMagR = inverseFFTR.DCToCentre(bigMagR);
-        bigMagG = inverseFFTG.DCToCentre(bigMagG);
-        bigMagB = inverseFFTB.DCToCentre(bigMagB);
-        bigPhaseR = inverseFFTR.DCToCentre(bigPhaseR);
+        bigPhase = inverseFFTs[0].DCToCentre(bigPhase);
 
         BufferedImage centerSpectrum = new BufferedImage(spectrumWidth, spectrumHeight, BufferedImage.TYPE_INT_RGB);
         BufferedImage centerPhase = new BufferedImage(spectrumWidth, spectrumHeight, BufferedImage.TYPE_INT_RGB);
         for (int i = 0; i < spectrumWidth; i++) {
             for (int j = 0; j < spectrumWidth; j++) {
-                centerSpectrum.setRGB(i, j, (Math.min(255, (int) (bigMagR[i + j * spectrumWidth] * 255)) << 16) | (Math.min(255, (int) (bigMagG[i + j * spectrumWidth] * 255)) << 8) | Math.min(255, (int) (bigMagB[i + j * spectrumWidth] * 255)));
-                if (bigPhaseR[i + j * spectrumWidth] == 0) {
+                centerSpectrum.setRGB(i, j, (Math.min(255, (int) (bigMags[0][i + j * spectrumWidth] * 255)) << 16) | (Math.min(255, (int) (bigMags[1][i + j * spectrumWidth] * 255)) << 8) | Math.min(255, (int) (bigMags[2][i + j * spectrumWidth] * 255)));
+                if (bigPhase[i + j * spectrumWidth] == 0) {
                     centerPhase.setRGB(i, j, 0);
-                } else if (bigPhaseR[i + j * spectrumWidth] > 0) {
-                    centerPhase.setRGB(i, j, (int) (bigPhaseR[i + j * spectrumWidth] * 255 / Math.PI) << 16);
+                } else if (bigPhase[i + j * spectrumWidth] > 0) {
+                    centerPhase.setRGB(i, j, (int) (bigPhase[i + j * spectrumWidth] * 255 / Math.PI) << 16);
                 } else {
-                    centerPhase.setRGB(i, j, (int) (-bigPhaseR[i + j * spectrumWidth] * 255 / Math.PI));
+                    centerPhase.setRGB(i, j, (int) (-bigPhase[i + j * spectrumWidth] * 255 / Math.PI));
                 }
             }
         }
-        g.drawImage(scale(res, getHashWidth(shift), getHashHeight(shift)), getShiftX(shift), getShiftY(shift), null);
+        if (!g.drawImage(scale(res, getHashWidth(shift), getHashHeight(shift)), getShiftX(shift), getShiftY(shift), null)) {
+            System.out.println("error drawing image");
+        }
+        ;
+
         if (shift == 1 || shift == 2) {
             g.drawImage(scale((params.isSeePhase() ? centerPhase : centerSpectrum), getHashWidth(shift), getHashHeight(shift)), getShiftX(shift) + (int) (getHashWidth(shift) * 1.1), getShiftY(shift), null);
         }
-        return resint;
+        return fingerprintInt;
 
     }
 
@@ -435,24 +444,24 @@ public class HashDrawer extends JPanel {
                 out[i] = arr[(i + n) % (arr.length)];
             }
             return out;
-        }else{
+        } else {
             return IntStream.concat(Arrays.stream(Arrays.copyOf(arr, from)),
                     Arrays.stream(rotate(Arrays.copyOfRange(arr, from, arr.length), n, 0))).toArray();
         }
     }
 
-    private int getRGBCorr(String hash, DrawParams params, int[] colors, double... funcs) {
+    private int getRGBCorr(String hash, DrawParams params, int[] colors, int index, double[]... funcs) {
         if ((1 << funcs.length) != colors.length)
             throw new IllegalArgumentException("number of functions vs number of colors");
         double corr = params.getCorr();
         int color = 0;
         for (int i = 0; i < funcs.length; i++) {
-            color += ((funcs[i] * corr > 0.5) ? 1 : 0) << (funcs.length - 1 - i);
+            color += ((funcs[i][index] * corr > 0.5) ? 1 : 0) << (funcs.length - 1 - i);
         }
         if (params.isFiltered()) {
             return colors[color];
         } else
-            return (int) (255 * corr * funcs[0]) % 255 << 16 | (int) (220 * corr * funcs[1]) % 255 << 8 | (int) (255 * corr * funcs[2]) % 255;
+            return (int) (255 * corr * funcs[0][index]) % 255 << 16 | (int) (220 * corr * funcs[1][index]) % 255 << 8 | (int) (255 * corr * funcs[2][index]) % 255;
     }
 
     private int getPixelLocSpectrum(int i, int j, int spectrumWidth, DrawParams params) {
@@ -501,37 +510,37 @@ public class HashDrawer extends JPanel {
         int obj, curr_ind;
         // Obj = sky
         curr_ind = 32;
-        obj = extract(info, curr_ind, 2);
+        obj = extractBits(info, curr_ind, 2);
         curr_ind -= 2;
         GradientPaint gp = new GradientPaint(getShiftX(shift), getShiftY(shift), new Color(0, 0, 0), getShiftX(shift), getShiftY(shift) + 3 * getHashHeight(shift) / 4f, palette[obj + 11]);
         g2d.setPaint(gp);
         drawRectHash(g2d, null, 0, 0, getHashWidth(shift), 2 * getHashHeight(shift) / 3, shift);
 
         // Obj = sun
-        obj = extract(info, curr_ind, 3);
+        obj = extractBits(info, curr_ind, 3);
         curr_ind -= 3;
         int SUN_RADIUS = 2 * getHashWidth(shift) / 3 - getHashHeight(shift) / 30;
         float[] hsb = Color.RGBtoHSB(palette[obj].getRed(), palette[obj].getGreen(), palette[obj].getBlue(), null);
         gp = new GradientPaint(getShiftX(shift), getShiftY(shift) + getHashHeight(shift) / 3f, palette[obj], getShiftX(shift), getShiftY(shift) + getHashHeight(shift), Color.getHSBColor(hsb[0], hsb[1], 0));
         g2d.setPaint(gp);
-        obj = extract(info, curr_ind, 1);
+        obj = extractBits(info, curr_ind, 1);
         curr_ind -= 1;
         Ellipse2D sun = new Ellipse2D.Double(getShiftX(shift) + getHashWidth(shift) / 6.0 + (-1 + 2 * obj) * SUN_RADIUS / 4f, getShiftY(shift) + getHashHeight(shift) / 3.0, SUN_RADIUS, SUN_RADIUS);
         g2d.fill(sun);
 
         // Obj = ground
-        obj = extract(info, curr_ind, 2);
+        obj = extractBits(info, curr_ind, 2);
         curr_ind -= 2;
         gp = new GradientPaint(getShiftX(shift), getShiftY(shift) + getHashHeight(shift) * 2 / 3f, new Color(0, 0, 0), getShiftX(shift), getShiftY(shift) + getHashHeight(shift), palette[obj + 5]);
         g2d.setPaint(gp);
         drawRectHash(g2d, null, 0, 2 * getHashHeight(shift) / 3, getHashWidth(shift), getHashHeight(shift) / 3, shift);
 
         // Obj = mountainsSize
-        int sizes = extract(info, curr_ind, 4);
+        int sizes = extractBits(info, curr_ind, 4);
         curr_ind -= 4;
-        int shapes = extract(info, curr_ind, 4);
+        int shapes = extractBits(info, curr_ind, 4);
         curr_ind -= 4;
-        int colors = extract(info, curr_ind, 8);
+        int colors = extractBits(info, curr_ind, 8);
         curr_ind -= 8;
 
         for (int i = 3; i >= 0; i--) {
@@ -539,11 +548,11 @@ public class HashDrawer extends JPanel {
             drawMountain(g2d, i, (sizes >> i) & 1, (shapes >> i) & 1, palette[((colors >> (2 * i)) & 0b11) + 4], shift);
         }
 
-        int moonPos = extract(info, curr_ind, 2);
+        int moonPos = extractBits(info, curr_ind, 2);
         curr_ind -= 2;
-        int moonPat = extract(info, curr_ind, 2);
+        int moonPat = extractBits(info, curr_ind, 2);
         curr_ind -= 2;
-        int moonCol = extract(info, curr_ind, 2);
+        int moonCol = extractBits(info, curr_ind, 2);
         curr_ind -= 2;
         int MOON_RADIUS = getHashHeight(shift) / 6;
         g2d.setColor(palette[moonCol]);
@@ -557,11 +566,11 @@ public class HashDrawer extends JPanel {
             if (moonPat == 2) g2d.fill(moon);
         }
 
-        obj = extract(info, curr_ind, 1);
+        obj = extractBits(info, curr_ind, 1);
         if (obj == 0)
             drawLineHash(g, getHashWidth(shift) / 10, getHashHeight(shift) / 3, getHashWidth(shift) / 10, 5 * getHashHeight(shift) / 6, Color.WHITE, shift);
         curr_ind -= 1;
-        obj = extract(info, curr_ind, 1);
+        obj = extractBits(info, curr_ind, 1);
         if (obj == 0)
             drawLineHash(g, 9 * getHashWidth(shift) / 10, getHashHeight(shift) / 3, 9 * getHashWidth(shift) / 10, 5 * getHashHeight(shift) / 6, Color.WHITE, shift);
 
@@ -587,17 +596,17 @@ public class HashDrawer extends JPanel {
 
     private int getHashWidth(int shift) {
         if (shift == 2) return HASH_W / 2;
-        if (shift > 2) return (HASH_W) / 2;
+        if (shift > 2 && shift < 100) return (HASH_W) / 2;
         return HASH_W;
     }
 
     private int getHashHeight(int shift) {
         if (shift == 2) return HASH_H / 2;
-        if (shift > 2) return (HASH_H / 2);
+        if (shift > 2 && shift < 100) return (HASH_W) / 2;
         return HASH_H;
     }
 
-    private int extract(long source, int index, int length) {
+    private int extractBits(long source, int index, int length) {
         return (int) ((source & (((1L << length) - 1) << (index - length))) >>> (index - length));
     }
 
