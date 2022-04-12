@@ -270,41 +270,41 @@ public interface HashTransform {
      * @return an array of evenly spaced colors
      */
     static Color[] buildHSVWheel(int n, DrawParams params, Random r) {
-                Color[] wheel = new Color[n];
+        Color[] wheel = new Color[n];
         if (n == 32) {
             return new Color[]{
-                    new Color(0x222034),
+                    new Color(0xdf7126),
                     new Color(0xffffff),
-                    new Color(0x9badb7),
                     new Color(0x000000),
                     new Color(0x696a6a),
-                    new Color(0x663931),
-                    new Color(0x45283c),
                     new Color(0x639bff),
-                    new Color(0xeec39a),
+                    new Color(0x663931),
                     new Color(0x99e550),
+                    new Color(0xeec39a),
+                    new Color(0x9badb7),
+                    new Color(0x222034),
                     new Color(0x5b6ee1),
-                    new Color(0xdf7126),
+                    new Color(0x45283c),
                     new Color(0x4b692f),
                     new Color(0xd95763),
                     new Color(0xfbf236),
-                    new Color(0x3f3f74),
                     new Color(0x8f563b),
-                    new Color(0x524b24),
-                    new Color(0x323c39),
-                    new Color(0x306082),
+                    new Color(0x3f3f74),
                     new Color(0x76428a),
                     new Color(0xd9a066),
+                    new Color(0x524b24),
+                    new Color(0x847e87),
+                    new Color(0x323c39),
+                    new Color(0x306082),
+                    new Color(0x8f974a),
                     new Color(0x37946e),
                     new Color(0xcbdbfc),
-                    new Color(0x5fcde4),
-                    new Color(0x8f974a),
-                    new Color(0x847e87),
                     new Color(0x595652),
                     new Color(0x6abe30),
                     new Color(0xd77bba),
                     new Color(0xac3232),
-                    new Color(0x8a6f30)};
+                    new Color(0x8a6f30),
+                    new Color(0x5fcde4)};
 
         }
         int[] ref = new int[0];

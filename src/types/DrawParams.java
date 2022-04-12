@@ -22,6 +22,8 @@ public class DrawParams {
     private boolean seePhase;
     private boolean classicRGB;
     private int nFunc;
+    private boolean symmetric;
+    private double threshold;
 
     private static Color back;
     private static Color front;
@@ -44,6 +46,8 @@ public class DrawParams {
         seePhase = false;
         classicRGB = false;
         nFunc = 3;
+        symmetric = true;
+        threshold = 0.5;
     }
 
     public DrawParams(DrawParams other){
@@ -89,10 +93,23 @@ public class DrawParams {
         this.nFunc = nFunc;
     }
 
+    public boolean isSymmetric() {
+        return symmetric;
+    }
+
+    public void setSymmetric(boolean symmetric) {
+        this.symmetric = symmetric;
+    }
+
+    public double getThreshold() {
+        return threshold;
+    }
+
+    public void setThreshold(double threshold) {
+        this.threshold = threshold;
+    }
+
     public static double getDefaultCorr(DrawMode mode, Deter modDet, Deter phaseDet){
-        if(mode == DrawMode.Fourier128 && (modDet == Deter.FIXED || modDet == Deter.DET) && (phaseDet == Deter.DET || phaseDet == Deter.DOUBLE)){
-            return 0.4;
-        }
         return 0.4;
     }
     public static int worstBit(DrawMode mode){

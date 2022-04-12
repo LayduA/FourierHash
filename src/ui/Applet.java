@@ -2,10 +2,7 @@ package src.ui;
 
 import src.crypto.PRNG128BitsInsecure;
 import src.crypto.SecureCrypto;
-import src.hashops.AvgDistRunnable;
-import src.hashops.HashDrawer;
-import src.hashops.HashTransform;
-import src.hashops.SimpleHashRunnable;
+import src.hashops.*;
 import src.types.Distance;
 import src.types.DrawMode;
 import src.types.DrawParams;
@@ -48,6 +45,7 @@ public class Applet extends JFrame {
     private HashDrawer canvas;
     private JTextArea psiDisplay;
     private JComboBox<DrawMode> modeSelector;
+
     public Applet() {
         initUI();
     }
@@ -208,9 +206,13 @@ public class Applet extends JFrame {
         JButton plotButton = new JButton("Get Data");
         plotButton.addActionListener(l -> getHashesDataDists());
 
-        JCheckBox checkBoxClassicRGB = new JCheckBox();
+        JCheckBox checkBoxClassicRGB = new JCheckBox("RGB");
         checkBoxClassicRGB.setSelected(params.isClassicRGB());
         checkBoxClassicRGB.addActionListener(l -> params.setClassicRGB(checkBoxClassicRGB.isSelected()));
+
+        JCheckBox checkBoxSymmetry = new JCheckBox("Sym");
+        checkBoxSymmetry.setSelected(params.isSymmetric());
+        checkBoxSymmetry.addActionListener(l -> params.setSymmetric(checkBoxSymmetry.isSelected()));
 
         JCheckBox checkBoxModPhase = new JCheckBox("Phase");
         checkBoxModPhase.addActionListener(l -> {
@@ -283,6 +285,11 @@ public class Applet extends JFrame {
             bitsUsed.setText(Integer.toString(canvas.drawFourierHash(b.createGraphics(), inputL.getText(), 0, params)[256 * 256]));
         });
 
+        JTextField thresholdField = new JTextField("0.5", 3);
+        thresholdField.addActionListener(l ->{
+            params.setThreshold(Double.parseDouble(thresholdField.getText()));
+        });
+
         JButton paramsButton = new JButton("Params");
         paramsButton.addActionListener(l -> {
             JFrame frame = new JFrame("Params selection");
@@ -313,6 +320,8 @@ public class Applet extends JFrame {
                 pane.setVisible(modeSelector.getSelectedItem().toString().startsWith("Fourier"));
                 frame.pack();
             });
+            base.add(new JLabel("Threshold"));
+            base.add(thresholdField);
             frame.getContentPane().add(BorderLayout.NORTH, base);
             frame.getContentPane().add(BorderLayout.CENTER, pane);
             frame.pack();
@@ -323,7 +332,8 @@ public class Applet extends JFrame {
         topRowL.add(newButtonL, BorderLayout.WEST);
         topRowL.add(inputL, BorderLayout.CENTER);
         topRowL.add(valButtonL, BorderLayout.EAST);
-        topRowL.add(checkBoxClassicRGB, BorderLayout.EAST);
+        topRowL.add(checkBoxClassicRGB, BorderLayout.SOUTH);
+        topRowL.add(checkBoxSymmetry, BorderLayout.SOUTH);
         botRowL.add(paramsButton);
         botRowL.add(checkBoxModPhase);
         botRowL.add(modeSelector);
@@ -375,22 +385,59 @@ public class Applet extends JFrame {
         saveButtonR.addActionListener(l -> save(inputR));
 
         hamDistDisplay.setBackground(southR.getBackground());
-        JTextField flipIndex = new JTextField("27", 3);
-        JTextField flipValue = new JTextField("1", 3);
+        JTextField flipIndex = new JTextField("c", 3);
+        JTextField flipValue = new JTextField("4", 3);
 
         JButton flipButton = new JButton("Flip");
         flipButton.addActionListener(e -> {
             String in = inputL.getText();
             int nBitsToFlip = Integer.parseInt(flipValue.getText());
             String indexString = flipIndex.getText();
-            int index = !indexString.contains("r") ? Integer.parseInt(indexString, 10) : -1;
             int randIndex = (int) Math.floor(Math.random() * params.getMode().length());
             params.sampleColors();
-            inputR.setText(
-                    !indexString.contains("r")
-                            ? flipBits(in, IntStream.range(index, index + nBitsToFlip).toArray())
-                            //Integer.parseInt(params.getMode().toString().substring(params.getMode().toString().length() - 3), 10) - 1)
-                            : flipBits(in, IntStream.range(randIndex, randIndex + nBitsToFlip).toArray()));
+            if (indexString.contains("r")) {
+                inputR.setText(flipBits(in, IntStream.range(randIndex, randIndex + nBitsToFlip).toArray()));
+                //Integer.parseInt(params.getMode().toString().substring(params.getMode().toString().length() - 3), 10) - 1
+            } else if (indexString.contains("+")) {
+                int index = Integer.parseInt(indexString, 10);
+                inputR.setText(flipBits(in, index, index + 12));
+            } else if (indexString.contains("c")) {
+                JTextField[] indicesField = new JTextField[nBitsToFlip];
+                JLabel[] prevValues = new JLabel[nBitsToFlip];
+                JFrame frame = new JFrame("Test");
+                JPanel pane = new JPanel();
+                pane.setSize(150, 300);
+                pane.setPreferredSize(new Dimension(150, 300));
+                frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                for (int i = 0; i < indicesField.length; i++) {
+                    indicesField[i] = new JTextField(3);
+                    indicesField[i].setSize(100, 30);
+                    indicesField[i].setPreferredSize(new Dimension(100, 30));
+                    indicesField[i].setLocation(0, 30 * i);
+                    prevValues[i] = new JLabel("was ?");
+                    pane.add(new JLabel("Index " + i));
+                    pane.add(indicesField[i]);
+                    pane.add(prevValues[i]);
+                }
+                JButton validateButton = new JButton("Validate");
+                validateButton.addActionListener(l -> {
+                    int[] indices = Arrays.stream(indicesField).mapToInt(field -> Integer.parseInt(field.getText())).toArray();
+                    for (int i = 0; i < prevValues.length; i++) {
+                        prevValues[i].setText(" was " + (hexToBin(inputL.getText()).charAt(Integer.parseInt(indicesField[i].getText())) - '0'));
+                    }
+                    inputR.setText(flipBits(inputL.getText(), indices));
+                });
+                pane.add(validateButton);
+                frame.getContentPane().add(pane);
+                frame.pack();
+                frame.setLocationByPlatform(true);
+                frame.setVisible(true);
+                frame.setResizable(true);
+
+            } else {
+                int index = Integer.parseInt(indexString, 10);
+                inputR.setText(flipBits(in, IntStream.range(index, index + nBitsToFlip).toArray()));
+            }
 
         });
 
@@ -422,11 +469,70 @@ public class Applet extends JFrame {
             JButton runButton = new JButton("Run");
             runButton.addActionListener(e -> {
                 // canv.setLocation(200, 200);
-                for (int i = 3; i < 35; i++) {
-                    canvasDemo.drawHash(frame.getGraphics(),
-                            HashTransform.flipBit(inputL.getText(), (i - 3)),
-                            i, params);
+                if (params.getMode() == DrawMode.FourierCartesian128) {
+                    String input = inputL.getText();
+                    int count = 3;
+                    for (int[] bits : Combinatorial.indices3Mod23PPP) {
+                        int[] indices = Arrays.stream(bits).map(b -> 120 - 4 - b * 12).toArray();
+                        boolean toDraw = hexToBin(input).charAt(indices[0]) == hexToBin(input).charAt(indices[1]);
+                        toDraw = toDraw && hexToBin(input).charAt(indices[0]) == hexToBin(input).charAt(indices[2]);
+                        if (toDraw && count < 35) {
+                            canvasDemo.drawHash(frame.getGraphics(),
+                                    HashTransform.flipBits(input, indices),
+                                    count, params);
+
+                            count++;
+                        }
+                    }
+                    count++;
+                    for (int[] bits : Combinatorial.indices3Mod23PPM) {
+                        int[] indices = Arrays.stream(bits).map(b -> 120 - 4 - b * 12).toArray();
+                        boolean toDraw = hexToBin(input).charAt(indices[0]) == hexToBin(input).charAt(indices[1]);
+                        toDraw = toDraw && hexToBin(input).charAt(indices[0]) != hexToBin(input).charAt(indices[2]);
+                        if (toDraw && count < 35) {
+                            canvasDemo.drawHash(frame.getGraphics(),
+                                    HashTransform.flipBits(input, indices),
+                                    count, params);
+
+                            count++;
+                        }
+                    }
+                    count++;
+                    for (int[] bits : Combinatorial.indices4Mod23PPPP) {
+                        int[] indices = Arrays.stream(bits).map(b -> 120 - 4 - b * 12).toArray();
+                        boolean toDraw = hexToBin(input).charAt(indices[0]) == hexToBin(input).charAt(indices[1]);
+                        toDraw = toDraw && hexToBin(input).charAt(indices[2]) == hexToBin(input).charAt(indices[3]);
+                        toDraw = toDraw && hexToBin(input).charAt(indices[2]) == hexToBin(input).charAt(indices[0]);
+                        if (toDraw && count < 35) {
+                            canvasDemo.drawHash(frame.getGraphics(),
+                                    HashTransform.flipBits(input, indices),
+                                    count, params);
+
+                            count++;
+                        }
+                    }
+                    count++;
+                    for (int[] bits : Combinatorial.indices4Mod23PPPM) {
+                        int[] indices = Arrays.stream(bits).map(b -> 120 - 4 - b * 12).toArray();
+                        boolean toDraw = hexToBin(input).charAt(indices[0]) == hexToBin(input).charAt(indices[1]);
+                        toDraw = toDraw && hexToBin(input).charAt(indices[1]) == hexToBin(input).charAt(indices[2]);
+                        toDraw = toDraw && hexToBin(input).charAt(indices[0]) != hexToBin(input).charAt(indices[3]);
+                        if (toDraw && count < 35) {
+                            canvasDemo.drawHash(frame.getGraphics(),
+                                    HashTransform.flipBits(input, indices),
+                                    count, params);
+
+                            count++;
+                        }
+                    }
+                } else {
+                    for (int i = 3; i < 35; i++) {
+                        canvasDemo.drawHash(frame.getGraphics(),
+                                HashTransform.flipBit(inputL.getText(), (i - 3)),
+                                i, params);
+                    }
                 }
+
             });
 
             // frame.add(panel);

@@ -19,7 +19,7 @@ public class Compressor {
     }
 
     public static void main(String[] args) {
-        String hash = "0001101";//hexToBin(getHash("oui"));
+        String hash = "0001000101011";//hexToBin(getHash("oui"));
         while(hash.length() > 1) {
             hash = getSeq(hash);
             System.out.println(hash.length() + " " + hash);

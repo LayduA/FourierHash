@@ -1,0 +1,89 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{tikz}
+\usepackage{xcolor}
+\usetikzlibrary{quotes,angles}
+
+\title{Trashcan}
+\author{adrien.laydu }
+\date{March 2022}
+
+\begin{document}
+
+\def\nn{8}
+%I honestly want to murder myself after seeing this code
+\begin{figure}
+    \centering
+    \resizebox{\columnwidth}{!}{%
+            \begin{tikzpicture}
+                \draw[step=1, thin] (0,0) grid (\nn, \nn);
+                \draw[->, thick] (-0.9,\nn/2) -- ( \nn + 0.9, \nn/2);
+                \draw[->, thick] (\nn/2, -0.9) -- (\nn/2, \nn + 0.9);
+                \node[rectangle,draw=black,fill=black!10!white, minimum width = 1cm, minimum height = 1cm] (r) at (2.5,5.5){$\omega_0$};
+                \node[rectangle,draw=black,fill=black!10!white, minimum width = 1cm, minimum height = 1cm] (r) at (8-2.5,8-5.5){$\omega_0^*$};
+                \node[rectangle,draw=black,fill=black!20!white, minimum width = 1cm, minimum height = 1cm] (r) at (3.5,5.5){$\omega_1$};
+                \node[rectangle,draw=black,fill=black!20!white, minimum width = 1cm, minimum height = 1cm] (r) at (8-3.5,8-5.5){$\omega_1^*$};
+                \node[rectangle,draw=black,fill=black!20!white, minimum width = 1cm, minimum height = 1cm] (r) at (4.5,5.5){$\omega_2$};
+                \node[rectangle,draw=black,fill=black!20!white, minimum width = 1cm, minimum height = 1cm] (r) at (8-4.5,8-5.5){$\omega_2^*$};
+                \node[rectangle,draw=black,fill=black!10!white, minimum width = 1cm, minimum height = 1cm] (r) at (5.5,5.5){$\omega_3$};
+                \node[rectangle,draw=black,fill=black!10!white, minimum width = 1cm, minimum height = 1cm] (r) at (8-5.5,8-5.5){$\omega_3^*$};
+                \node[rectangle,draw=black,fill=black!20!white, minimum width = 1cm, minimum height = 1cm] (r) at (2.5,4.5){$\omega_4$};
+                \node[rectangle,draw=black,fill=black!20!white, minimum width = 1cm, minimum height = 1cm] (r) at (8-2.5,8-4.5){$\omega_4^*$};
+                \node[rectangle,draw=black,fill=black!40!white, minimum width = 1cm, minimum height = 1cm] (r) at (3.5,4.5){$\omega_5$};
+                \node[rectangle,draw=black,fill=black!40!white, minimum width = 1cm, minimum height = 1cm] (r) at (8-3.5,8-4.5){$\omega_5^*$};
+                \node[rectangle,draw=black,fill=black!40!white, minimum width = 1cm, minimum height = 1cm] (r) at (4.5,4.5){$\omega_6$};
+                \node[rectangle,draw=black,fill=black!40!white, minimum width = 1cm, minimum height = 1cm] (r) at (8-4.5,8-4.5){$\omega_6^*$};
+                \node[rectangle,draw=black,fill=black!20!white, minimum width = 1cm, minimum height = 1cm] (r) at (5.5,4.5){$\omega_7$};
+                \node[rectangle,draw=black,fill=black!20!white, minimum width = 1cm, minimum height = 1cm] (r) at (8-5.5,8-4.5){$\omega_7^*$};
+            \end{tikzpicture}%
+        }
+    \caption{Caption}
+    \label{fig:my_label}
+\end{figure}
+\newpage
+\def\scl{3}
+\def\points{(\scl * -1, \scl * 1) / 0110, (\scl * -0.5, \scl * 1) / 1011, (\scl * 0.5, \scl * 1) / 1110, (\scl * 1, \scl * 1) / 0011,
+(\scl * -1, \scl * 0.5) / 1101, (\scl * -0.5, \scl * 0.5) / 0000, (\scl * 0.5, \scl * 0.5) / 0101, (\scl * 1, \scl * 0.5) / 1000,
+(\scl * -1, \scl * -0.5) / 0111, (\scl * -0.5, \scl * -0.5) / 1010, (\scl * 0.5, \scl * -0.5) / 1111, (\scl * 1, \scl * -0.5) / 0010,
+(\scl * -1, \scl * -1) / 1100, (\scl * -0.5, \scl * -1) / 0001, (\scl * 0.5, \scl * -1) / 0100, (\scl * 1, \scl * -1) / 1001,
+}
+\begin{figure}
+    \centering
+    \begin{tikzpicture}
+        \foreach \Point/\PointLabel in \points{
+            \draw[fill=black] \Point circle (0.05) node[above right] {$\PointLabel$};
+        }
+        \coordinate (o) at (0,0);
+        \coordinate (e) at (0.5 * \scl,\scl);
+        \coordinate (x) at (1,0);
+        \draw[->, thick] (-1.4 * \scl,0) -- (1.4 * \scl, 0) node[above right] {$\mathcal R(\omega)$};
+        \draw[->, thick] (0, -1.4 * \scl) -- (0, 1.4 * \scl) node[above right] {$\mathcal I(\omega)$};
+        \draw[->, red, ultra thick] (0,0) -- (0.5 * \scl ,\scl) node [midway, above left] {$r$};
+        \draw pic ["$\theta$", draw=red, text = red, -, angle eccentricity=1.2, angle radius=\scl * 0.25 cm] {angle = x--o--e};    
+    \end{tikzpicture}
+    \caption{Encoding 4-bit words into frequencies.}
+    \label{fig:encoding}
+\end{figure}
+
+\newpage
+ \def \n{6}
+ \def \scl{0.5}
+ %Pain
+ \def \rects {
+    (0, -\scl)/red/0,(\scl, 0)/blue/1,(0, -2*\scl)/green/2,(\scl,  -\scl)/yellow/3,(2* \scl,  0)/orange/4,(\scl,  \scl + 0)/purple/5,(\scl,  2*\scl + 0)/brown/6,(2*\scl,  \scl+ 0)/gray/7,(3 * \scl,  0)/pink/8,(2*\scl, -\scl)/blue!40!white/9, (\scl, -2*\scl)/blue!40!white/9, (0, -3 *\scl)/pink/8,(0, -4 * \scl) /gray/7,(\scl,  -3 * \scl) /brown/6, (2*\scl,  -2*\scl)/purple/5,(3*\scl,  - \scl)/orange/4,(4 * \scl,  0)/yellow/3, (3 * \scl,  \scl)/green/2,(2 * \scl, 2 * \scl)/blue/1,(\scl,  3 * \scl + 0)/red/0 
+    %(0, 0)/green!30!black/r
+ }
+\begin{tikzpicture}
+    %\draw[step= \scl, thin] (-\n * \scl,-\n * \scl) grid (\n * \scl, \n * \scl);
+    \draw[->, thick] (-\n * \scl - 0.5,0) -- (\n * \scl + 0.5, 0) node[above right] {$\mathcal R(\omega)$};
+    \draw[->, thick] (0, -\n * \scl - 0.5) -- (0, \n * \scl + 0.5) node[above right] {$\mathcal I(\omega)$};
+    \foreach \Point/\Col/\Lab in \rects{
+        \node[rectangle,fill=\Col,  minimum width = \scl cm, minimum height = \scl cm] (r) at \Point {$\Lab$};
+    }
+\end{tikzpicture}
+
+
+$$h = \textcolor{red}{1010}\textcolor{blue}{1111}\textcolor{green}{0110}\textcolor{orange}{0010}\textcolor{purple}{1110}\textcolor{brown}{0110}\dots\textcolor{blue!40!white}{0011}$$
+
+
+\end{document}

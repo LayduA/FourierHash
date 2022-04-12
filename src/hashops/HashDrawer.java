@@ -16,9 +16,9 @@ import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
 import java.math.BigInteger;
 import java.util.Arrays;
-import java.util.Random;
+import java.util.Collections;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
+import java.util.List;
 
 import static src.fourier.ImgMod30.shiftOrigin;
 import static src.types.DrawParams.Deter.*;
@@ -31,7 +31,7 @@ public class HashDrawer extends JPanel {
             {-1, 10, -1, -1, -1},
             {-1, 6, 11, -1, -1},
             {-1, 5, 7, 12, -1},
-            {-2, 1, 4, 8, 13},
+            {20, 1, 4, 8, 13},
             {0, 3, 9, 14, -1},
             {2, 19, 15, -1, -1},
             {18, 16, -1, -1, -1},
@@ -41,7 +41,7 @@ public class HashDrawer extends JPanel {
             //i,j
             {0, 1}, {1, 0}, {0, 2}, {1, 1}, {2, 0}, {HASH_W - 1, 1}, {HASH_W - 1, 2}, {HASH_W - 2, 1},
             {3, 0}, {2, 1}, {HASH_W - 1, 3}, {HASH_W - 2, 2}, {HASH_W - 3, 1}, {4, 0},
-            {3, 1}, {2, 2}, {1, 3}, {0, 4}, {0, 3}, {1, 2}
+            {3, 1}, {2, 2}, {1, 3}, {0, 4}, {0, 3}, {1, 2}, {0, 0}
     };
     private final double[] reals = new double[]{-0.5, -0.5, 1.0, 1.0, 0.5, 0.5, -1.0, -1.0, 1.0, 1.0, -0.5, -0.5, -1.0, -1.0, 0.5, 0.5};
     private final double[] ims = new double[]{0.5, -1.0, -0.5, 1.0, -1.0, 0.5, 1.0, -0.5, 0.5, -1.0, -0.5, 1.0, -1.0, 0.5, 1.0, 0.5};
@@ -226,6 +226,7 @@ public class HashDrawer extends JPanel {
         int nBitsPerElement;
         String binHash = HashTransform.hexToBin(hash);
         assert binHash.length() == spectrumWidth;
+        String binTemp = binHash;
 
         BufferedImage spectrum = new BufferedImage(spectrumWidth, spectrumHeight, BufferedImage.TYPE_INT_RGB);
 
@@ -253,64 +254,85 @@ public class HashDrawer extends JPanel {
                 new int[]{0, 0x80, 0xff, 0x8000, 0xff00, 0x8080, 0xffff, 0x800000, 0xff0000, 0x800080, 0xff00ff, 0x808000, 0xffff00, 0x808080, 0xffffff, 0x123456};
 
         if (params.getMode().name().contains("Cartesian")) {
-            setValues(0, 0, dataSpectrums, params.dist(0,0), 0, spectrumWidth);
+            setValues(0, 0, dataSpectrums, params.dist(0, 0), 0, spectrumWidth);
 
             nBitsPerElement = 4;
-            //MAGIC BEGINS
+
             int groupSize = nFunc * nBitsPerElement;
             int nGroups = params.getMode().length() / groupSize;
             int maxInd = nGroups * groupSize;
             int remainder = params.getMode().length() - maxInd;
-            while(ind < 2 * maxInd) {
-                if(ind + groupSize > binHash.length()) binHash = binHash + binHash;
-                if(ind == maxInd) ind += remainder;
+            while (ind < 2 * maxInd) {
+                if (ind + groupSize > binTemp.length()) binTemp = binTemp + binTemp;
+                if (ind == maxInd) ind += remainder;
+                //MAGIC BEGINS
                 int x = horribleMagicIndex[ind / groupSize][0];
                 int y = horribleMagicIndex[ind / groupSize][1];
                 //MAGIC ENDS
 
                 //Going from bits to complex numbers (real in [-1,1], im in [-1,1]) according to encoding
                 for (int k = 0; k < complexes.length; k++) {
-                    complexes[k] = mapToComplex(Integer.parseInt(binHash.substring(ind + nBitsPerElement * k, ind + nBitsPerElement * (k + 1)), 2));
+                    complexes[k] = mapToComplex(Integer.parseInt(binTemp.substring(ind + nBitsPerElement * k, ind + nBitsPerElement * (k + 1)), 2));
                 }
 
-                //Getting coeff according to distance from origin to (x,y)
-                frequencyCoeff = params.dist(x, y);
-                final double f = frequencyCoeff;
-
                 //Translating cartesian coords into polar coords
-                moduli = Arrays.stream(complexes).mapToDouble(c -> f * Math.sqrt(c[0] * c[0] + c[1] * c[1])).toArray();
+                moduli = Arrays.stream(complexes).mapToDouble(c -> params.dist(x, y) * Math.sqrt(c[0] * c[0] + c[1] * c[1])).toArray();
                 phis = Arrays.stream(complexes).mapToDouble(c -> Math.atan2(c[1], c[0])).toArray();
 
                 setValues(x, y, dataSpectrums, moduli, phis, spectrumWidth);
 
                 ind += groupSize;
             }
+
+            if (params.getMode() == DrawMode.FourierCartesian128) {
+                int x = horribleMagicIndex[maxInd / groupSize][0];
+                int y = horribleMagicIndex[maxInd / groupSize][1];
+                for (int i = 0; i < remainder / nBitsPerElement; i++) {
+                    complexes[i] = mapToComplex(Integer.parseInt(binTemp.substring(ind + nBitsPerElement * i, ind + nBitsPerElement * (i + 1)), 2));
+                    moduli[i] = params.dist(x, y) * Math.sqrt(complexes[i][0] * complexes[i][0] + complexes[i][1] * complexes[i][1]);
+                    phis[i] = Math.atan2(complexes[i][1], complexes[i][0]);
+                }
+                for (int i = remainder / nBitsPerElement; i < complexes.length; i++) {
+                    moduli[i] = params.dist(x, y);
+                    phis[i] = 0;
+                }
+                setValues(x, y, dataSpectrums, moduli, phis, spectrumWidth);
+            }
+
             if (!params.isClassicRGB()) {
-                Boolean[] groupParities = new Boolean[groupSize + remainder/2];
+                Boolean[] groupParities = new Boolean[groupSize + remainder / 2];
                 for (int i = 0; i < groupSize; i++) {
                     StringBuilder sb = new StringBuilder();
                     for (int j = i; j < maxInd; j += groupSize) {
                         sb.append(binHash.charAt(j));
                     }
-                    groupParities[remainder/2 + i] = sb.toString().chars().map(c -> c - '0').sum() % 2 == 0;
+                    groupParities[remainder / 2 + i] = sb.toString().chars().map(c -> c - '0').sum() % 2 == 0;
                 }
-                for (int i = 0; i < remainder/2; i++) {
-                    groupParities[i] = ((binHash.charAt(maxInd + i) - '0') + (binHash.charAt(maxInd + remainder/2 + i) - '0')) % 2 == 0;
+                for (int i = 0; i < remainder / 2; i++) {
+                    groupParities[i] = ((binHash.charAt(maxInd + i) - '0') + (binHash.charAt(maxInd + remainder / 2 + i) - '0')) % 2 == 0;
                 }
-                //System.out.println(Arrays.toString(groupParities));
-                Random tempRand = new Random();
-                tempRand.setSeed(Long.parseUnsignedLong(hash.substring(0, 16), 16));
+
                 colors = new int[1 << nFunc];
-                int[] palette = params.paletteRGB(32, tempRand);
+                int[] palette = params.paletteRGB(32, null);
+                int rotat = new BigInteger(hash, 16).mod(BigInteger.valueOf(23)).intValue();
+                System.out.println(rotat + Arrays.toString(groupParities) + hash);
+                //new StringBuilder(hash).reverse().toString()
+                palette = rotate(palette, rotat, 0);
+                int globalParity = binHash.chars().map(b -> b - '0').sum() % 2;
+                if(globalParity == 1) {
+                    List<Object> li = Arrays.asList(Arrays.stream(palette).mapToObj(i -> i).toArray());
+                    Collections.reverse(li);
+                    palette = li.stream().mapToInt(I -> (Integer) I).toArray();
+                }
                 for (int i = 0; i < colors.length; i++) {
-                    if(colors.length == 8) {
+                    if (colors.length == 8) {
                         colors[i] = palette[4 * i + (groupParities[2 * i] ? 2 : 0) + (groupParities[2 * i + 1] ? 1 : 0)];
-                    }else if (colors.length == 16){
+                    } else if (colors.length == 16) {
                         colors[i] = palette[2 * i + (groupParities[i] ? 1 : 0)];
                     }
                 }
-                //int rotat = new BigInteger(new StringBuilder(hash).reverse().toString(), 16).mod(BigInteger.valueOf(16)).intValue();
-                colors = rotate(colors, (Stream.of(groupParities)).mapToInt(b -> b ? 1 : 0).sum(), 1); //(int) Math.floor(8 * jouj.nextDouble()));
+                //colors = rotate(colors, (Stream.of(groupParities)).mapToInt(b -> b ? 1 : 0).sum(), 1); //(int) Math.floor(8 * jouj.nextDouble()));
+                colors = rotate(colors, rotat, 0);
             }
 
             //System.out.println("Remainder = " + remainder + " bits");
@@ -381,10 +403,11 @@ public class HashDrawer extends JPanel {
         fingerprintInt[fingerprintInt.length - 1] = ind;
 
 
-
         for (int i = 0; i < spectrumWidth; i++) {
             for (int j = 0; j < spectrum.getHeight(); j++) {
+
                 coordY = j;
+
                 pixelLoc = j * spectrumWidth + i;
                 pixelLocMod = getPixelLocSpectrum(i, j, spectrumWidth, params);
                 spectrum.setRGB(i, j, (Math.min(255, (int) (mags[0][pixelLocMod] * 255)) << 16) | (Math.min(255, (int) (mags[1][pixelLocMod] * 255)) << 8) | Math.min(255, (int) (mags[2][pixelLocMod] * 255)));
@@ -396,7 +419,11 @@ public class HashDrawer extends JPanel {
 
                 bigPhase[i + j * spectrumWidth] = phase[pixelLocMod];
 
-                res.setRGB(i, coordY, getRGBCorr(binHash, params, colors, pixelLoc, imageValues));
+                if (params.isSymmetric() && i > spectrumWidth / 2) {
+                    res.setRGB(i, coordY, res.getRGB(spectrumWidth - i, j));
+                } else {
+                    res.setRGB(i, coordY, getRGBCorr(params, colors, pixelLoc, imageValues));
+                }
             }
         }
         //Here to ensure the return int array is what we see on the screen
@@ -450,13 +477,13 @@ public class HashDrawer extends JPanel {
         }
     }
 
-    private int getRGBCorr(String hash, DrawParams params, int[] colors, int index, double[]... funcs) {
+    private int getRGBCorr(DrawParams params, int[] colors, int index, double[]... funcs) {
         if ((1 << funcs.length) != colors.length)
             throw new IllegalArgumentException("number of functions vs number of colors");
         double corr = params.getCorr();
         int color = 0;
         for (int i = 0; i < funcs.length; i++) {
-            color += ((funcs[i][index] * corr > 0.5) ? 1 : 0) << (funcs.length - 1 - i);
+            color += ((funcs[i][index] * corr > params.getThreshold()) ? 1 : 0) << (funcs.length - 1 - i);
         }
         if (params.isFiltered()) {
             return colors[color];
