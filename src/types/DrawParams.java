@@ -10,6 +10,9 @@ import static src.hashops.HashTransform.buildHSVWheel;
 
 public class DrawParams {
 
+    private static Color back;
+    private static Color front;
+    private static Color spots;
     private DrawMode drawMode;
     private Distance dist;
     private PRNG128BitsInsecure prng;
@@ -23,17 +26,15 @@ public class DrawParams {
     private boolean classicRGB;
     private int nFunc;
     private boolean symmetric;
+    private SymMode symmetry;
     private double threshold;
+    private boolean contoured;
 
-    private static Color back;
-    private static Color front;
-    private static Color spots;
-
-    public enum Deter{
-        DET, RAND, DOUBLE, FIXED
+    public enum SymMode{
+        HORIZONTAL_LEFT, HORIZONTAL_RIGHT, VERTICAL_LEFT, VERTICAL_RIGHT, DIAGONAL_LEFT, DIAGONAL_RIGHT, ANTIDIAGONAL_LEFT, ANTIDIAGONAL_RIGHT,FROM_HASH
     }
 
-    public DrawParams(DrawMode mode, Distance distance, PRNG128BitsInsecure prng, double corr, Distance.Shape distMode){
+    public DrawParams(DrawMode mode, Distance distance, PRNG128BitsInsecure prng, double corr, Distance.Shape distMode) {
         drawMode = mode;
         dist = distance;
         this.prng = prng;
@@ -47,10 +48,12 @@ public class DrawParams {
         classicRGB = false;
         nFunc = 3;
         symmetric = true;
+        symmetry = SymMode.FROM_HASH;
         threshold = 0.5;
+        contoured = false;
     }
 
-    public DrawParams(DrawParams other){
+    public DrawParams(DrawParams other) {
         drawMode = other.getMode();
         dist = other.dist;
         this.prng = other.prng.copy();
@@ -63,18 +66,26 @@ public class DrawParams {
         seePhase = other.seePhase;
     }
 
-    public DrawParams(DrawMode mode){
+    public DrawParams(DrawMode mode) {
         this(mode, getDefaultDist(mode, Deter.DET, Deter.DET), new PRNG128BitsInsecure(), getDefaultCorr(mode, Deter.DET, Deter.DET), Distance.Shape.RHOMBUS);
     }
 
-    public static Distance getDefaultDist(DrawMode mode, Deter modDet, Deter phaseDet){
+    public static Distance getDefaultDist(DrawMode mode, Deter modDet, Deter phaseDet) {
         if (modDet == Deter.RAND && phaseDet == Deter.RAND) return Distance.SQUARE;
-        else if(mode.toString().contains("Cart") || mode == DrawMode.Fourier128 && (modDet == Deter.FIXED || modDet == Deter.DET) && (phaseDet == Deter.DET || phaseDet == Deter.DOUBLE)){
+        else if (mode.toString().contains("Cart") || mode == DrawMode.Fourier128 && (modDet == Deter.FIXED || modDet == Deter.DET) && (phaseDet == Deter.DET || phaseDet == Deter.DOUBLE)) {
             return Distance.MANHATTAN;
-        }
-        else{
+        } else {
             return Distance.CUBIC;
         }
+    }
+
+    public static double getDefaultCorr(DrawMode mode, Deter modDet, Deter phaseDet) {
+        return 0.4;
+    }
+
+    public static int worstBit(DrawMode mode) {
+        if (mode == DrawMode.Fourier256) return 147;
+        return 54;
     }
 
     public boolean isClassicRGB() {
@@ -101,6 +112,14 @@ public class DrawParams {
         this.symmetric = symmetric;
     }
 
+    public SymMode getSymmetry() {
+        return symmetry;
+    }
+
+    public void setSymmetry(SymMode symmetry) {
+        this.symmetry = symmetry;
+    }
+
     public double getThreshold() {
         return threshold;
     }
@@ -109,46 +128,38 @@ public class DrawParams {
         this.threshold = threshold;
     }
 
-    public static double getDefaultCorr(DrawMode mode, Deter modDet, Deter phaseDet){
-        return 0.4;
-    }
-    public static int worstBit(DrawMode mode){
-        if(mode == DrawMode.Fourier256) return 147;
-        return 54;
-    }
-
-    public int worstBit(){
+    public int worstBit() {
         return worstBit(getMode());
     }
 
-    public int cut(){
+    public int cut() {
         return cut;
     }
-    public void setCut(int newCut){
+
+    public void setCut(int newCut) {
         cut = newCut;
     }
 
-    public int default_cut(DrawMode drawMode){
-        if(drawMode == DrawMode.Fourier128){
-            if(modDet == Deter.DET && phaseDet == Deter.RAND){
+    public int default_cut(DrawMode drawMode) {
+        if (drawMode == DrawMode.Fourier128) {
+            if (modDet == Deter.DET && phaseDet == Deter.RAND) {
                 return distMode == Distance.Shape.RHOMBUS ? 7 : 6;
             }
-            if(modDet == Deter.DET && phaseDet == Deter.DET){
+            if (modDet == Deter.DET && phaseDet == Deter.DET) {
                 return distMode == Distance.Shape.RHOMBUS ? 4 : 3;
             }
-            if(modDet == Deter.DET && phaseDet == Deter.DOUBLE){
+            if (modDet == Deter.DET && phaseDet == Deter.DOUBLE) {
                 return distMode == Distance.Shape.RHOMBUS ? 3 : 2;
             }
-            if(modDet == Deter.RAND && phaseDet == Deter.RAND){
+            if (modDet == Deter.RAND && phaseDet == Deter.RAND) {
                 return 63;
-            }
-            else{
+            } else {
                 return 6;
             }
-        } else if (drawMode == DrawMode.Fourier256){
-            if(modDet == Deter.RAND && phaseDet == Deter.RAND){
+        } else if (drawMode == DrawMode.Fourier256) {
+            if (modDet == Deter.RAND && phaseDet == Deter.RAND) {
                 return 127;
-            }else{
+            } else {
                 return 6;
             }
         } else {
@@ -158,13 +169,13 @@ public class DrawParams {
 
     @Override
     public String toString() {
-        if(drawMode.toString().startsWith("Fourier")){
-            if(drawMode.toString().contains("Cartesian")){
-                return drawMode + "_" + dist.toString().substring(0,3) + distMode.toString().substring(0,4) + "_" + (corr + "000").replace(".", "").substring(0,3);
-            }else{
-                return drawMode + "_" + modDet + "Mod_" + phaseDet + "_Phase_" + dist.toString().substring(0,3) + "_" + distMode.toString().substring(0,4) + "_" + (corr + "000").replace(".", "").substring(0,3);
+        if (drawMode.toString().startsWith("Fourier")) {
+            if (drawMode.toString().contains("Cartesian")) {
+                return drawMode + "_" + dist.toString().substring(0, 3) + distMode.toString().substring(0, 4) + "_" + (corr + "000").replace(".", "").substring(0, 3);
+            } else {
+                return drawMode + "_" + modDet + "Mod_" + phaseDet + "_Phase_" + dist.toString().substring(0, 3) + "_" + distMode.toString().substring(0, 4) + "_" + (corr + "000").replace(".", "").substring(0, 3);
             }
-        }else{
+        } else {
             return drawMode.toString();
         }
     }
@@ -173,45 +184,55 @@ public class DrawParams {
         return dist;
     }
 
-    public double dist(int x,  int y){
+    public void setDist(Distance newDist) {
+        this.dist = newDist;
+    }
+
+    public double dist(int x, int y) {
         return dist.dist(x, y, this);
     }
 
-    public void setModDet(Deter det){
-        modDet = det;
-    }
-    public void setPhaseDet(Deter phaseDet) {
-        this.phaseDet = phaseDet;
-    }
     public Deter getModDet() {
         return modDet;
     }
+
+    public void setModDet(Deter det) {
+        modDet = det;
+    }
+
     public Deter getPhaseDet() {
         return phaseDet;
     }
 
-
-    public void setDist(Distance newDist){
-        this.dist = newDist;
+    public void setPhaseDet(Deter phaseDet) {
+        this.phaseDet = phaseDet;
     }
 
-    public void setMode(DrawMode mode){
-        drawMode = mode;
+    public boolean isContoured() {
+        return contoured;
     }
 
-    public DrawMode getMode(){
+    public void setContoured(boolean contoured) {
+        this.contoured = contoured;
+    }
+
+    public DrawMode getMode() {
         return drawMode;
     }
 
-    public void setCorr(double newCorr){
-        corr = newCorr;
+    public void setMode(DrawMode mode) {
+        drawMode = mode;
     }
 
-    public double getCorr(){
+    public double getCorr() {
         return corr;
     }
 
-    public boolean isFiltered(){
+    public void setCorr(double newCorr) {
+        corr = newCorr;
+    }
+
+    public boolean isFiltered() {
         return filtered;
     }
 
@@ -219,10 +240,11 @@ public class DrawParams {
         this.filtered = filtered;
     }
 
-    public Distance.Shape getDistMode(){
+    public Distance.Shape getDistMode() {
         return distMode;
     }
-    public void setDistMode(Distance.Shape newDistMode){
+
+    public void setDistMode(Distance.Shape newDistMode) {
         distMode = newDistMode;
     }
 
@@ -234,11 +256,11 @@ public class DrawParams {
         this.seePhase = seePhase;
     }
 
-    public PRNG128BitsInsecure prng(){
+    public PRNG128BitsInsecure prng() {
         return prng;
     }
 
-    public void setPrng(PRNG128BitsInsecure b){
+    public void setPrng(PRNG128BitsInsecure b) {
         prng = b;
     }
 
@@ -250,11 +272,12 @@ public class DrawParams {
         spots = prng.createColor();
     }
 
-    public int[] paletteRGB(int length, Random r){
+    public int[] paletteRGB(int length, Random r) {
         Color[] palette = buildHSVWheel(length, this, r);
         return Stream.of(palette).mapToInt(col -> (col.getRGB() & 0xffffff)).toArray();
     }
-    public int[] paletteRGB(int length){
+
+    public int[] paletteRGB(int length) {
         Color[] palette = buildHSVWheel(length, this);
         return Stream.of(palette).mapToInt(col -> (col.getRGB() & 0xffffff)).toArray();
     }
@@ -272,5 +295,9 @@ public class DrawParams {
             default:
                 return buildHSVWheel(16, this);
         }
+    }
+
+    public enum Deter {
+        DET, RAND, DOUBLE, FIXED
     }
 }

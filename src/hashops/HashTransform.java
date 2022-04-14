@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public interface HashTransform {
 
@@ -100,6 +101,7 @@ public interface HashTransform {
     static String hexToBin(String hex) {
         return String.format("%" + hex.length() * 4 + "s", new BigInteger(hex, 16).toString(2)).replace(" ", "0");
     }
+
 
     static String shiftRBits(String hexString) {
         String bin = hexToBin(hexString);
@@ -208,6 +210,59 @@ public interface HashTransform {
             mat[i] = rotateHex(bin, i).chars().map(n -> n - '0').toArray();
         }
         return mat;
+    }
+
+
+    static Boolean[] getParities(String hash, DrawParams params){
+        String binHash = hexToBin(hash);
+        int nBitsPerElement = 4;
+
+        int groupSize = params.getNFunc() * nBitsPerElement;
+        int nGroups = params.getMode().length() / groupSize;
+        int maxInd = nGroups * groupSize;
+        int remainder = params.getMode().length() - maxInd;
+        Boolean[] groupParities = new Boolean[groupSize + remainder / 2];
+        for (int i = 0; i < groupSize; i++) {
+            StringBuilder sb = new StringBuilder();
+            for (int j = i; j < maxInd; j += groupSize) {
+                sb.append(binHash.charAt(j));
+            }
+            groupParities[i] = sb.toString().chars().map(c -> c - '0').sum() % 2 == 0;
+        }
+        for (int i = 0; i < remainder / 2; i++) {
+            groupParities[groupSize + i] = ((binHash.charAt(maxInd + i) - '0') + (binHash.charAt(maxInd + remainder / 2 + i) - '0')) % 2 == 0;
+        }
+
+        return groupParities;
+    }
+
+    static int[] parityDist(String hash1, String hash2, DrawParams params){
+        Boolean[] par1 = getParities(hash1, params);
+        Boolean[] par2 = getParities(hash2, params);
+        IntStream diff = IntStream.of();
+        for (int i = 0; i < par1.length; i++) {
+            if (par1[i] != par2[i]) diff = IntStream.concat(diff, IntStream.of(i));
+        }
+        return diff.toArray();
+    }
+
+    static int getPaletteShift(String hash){
+        return new BigInteger(new StringBuilder(hexToBin(hash)).reverse().toString(), 2).mod(BigInteger.valueOf(23)).intValue();
+    }
+
+    static int getSymmetry(String hash){
+        //TODO -> Incorporate that mod 13
+        //TODO -> see combinatorial2.py
+        //TODO -> prove thingies
+        String temp = new StringBuilder(hexToBin(hash)).toString();
+        int count = 0;
+        for (int i = 0; i < temp.length(); i++) {
+            if (temp.charAt(i) == '1'){
+                count += i == 0 ? 5 : i;
+            }
+        }
+        System.out.println(count);
+        return count % 8;
     }
 
 

@@ -14,7 +14,7 @@ public enum DrawMode {
 
 
     public int length() {
-        return Integer.parseInt(toString().substring(toString().length() - 3));
+        return Integer.parseInt(toString().substring(toString().length() - (toString().contains("Landscape") ? 2 : 3)));
     }
 
 
