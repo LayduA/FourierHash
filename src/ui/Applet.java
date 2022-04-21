@@ -40,7 +40,7 @@ public class Applet extends JFrame {
     private final static int[] SHIFTS_X = {0, HASH_X_0, HASH_X_1};
     public final static int HASH_Y = (WINDOW_H - HASH_H - BANNER_H) / 2;
     public final static int[] SHIFTS_Y = {0, HASH_Y, HASH_Y * 3 / 2};
-    public final static String DEFAULT_HASH = "e7e6bda1152ee0ec0f2082cd041e2cdc02f4b390b01bde55ae0abbb7cc99bc2c";
+    public final static String DEFAULT_HASH = "e7e6bda1152e60ec0f2082cd841e2cdce7e6bda1152e60ec0f2082cd841e2cdc";
     public DrawParams params;
     private HashDrawer canvas;
     private JTextArea psiDisplay;
@@ -160,7 +160,7 @@ public class Applet extends JFrame {
         psiDisplay = new JTextArea("psi = ");
         JButton distButtonOnce = new JButton("Psi");
         distButtonOnce.addActionListener(l ->
-                psiDisplay.setText(Double.toString(psiDist(canvas, inputL.getText(), inputR.getText(), params, "image"))));
+                psiDisplay.setText(Double.toString(psiDist(canvas, inputL.getText(), inputR.getText(), params, "image")).substring(0,5)));
 
         JButton distButton = new JButton("Comp");
         distButton.addActionListener(l -> {
@@ -209,6 +209,10 @@ public class Applet extends JFrame {
         JCheckBox checkBoxClassicRGB = new JCheckBox("RGB");
         checkBoxClassicRGB.setSelected(params.isClassicRGB());
         checkBoxClassicRGB.addActionListener(l -> params.setClassicRGB(checkBoxClassicRGB.isSelected()));
+
+        JCheckBox checkBoxFiltered = new JCheckBox("Filt");
+        checkBoxFiltered.setSelected(params.isFiltered());
+        checkBoxFiltered.addActionListener(l -> params.setFiltered(checkBoxFiltered.isSelected()));
 
         JCheckBox checkBoxSymmetry = new JCheckBox("Sym");
         checkBoxSymmetry.setSelected(params.isSymmetric());
@@ -344,8 +348,9 @@ public class Applet extends JFrame {
         topRowL.add(checkBoxSymmetry, BorderLayout.SOUTH);
         botRowL.add(paramsButton);
         botRowL.add(checkBoxModPhase);
+        botRowL.add(checkBoxFiltered);
         botRowL.add(modeSelector);
-        JComboBox<Integer> comboBoxNFunc = new JComboBox<>(new Integer[]{3, 4});
+        JComboBox<Integer> comboBoxNFunc = new JComboBox<>(new Integer[]{1,2, 3, 4});
         comboBoxNFunc.addActionListener(l -> {
             Integer n = (Integer) comboBoxNFunc.getSelectedItem();
             if (n != null) {
@@ -358,7 +363,7 @@ public class Applet extends JFrame {
         southL.add(distButtonOnce, BorderLayout.CENTER);
         southL.add(psiDisplay, BorderLayout.CENTER);
         southL.add(distButton, BorderLayout.CENTER);
-        southL.add(plotButton, BorderLayout.CENTER);
+        //southL.add(plotButton, BorderLayout.CENTER);
         southL.add(saveButtonL, BorderLayout.CENTER);
         southL.add(setContourBox, BorderLayout.CENTER);
         southL.add(symmetryIndex, BorderLayout.CENTER);
@@ -395,8 +400,8 @@ public class Applet extends JFrame {
         saveButtonR.addActionListener(l -> save(inputR));
 
         hamDistDisplay.setBackground(southR.getBackground());
-        JTextField flipIndex = new JTextField("c", 3);
-        JTextField flipValue = new JTextField("4", 3);
+        JTextField flipIndex = new JTextField("67", 3);
+        JTextField flipValue = new JTextField("1", 3);
 
         JButton flipButton = new JButton("Flip");
         flipButton.addActionListener(e -> {
@@ -472,77 +477,70 @@ public class Applet extends JFrame {
             JFrame frame = new JFrame("Test");
             frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             JPanel panel = new JPanel();
-            panel.setPreferredSize(new Dimension(1200, 600));
+            panel.setPreferredSize(new Dimension(1200, 50));
             HashDrawer canvasDemo = new HashDrawer();
             canvasDemo.setPreferredSize(new Dimension(1200, 600));
+            JLabel[] jlabs = new JLabel[32];
+            for(int i = 0; i < jlabs.length; i++) {
+                jlabs[i] = new JLabel();
+                jlabs[i].setPreferredSize(new Dimension(120, 20));
+                jlabs[i].setSize(new Dimension(120, 20));
+                jlabs[i].setLocation(getShiftX(i+3)+15, getShiftY(i+3)+100);
+                jlabs[i].setOpaque(false);
+                frame.getContentPane().add(jlabs[i], BorderLayout.CENTER);
+            }
 
-            JButton runButton = new JButton("Run");
+            JButton runButton = new JButton("Worst cases");
+            runButton.setPreferredSize(new Dimension(300,20));
+            JButton symButton = new JButton("Symmetries");
+            symButton.setPreferredSize(new Dimension(300,20));
+
             runButton.addActionListener(e -> {
                 // canv.setLocation(200, 200);
                 if (params.getMode() == DrawMode.FourierCartesian128) {
                     String input = inputL.getText();
+                    String inputBin = hexToBin(input);
                     int count = 3;
-                    for (int[] bits : Combinatorial.indices3Mod23PPP) {
-                        int[] indices = Arrays.stream(bits).map(b -> 120 - 4 - b * 12).toArray();
-                        boolean toDraw = hexToBin(input).charAt(indices[0]) == hexToBin(input).charAt(indices[1]);
-                        toDraw = toDraw && hexToBin(input).charAt(indices[0]) == hexToBin(input).charAt(indices[2]);
-                        if (toDraw && count < 35) {
-                            canvasDemo.drawHash(frame.getGraphics(),
-                                    flipBits(input, indices),
-                                    count, params);
 
-                            count++;
-                        }
-                    }
-                    count++;
-                    for (int[] bits : Combinatorial.indices3Mod23PPM) {
-                        int[] indices = Arrays.stream(bits).map(b -> 120 - 4 - b * 12).toArray();
-                        boolean toDraw = hexToBin(input).charAt(indices[0]) == hexToBin(input).charAt(indices[1]);
-                        toDraw = toDraw && hexToBin(input).charAt(indices[0]) != hexToBin(input).charAt(indices[2]);
-                        if (toDraw && count < 35) {
-                            canvasDemo.drawHash(frame.getGraphics(),
-                                    flipBits(input, indices),
-                                    count, params);
+                    jlabs[count - 3].setText("original");
+                    canvasDemo.drawHash(frame.getGraphics(),
+                            input, count++, params);
+                    int[][][] allAttacks = {AttackIndices.sameParity4bits, AttackIndices.sameParity6bits, AttackIndices.sameParity8bits, AttackIndices.sameParity10bits};
+                    for(int[][] attacks : allAttacks) {
+                        for (int[] indices : attacks) {
+                            boolean toDraw = true;
+                            for (int index : indices) {
+                                toDraw &= ((index >= 0 && inputBin.charAt(index) == '0') || (index < 0 && inputBin.charAt(-index) == '1'));
+                            }
+                            if (toDraw && count < 35) {
 
-                            count++;
-                        }
-                    }
-                    count++;
-                    for (int[] bits : Combinatorial.indices4Mod23PPPP) {
-                        int[] indices = Arrays.stream(bits).map(b -> 120 - 4 - b * 12).toArray();
-                        boolean toDraw = hexToBin(input).charAt(indices[0]) == hexToBin(input).charAt(indices[1]);
-                        toDraw = toDraw && hexToBin(input).charAt(indices[2]) == hexToBin(input).charAt(indices[3]);
-                        toDraw = toDraw && hexToBin(input).charAt(indices[2]) == hexToBin(input).charAt(indices[0]);
-                        if (toDraw && count < 35) {
-                            canvasDemo.drawHash(frame.getGraphics(),
-                                    flipBits(input, indices),
-                                    count, params);
+                                int[] indicesAbs = Arrays.stream(indices).map(Math::abs).toArray();
+                                jlabs[count - 3].setText(Arrays.toString(indicesAbs));
 
-                            count++;
-                        }
-                    }
-                    count++;
-                    for (int[] bits : Combinatorial.indices4Mod23PPPM) {
-                        int[] indices = Arrays.stream(bits).map(b -> 120 - 4 - b * 12).toArray();
-                        boolean toDraw = hexToBin(input).charAt(indices[0]) == hexToBin(input).charAt(indices[1]);
-                        toDraw = toDraw && hexToBin(input).charAt(indices[1]) == hexToBin(input).charAt(indices[2]);
-                        toDraw = toDraw && hexToBin(input).charAt(indices[0]) != hexToBin(input).charAt(indices[3]);
-                        if (toDraw && count < 35) {
-                            canvasDemo.drawHash(frame.getGraphics(),
-                                    flipBits(input, indices),
-                                    count, params);
+                                String flipped = flipBits(input, indicesAbs);
 
-                            count++;
+                                canvasDemo.drawHash(frame.getGraphics(),
+                                        flipped, count++, params);
+                            }
                         }
-                    }
-                } else {
-                    for (int i = 3; i < 35; i++) {
-                        canvasDemo.drawHash(frame.getGraphics(),
-                                flipBit(inputL.getText(), (i - 3)),
-                                i, params);
+                        count++;
                     }
                 }
+            });
 
+            symButton.addActionListener(e -> {
+                DrawParams.SymMode symPush = params.getSymmetry();
+                if (params.getMode() == DrawMode.FourierCartesian128) {
+                    String input = inputL.getText();
+                    int count = 3;
+
+                    while(count - 3 < DrawParams.SymMode.FROM_HASH.ordinal()) {
+                        params.setSymmetry(DrawParams.SymMode.values()[count - 3]);
+                        canvasDemo.drawHash(frame.getGraphics(),
+                                input, count++, params);
+                    }
+                    params.setSymmetry(symPush);
+                }
             });
 
             // frame.add(panel);
@@ -550,8 +548,11 @@ public class Applet extends JFrame {
             // panel.add(runButton);
 
             // frame.getContentPane().add(BorderLayout.CENTER, panel);
+
             frame.getContentPane().add(BorderLayout.CENTER, canvasDemo);
-            frame.getContentPane().add(BorderLayout.SOUTH, runButton);
+            panel.add(BorderLayout.CENTER, runButton);
+            panel.add(BorderLayout.SOUTH, symButton);
+            frame.getContentPane().add(BorderLayout.SOUTH, panel);
             frame.pack();
             frame.setLocationByPlatform(true);
             frame.setVisible(true);
@@ -681,6 +682,7 @@ public class Applet extends JFrame {
                 int[] ref = canvas.drawFourierHash(res.createGraphics(), newRefHash, 0, params);
 
                 for (int i = 0; i < tasks.length; i++) {
+                    tasks[i] = new AvgDistRunnable(averages[hashItr], i * 120 / tasks.length, 120 / tasks.length, newRefHash, ref, canvas, params);
                     tasks[i] = new AvgDistRunnable(averages[hashItr], i * 120 / tasks.length, 120 / tasks.length, newRefHash, ref, canvas, params);
                     //tasks[i] = new CompressPairRunnable(results[i], Distance.values()[i], newRefHash, canvas, params.getMode(), hashItr);
                     threads[i] = new Thread(tasks[i], "Thread " + tasks[i].hashCode());

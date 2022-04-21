@@ -409,8 +409,9 @@ $$\verb!ADD(MULT(x,y), MULT(0.5, x)) == MULT(x, ADD(y, 0.5))!$$ because $xy + 0.
 \end{itemize}
 The second criterion is what inspired us in the design of our scheme.
 
-\section{Our new scheme}
-RandomHash seems to work well, but the function generation algorithm complexity grows exponentially with depth, which can incur high computing time. So we design a new scheme with the following idea: instead of generating a random function and hoping that its frequency spectrum is centered around low frequences, we generate a frequency spectrum centered around low frequences and apply a 2-dimensional inverse Fourier transform to create the image.
+\section{Fourier scheme}
+The complexity of the RandomHash function generation algorithm grows exponentially with depth, which can incur high computing time. So we design a new scheme with the following idea: instead of generating a random function and hoping that its frequency spectrum is centered around low frequences, we proceed "in reverse" and generate a frequency spectrum centered around low frequences then apply a 2-dimensional inverse Fourier transform to create the image.
+
 \subsection{2D Discrete Fourier Transform}
 The 2D Discrete Fourier Transform (2DDFT) is defined as follows:
 $$\mathcal{F}(u,v) = \frac{1}{MN}\sum\limits_{x=0}^{M-1}\sum\limits_{y=0}^{N-1}f(x,y) e^{-i2\pi(ux/M + vy/N)}$$
@@ -418,17 +419,103 @@ and the 2D Inverse Fourier Transform (2DIDFT):
 $$f(x,y) = \sum\limits_{u=0}^{M-1}\sum\limits_{v=0}^{N-1}\mathcal F(u,v) e^{i2\pi(ux/M + vy/N)}$$
 where $M$ and $N$ are the dimensions of the input image, and $f(x,y)$ denotes the value of the pixel at position $(x,y)$. Although $\mathcal{F}(u,v)$ is defined for any $u,v \in \mathbb Z$, since $\mathcal F(u + M, v) = \mathcal F(u, v + N) = \mathcal F(u,v)$, we restrict the input domain to $[0,M-1]$ for $u$ and $[0,N-1]$ for $v$ (similarly to how we would sometimes restrict the input domain to $[0, 2\pi)$ for trigonometric functions).
 
-What we would like to achieve is to map a hash to an array of coefficients in the frequency domain, and then apply the inverse 2D Transform on this frequency spectrum to generate a fingerprint.
+\subsection{Spectrum generation}
+What we would like to achieve is to map a hash to an array of coefficients in the frequency domain, and then apply the inverse 2D Transform on this frequency spectrum to get a fingerprint [UNCLEAR]. In this section we give an insight as to how we would generate this spectrum.
 
-We see that $\mathcal{F}(u,v)$ is a complex number, meaning each element in the output space of $\mathcal F$ requires 2 coefficients to store (modulus and phase). However, there is a symmetry in the output space: indeed, we have 
+First, we have that $\mathcal{F}(u,v)$ is a complex number, meaning each element in the output space of $\mathcal F$ can be thought of as a pair of real numbers (either complex and imaginary parts in a Cartesian system or a modulus and phase in a polar system). 
+
+There is a symmetry in the output space: indeed, we have 
 \begin{align*}
     \mathcal{F}(-u,-v) &= \frac{1}{MN}\sum\limits_{x=0}^{M-1}\sum\limits_{y=0}^{N-1}f(x,y) e^{-i2\pi(-ux/M - vy/N)}\\
     &=  \frac{1}{MN}\sum\limits_{x=0}^{M-1}\sum\limits_{y=0}^{N-1}f(x,y) e^{i2\pi(ux/M + vy/N)}\\
     &= \mathcal{F}(u,v)^*
 \end{align*}
-where $(\cdot)^*$ denotes the complex conjugate. That means we actually have to sample $MN/2$ complex numbers.
+where $(\cdot)^*$ denotes the complex conjugate. That means we actually have to sample $MN/2$ complex numbers in order to generate a $M \times N$ spectrum.
 
-Figure X shows a graphical representation of how we generate our spectrum. The darker squares represent a number with a greater module. We now detail the possibilities for the computation of the $\omega_i$.
+The way we map bits the frequences is as follows:
+$$w_i = d_i(0.5 + 0.5b_{2i})\exp(b_{2i+1} \cdot \pi \cdot i)$$
+
+Figure X shows a graphical representation of how we generate our spectrum. The darker squares represent a number with a greater module.
+
+[SOMETHING ABOUT DISTANCE HERE PROBABLY]
+
+Once the spectrum is generated, the 2DIDFT is applied. The resulting array is then scaled by the inverse of its mean in order to have a mean of 1 [bc very few have values $> 1$], and then multiplied by 255 to get an array of gray pixels. We apply the modulo 255 operator to values greater than 255 to generate the final pixel array. \Cref{fig:unfiltered} shows the resulting fingerprints of [$h$ and $h^\prime$], that differ only at bit 67. This pair yields a Haar-PSI value of 0.883, which is much more than the threshold value [OF X]
+
+\begin{center}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=3cm]{figures/OneFunc_Unfiltered.png}
+    \includegraphics[width=3cm]{figures/OneFuncP67_Unfiltered.png}
+    \caption{Two fingerprints that differ only in one bit}
+    \label{fig:unfiltered}
+\end{figure}
+\end{center}
+
+\subsubsection{Filtering}
+
+During testing, we noticed that the high-contrast zones due to overflows tend to stand out to the eye and thus help with the distinction of fingerprints [REF WOULD BE NICE]. Therefore, we decided to apply a simple filter to enforce very high contrast zones: namely, from an array $a$ of real values issued from the 2DIDFT, we apply
+$$f(a, x,y) = \begin{cases}255 & \text{if }  a(x,y) \geq 0.5\\ 
+			0 & \text{otherwise} \end{cases}$$
+
+\begin{center}
+\Cref{fig:oneFunc}- shows the two same $h$ and $h^\prime$. The PSI is 0.496
+
+\begin{figure}
+    \centering
+    \includegraphics[width=3cm]{figures/OneFunc.png}
+    \includegraphics[width=3cm]{figures/OneFuncP67.png}
+    \caption{The two fingerprints, filtered}
+    \label{fig:oneFunc}
+\end{figure}
+\end{center}
+
+\subsubsection{Number of functions}
+\label{rgbSect}
+
+Because we have to sample a lots of frequencies in order to get every bit of information, the ones on the far side of the spectrum have little to no influence on the resulting fingerprints. Furthermore, having frequencies that are so far from the origin creates some noisy images that result in a lot of small shapes, which is harder to differentiate. To address those problems, we repeat the sampling [3] times. That way we have 3 spectra, each corresponding to one color channel. The color of a pixel at position is $C(x,y) := (f(a_{red}, x, y), f(a_{green}, x, y), f(a_{blue}, x, y))$. The PSI is 0.47
+
+\begin{center}
+\begin{figure}
+    \centering
+    \includegraphics[width=3cm]{figures/ThreeFuncs.png}
+    \includegraphics[width=3cm]{figures/ThreeFuncsP67.png}
+    \caption{The two fingerprints, with 3 functions}
+    \label{fig:threeFuncs}
+\end{figure}
+\end{center}
+
+\subsubsection{Colors}
+
+Having all fingerprints being made of the same colors is certainly not a good idea. For that reason, we introduce parity bits to create fingerprints with different colors. Since we will use colors that are not purely made of one channel, we must slightly change the way we assign a color to a pixel: we must choose $2^3$ colors to account for every possibility of the filtered values of $a_0, a_1$ and $a_2$. Suppose we have an array named $Colors$ of length 8, containing rgb encodings.
+
+\begin{tabular}{c|c}
+	Filtered values of $a_0(x,y)$, $a_1(x,y)$, $a_2(x,y)$ & $C(x,y)$\\
+	\hline 0,   0,   0 & $Colors[0]$\\
+	 0,   0, 255 & $Colors[1]$\\
+	 0, 255,   0 & $Colors[2]$\\
+	 0, 255, 255 & $Colors[3]$\\
+	 255,   0,   0 & $Colors[4]$\\
+	 255,   0, 255 & $Colors[5]$\\
+	 255, 255,   0 & $Colors[6]$\\
+	255, 255, 255 & $Colors[7]$\\
+\end{tabular}
+
+Note that the system described in \cref{rgbSect} corresponds to picking the color to be the filtered values directly. To choose the set of 8 colors that will make the output set of $C(x,y)$, we use parity bits:
+
+Let the parity bits $p_0$ to $p_{15}$ be defined as 
+\begin{equation*}
+	p_i = \begin{cases} 
+	    b_{i} \oplus b_{12+i} \oplus b_{24+i} \oplus \dots \oplus b_{108+i} = \bigoplus_{k=0}^9 b_{12k+i} & 0 \leq i < 12\\
+	    b_{108 + i} \oplus b_{112 + i} & 12 \leq i < 16
+	    \end{cases}
+\end{equation*}
+
+We compute the colors indices:
+ $$c_j = p_{2j} || p_{2j+1} \text{ for } j \in \{0,\dotsc,7\}$$ where $||$ denotes concatenation, therefore $c_j \in \{0,1,2,3\}$.
+ Let $Palette$ be a fixed 32 colors palette. We fill $Colors$ as :
+$$Colors[j] = Palette[4j + c_j] \text{ for } j \in \{0, \dotsc, 7\}$$
+
+
 
 \subsection{Randomness}
 While having a scheme relying entirely on a PRG is not desirable [WHY?], we may use randomness when generating the $\omega_i$ in order to achieve intermediate pre-image resistance. In particular, we tried randomizing any combination of the $\omega_i$ moduli and phases. \Cref{tab:detvsrand} shows the computation of the $\omega_i$, where $d_i$ is the evaluation of a distance function at the coordinates of the pixel corresponding to $b_i$. The exact formula for $d_i$ is described [LATER].
@@ -439,7 +526,7 @@ While having a scheme relying entirely on a PRG is not desirable [WHY?], we may 
     \hline
         & Deterministic Phase & Random Phase \\
         \hline
-        Deterministic module    & $d_i \omega_i = (0.5 + 0.5b_i) /// 1 ///\exp{(b_i \cdot \pi i)}$ & $\omega_i = d_i \cdot b_i\exp{(rand() \cdot 2 \pi i )}$\\
+        Deterministic module    & $\omega_i = d_i \cdot (0.5 + 0.5b_i) /// 1 \cdot \exp{(b_i \cdot \pi i)}$ & $\omega_i = d_i \cdot b_i\exp{(rand() \cdot 2 \pi i )}$\\
         \hline
         Random module & $\omega_i = d_i \cdot rand() \cdot \exp{(b_i \cdot \pi i)}$ & $\omega_i = d_i \cdot rand()\cdot \exp{(rand() \cdot 2\pi i)}$\\
         \hline

@@ -2,15 +2,14 @@ from itertools import permutations
 import numpy as np
 import matplotlib.pyplot as plt
 def nChooseK(n, k):
-    count = 0
     arr = [sorted(list(p)) for p in permutations(range(n),k)]
     return np.unique(arr, axis = 0)
 
 def nChooseKModMTimesRPlusP(n, k, m, r=1, p=0):
-    return np.array([(i, (i * r + p) % m) for i in nChooseK(n, k)])
+    return np.array([(i * r + p) % m for i in nChooseK(n, k)])
 
 def intToPlusMinus(n, size):
-    return np.array([-2 * bool((n & (1 << i))) for i in range(size)])
+    return np.array([-2 * bool((n & (1 << i))) + 1 for i in range(size)])
 
 def intToBool(n, size):
     return np.array([bool((n & (1 << i))) for i in range(size)])
@@ -62,7 +61,7 @@ for i in range(combinations.shape[0]):
 combinations = combinations[(np.sum(combinations, axis = 1) % 2) == 0]
 
 def powerShifted(i):
-    return ((2 ** ((np.arange(nVar) * 12 + i) % 11)) % 23)
+    return ((2 ** ((np.arange(nVar) * 12 + i) % 22)) % 23)
 
 powershifted = np.zeros((12, nVar))
 for i in range(12):
@@ -70,15 +69,36 @@ for i in range(12):
 
 def getSum(x, i):
     return (combinations[x] * powershifted[i]).sum() % 23
+
 count = 0
-corr = np.zeros(nVar)
-corr[0] = 120
 for s in range(12):
     for c in range(combinations.shape[0]):
         if getSum(c, s) == 0 and combinations[c].sum() != 0:
             t = (12 * (np.where(combinations[c] == 1)[0]))
-            tRepl = np.where(t == 0, 3, t)
+            tRepl = t + 7
             if tRepl.sum() % 13 == 0:
-                print(combinations[c], powershifted[s], tRepl)
+                #print(combinations[c], powershifted[s], tRepl)
                 count += 1
+if count == 0:
+    print('oui')
+zeroVal = 3
+
+
+count = 0
+for s in range(12):
+
+    for n in range(4,5,2):
+
+        plusMinusBits = np.array([])
+        for i in range(1 << n):
+            plusMinusBits = np.append(plusMinusBits, intToPlusMinus(i, n))
+        plusMinusBits = plusMinusBits.reshape((2**n, n))
+
+        for comb in nChooseK(10, n):
+            #print(comb, 2**(12*comb % 22) % 23)
+            indices = (12 * comb) + s
+            for signs in plusMinusBits:
+                if (np.sum(2**(indices % 22) % 23 * signs).sum() % 23) == 0 and signs[0] > 0 and ((indices) * signs).sum() % 13 == 0:
+                    print(indices * signs) #print(comb, 2**(indices % 22) % 23, signs, ((indices) * signs))
+                    count += 1
 print(count)

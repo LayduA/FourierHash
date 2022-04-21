@@ -14,7 +14,10 @@ import java.awt.geom.Arc2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.WritableRaster;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -116,7 +119,7 @@ public class HashDrawer extends JPanel {
         GenFunc fr = GenFunc.randomFunc(hash, depth);
         GenFunc fg = GenFunc.randomFunc(hash.substring(1) + hash.charAt(0), depth);
         GenFunc fb = GenFunc.randomFunc(hash.substring(2) + hash.substring(0, 2), depth);
-        // System.out.println(fb);
+
         int[] flatArrayR = new int[bi.getWidth() * bi.getHeight()];
         int[] flatArrayG = new int[bi.getWidth() * bi.getHeight()];
         int[] flatArrayB = new int[bi.getWidth() * bi.getHeight()];
@@ -140,7 +143,6 @@ public class HashDrawer extends JPanel {
 
         // Spectral analysis
         double[] amplitudeR = new FFT(flatArrayR, bi.getWidth(), bi.getHeight()).output.getMagnitude();
-        // System.out.println(Arrays.stream(amplitudeR).summaryStatistics());
         double[][] amplitude2dR = new double[bi.getWidth()][bi.getHeight()];
         double[] amplitudeG = new FFT(flatArrayG, bi.getWidth(), bi.getHeight()).output.getMagnitude();
         double[][] amplitude2dG = new double[bi.getWidth()][bi.getHeight()];
@@ -162,14 +164,12 @@ public class HashDrawer extends JPanel {
             amplitude2dB[i / bi.getHeight()][i % bi.getHeight()] = GenFunc.cap(amplitudeB[i], 0, 1.0);
         }
 
-        // System.out.println(Arrays.stream(amplitudeB).summaryStatistics());
 
         outputR = shiftOrigin(amplitude2dR);
         outputG = shiftOrigin(amplitude2dG);
         outputB = shiftOrigin(amplitude2dB);
 
         int rVal, gVal, bVal;
-        // System.out.println(Arrays.stream(phaseB).summaryStatistics());
         for (int i = 0; i < outputR.length; i++) {
             for (int j = 0; j < outputR[0].length; j++) {
                 rVal = (int) Math.floor(outputR[i][j] * 255);
@@ -250,9 +250,51 @@ public class HashDrawer extends JPanel {
             dataSpectrums[i] = new TwoDArray(spectrumWidth, spectrumHeight);
         }
 
-        int[] colors = nFunc == 3 ? new int[]{0, 0xc5e4, 0xff00, 0xffff, 0xff0000, 0xffc5e4, 0xffff00, 0xffffff} :
-                new int[]{0, 0x80, 0xff, 0x8000, 0xff00, 0x8080, 0xffff, 0x800000, 0xff0000, 0x800080, 0xff00ff, 0x808000, 0xffff00, 0x808080, 0xffffff, 0x123456};
+        int[] colors;
+        switch (nFunc) {
+            case 1:
+                colors = new int[]{0, 0xffffff};
+                break;
+            case 2:
+                colors = new int[]{0, 0xff, 0xff00, 0xffff};
+                break;
+            case 3:
+                colors = new int[]{0, 0xc5e4, 0xff00, 0xffff, 0xff0000, 0xffc5e4, 0xffff00, 0xffffff};
+                break;
+            case 4:
+                colors = new int[]{0, 0x80, 0xff, 0x8000, 0xff00, 0x8080, 0xffff, 0x800000, 0xff0000, 0x800080, 0xff00ff, 0x808000, 0xffff00, 0x808080, 0xffffff, 0x123456};
+                break;
+            default:
+                colors = null;
+        }
+        if (!params.isClassicRGB()) {
+            //BEGIN COLOR MAPPING
+            Boolean[] groupParities = HashTransform.getParities(hash, params);
 
+            colors = new int[1 << nFunc];
+            int[] palette = params.paletteRGB(32, null);
+            int shiftPalette = HashTransform.getPaletteShift(hash);
+
+            //palette = rotate(palette, shiftPalette, 0);
+            int globalParity = binHash.chars().map(b -> b - '0').sum() % 2;
+            if (globalParity == 1 && false) {
+                List<Object> li = Arrays.asList(Arrays.stream(palette).boxed().toArray());
+                Collections.reverse(li);
+                palette = li.stream().mapToInt(I -> (Integer) I).toArray();
+            }
+            int indexColor;
+            for (int i = 0; i < colors.length; i++) {
+                if (colors.length == 8) {
+                    indexColor = 4 * i + (groupParities[2 * i] ? 2 : 0) + (groupParities[2 * i + 1] ? 1 : 0);
+                    colors[i] = palette[indexColor];
+                } else if (colors.length == 16) {
+                    colors[i] = palette[2 * i + (groupParities[i] ? 1 : 0)];
+                }
+            }
+            //colors = rotate(colors, (Stream.of(groupParities)).mapToInt(b -> b ? 1 : 0).sum(), 1); //(int) Math.floor(8 * jouj.nextDouble()));
+            //colors = rotate(colors, shiftPalette, 0);
+            //END COLOR MAPPING
+        }
         if (params.getMode().name().contains("Cartesian")) {
             setValues(0, 0, dataSpectrums, params.dist(0, 0), 0, spectrumWidth);
 
@@ -272,8 +314,16 @@ public class HashDrawer extends JPanel {
 
                 //Going from bits to complex numbers (real in [-1,1], im in [-1,1]) according to encoding
                 for (int k = 0; k < complexes.length; k++) {
-                    complexes[k] = mapToComplex(Integer.parseInt(binTemp.substring(ind + nBitsPerElement * k, ind + nBitsPerElement * (k + 1)), 2));
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < nBitsPerElement; i++) {
+                        sb.append(binTemp.charAt(ind + ((ind / groupSize * 2 + nBitsPerElement * k + i) % groupSize)));
+                    }
+                    complexes[k] = mapToComplex(Integer.parseInt(sb.toString(), 2));
                 }
+
+//                for (int k = 0; k < complexes.length; k++) {
+//                    complexes[k] = mapToComplex(Integer.parseInt(binTemp.substring(ind + nBitsPerElement * k, ind + nBitsPerElement * (k + 1)), 2));
+//                }
 
                 //Translating cartesian coords into polar coords
                 moduli = Arrays.stream(complexes).mapToDouble(c -> params.dist(x, y) * Math.sqrt(c[0] * c[0] + c[1] * c[1])).toArray();
@@ -301,37 +351,6 @@ public class HashDrawer extends JPanel {
                 //END FREQUENCES SAMPLING
             }
 
-            if (!params.isClassicRGB()) {
-                //BEGIN COLOR MAPPING
-                Boolean[] groupParities = HashTransform.getParities(hash, params);
-
-                colors = new int[1 << nFunc];
-                int[] palette = params.paletteRGB(32, null);
-                int shiftPalette = HashTransform.getPaletteShift(hash);
-
-                palette = rotate(palette, shiftPalette, 0);
-                int globalParity = binHash.chars().map(b -> b - '0').sum() % 2;
-                if (globalParity == 1) {
-                    List<Object> li = Arrays.asList(Arrays.stream(palette).boxed().toArray());
-                    Collections.reverse(li);
-                    palette = li.stream().mapToInt(I -> (Integer) I).toArray();
-                }
-                int indexColor;
-                for (int i = 0; i < colors.length; i++) {
-                    if (colors.length == 8) {
-                        indexColor = 4 * i + (groupParities[i / 2] ? 2 : 0) + (groupParities[i / 2 + groupParities.length / 2] ? 1 : 0);
-                        colors[i] = palette[indexColor];
-                    } else if (colors.length == 16) {
-                        colors[i] = palette[2 * i + (groupParities[i] ? 1 : 0)];
-                    }
-                }
-                //colors = rotate(colors, (Stream.of(groupParities)).mapToInt(b -> b ? 1 : 0).sum(), 1); //(int) Math.floor(8 * jouj.nextDouble()));
-                colors = rotate(colors, shiftPalette, 0);
-                //END COLOR MAPPING
-
-            }
-
-            //System.out.println("Remainder = " + remainder + " bits");
         } else {
             for (int i = 0; i < HASH_W; i++) {
                 for (int j = 0; j < HASH_H / 2; j++) {
@@ -349,9 +368,9 @@ public class HashDrawer extends JPanel {
                             } else if (params.getModDet() == FIXED) {
                                 moduli[k] = frequencyCoeff;
                             } else if (params.getModDet() == DET) {
-                                nBitsPerElement += 1;
-                                moduli[k] = frequencyCoeff * 0.5 * (binHash.charAt((ind + k) % binHash.length()) - '0' + 1);
-                            } else {
+                                moduli[k] = frequencyCoeff * 0.5 * (binHash.charAt(ind) - '0' + 1);
+                                if((frequencyCoeff > 0 && !(0 < i && i < spectrumWidth / 2 && j == 0))) ind = (ind + 1) % binHash.length();
+                            } else if (params.getModDet() == DOUBLE){
                                 System.out.println("Erhm modulus should not really be double");
                             }
                             if (params.getPhaseDet() == RAND) {
@@ -359,20 +378,17 @@ public class HashDrawer extends JPanel {
                             } else if (params.getPhaseDet() == DOUBLE) {
                                 nBitsPerElement += 2;
                                 phis[k] = Math.PI / 2.0 * Integer.parseInt(binHash.charAt((ind + 2 * k) % binHash.length()) + Character.toString(binHash.charAt((ind + 2 * k + 1) % binHash.length())), 2);
-                            } else {
-                                nBitsPerElement += 1;
-                                phis[k] = Math.PI * binHash.charAt((ind + k) % binHash.length()) - '0';
+                            } else{
+                                phis[k] = Math.PI * binHash.charAt(ind) - '0';
+                                if((frequencyCoeff > 0 && !(0 < i && i < spectrumWidth / 2 && j == 0))) ind = (ind + 1) % binHash.length();
                             }
                         }
-                        if (frequencyCoeff > 0 && !(0 < i && i < spectrumWidth / 2 && j == 0)) ind += nBitsPerElement;
                         setValues(i, j, dataSpectrums, moduli, phis, spectrumWidth);
 
                     }
                 }
             }
         }
-
-        //System.out.println("ind = " + ind);
 
         Object[] inverseFFTsO = Arrays.stream(dataSpectrums).map(spec -> new InverseFFT().transform(spec)).toArray();
         TwoDArray[] inverseFFTs = new TwoDArray[inverseFFTsO.length];
@@ -406,7 +422,7 @@ public class HashDrawer extends JPanel {
 
                 pixelLoc = j * spectrumWidth + i;
                 pixelLocMod = getPixelLocSpectrum(i, j, spectrumWidth, params);
-                spectrum.setRGB(i, j, (Math.min(255, (int) (mags[0][pixelLocMod] * 255)) << 16) | (Math.min(255, (int) (mags[1][pixelLocMod] * 255)) << 8) | Math.min(255, (int) (mags[2][pixelLocMod] * 255)));
+                spectrum.setRGB(i, j, (Math.min(255, (int) (mags[0][pixelLocMod] * 255)) << 16) | (Math.min(255, (int) (mags[Math.min(1, nFunc - 1)][pixelLocMod] * 255)) << 8) | Math.min(255, (int) (mags[Math.min(2, nFunc - 1)][pixelLocMod] * 255)));
                 //res.setRGB(i, i > spectrumWidth / 2 ? j == 0 ? j : spectrum.getHeight() - j : j, (int) (255 * corrCoeff * imageValuesR[j * spectrumWidth + i] % 255) << 16 | (int) (255 * corrCoeff * imageValuesG[j * spectrumWidth + i] % 255) << 8 | (int) (255 * corrCoeff * imageValuesB[j * spectrumWidth + i] % 255));
 
                 for (int k = 0; k < mags.length; k++) {
@@ -419,7 +435,7 @@ public class HashDrawer extends JPanel {
             }
         }
 
-        if (params.isContoured()) contour(res, 0x010101);
+        if (params.isContoured()) contour(res);
 
         if (params.isSymmetric()) {
             symmetrify(res, params.getSymmetry() == DrawParams.SymMode.FROM_HASH ? DrawParams.SymMode.values()[HashTransform.getSymmetry(hash)] : params.getSymmetry());
@@ -428,7 +444,7 @@ public class HashDrawer extends JPanel {
         for (int i = 0; i < spectrumWidth; i++) {
             for (int j = 0; j < spectrum.getHeight(); j++) {
 
-                fingerprintInt[i + j * spectrumWidth] = res.getRGB(i, j) & (1 << 24) - 1;
+                fingerprintInt[i + j * spectrumWidth] = res.getRGB(i, j);
             }
         }
 
@@ -442,7 +458,7 @@ public class HashDrawer extends JPanel {
         BufferedImage centerPhase = new BufferedImage(spectrumWidth, spectrumHeight, BufferedImage.TYPE_INT_RGB);
         for (int i = 0; i < spectrumWidth; i++) {
             for (int j = 0; j < spectrumWidth; j++) {
-                centerSpectrum.setRGB(i, j, (Math.min(255, (int) (bigMags[0][i + j * spectrumWidth] * 255)) << 16) | (Math.min(255, (int) (bigMags[1][i + j * spectrumWidth] * 255)) << 8) | Math.min(255, (int) (bigMags[2][i + j * spectrumWidth] * 255)));
+                centerSpectrum.setRGB(i, j, (Math.min(255, (int) (bigMags[0][i + j * spectrumWidth] * 255)) << 16) | (Math.min(255, (int) (bigMags[Math.min(1, nFunc-1)][i + j * spectrumWidth] * 255)) << 8) | Math.min(255, (int) (bigMags[Math.min(2, nFunc-1)][i + j * spectrumWidth] * 255)));
                 if (bigPhase[i + j * spectrumWidth] == 0) {
                     centerPhase.setRGB(i, j, 0);
                 } else if (bigPhase[i + j * spectrumWidth] > 0) {
@@ -464,9 +480,10 @@ public class HashDrawer extends JPanel {
 
     }
 
-    private void symmetrify(BufferedImage res, DrawParams.SymMode symMode){
+    private void symmetrify(BufferedImage res, DrawParams.SymMode symMode) {
         int spectrumWidth = res.getWidth();
         int spectrumHeight = res.getHeight();
+        //Giga yikes
         for (int i = 1; i < res.getWidth() - 1; i++) {
             for (int j = 1; j < res.getHeight() - 1; j++) {
                 if (symMode == DrawParams.SymMode.HORIZONTAL_LEFT && i > spectrumWidth / 2) {
@@ -493,8 +510,40 @@ public class HashDrawer extends JPanel {
                 if (symMode == DrawParams.SymMode.ANTIDIAGONAL_RIGHT && i < j) {
                     res.setRGB(i, j, res.getRGB(j, i));
                 }
+                if (symMode == DrawParams.SymMode.CROSS_TOPLEFT && (i <= spectrumWidth / 2 && j <= spectrumHeight / 2)) {
+                    int col = res.getRGB(i, j);
+                    res.setRGB(spectrumWidth - i, j, col);
+                    res.setRGB(i, spectrumHeight - j, col);
+                    res.setRGB(spectrumWidth - i, spectrumHeight - j, col);
+                }
+                if (symMode == DrawParams.SymMode.CROSS_TOPRIGHT && (i >= spectrumWidth / 2 && j <= spectrumHeight / 2)) {
+                    int col = res.getRGB(i, j);
+                    res.setRGB(spectrumWidth - i, j, col);
+                    res.setRGB(i, spectrumHeight - j, col);
+                    res.setRGB(spectrumWidth - i, spectrumHeight - j, col);
+                }
+                if (symMode == DrawParams.SymMode.CROSS_BOTLEFT && (i <= spectrumWidth / 2 && j >= spectrumHeight / 2)) {
+                    int col = res.getRGB(i, j);
+                    res.setRGB(spectrumWidth - i, j, col);
+                    res.setRGB(i, spectrumHeight - j, col);
+                    res.setRGB(spectrumWidth - i, spectrumHeight - j, col);
+                }
+                if (symMode == DrawParams.SymMode.CROSS_BOTRIGHT && (i >= spectrumWidth / 2 && j >= spectrumHeight / 2)) {
+                    int col = res.getRGB(i, j);
+                    res.setRGB(spectrumWidth - i, j, col);
+                    res.setRGB(i, spectrumHeight - j, col);
+                    res.setRGB(spectrumWidth - i, spectrumHeight - j, col);
+                }
+                if ((symMode == DrawParams.SymMode.CROSSX_LEFT && (i + j <= spectrumWidth && i <= j))
+                        || (symMode == DrawParams.SymMode.CROSSX_BOT && (i + j >= spectrumWidth && i <= j))
+                        || (symMode == DrawParams.SymMode.CROSSX_RIGHT && (i + j >= spectrumWidth && i >= j))
+                        || (symMode == DrawParams.SymMode.CROSSX_TOP && (i + j <= spectrumWidth && i >= j))) {
+                    int col = res.getRGB(i, j);
+                    res.setRGB(j, i, col);
+                    res.setRGB(spectrumHeight - j, spectrumWidth - i, col);
+                    res.setRGB(spectrumHeight - i, spectrumWidth - j, col);
+                }
             }
-
         }
     }
 
@@ -521,20 +570,35 @@ public class HashDrawer extends JPanel {
         }
         if (params.isFiltered()) {
             return colors[color];
-        } else
-            return (int) (255 * corr * funcs[0][index]) % 255 << 16 | (int) (220 * corr * funcs[1][index]) % 255 << 8 | (int) (255 * corr * funcs[2][index]) % 255;
+        } else {
+            int n = params.getNFunc();
+            return (int) (255 * corr * funcs[0][index]) % 255 << 16 | (int) (255 * corr * funcs[Math.min(1, n - 1)][index]) % 255 << 8 | (int) (255 * corr * funcs[Math.min(2, n - 1)][index]) % 255;
+        }
     }
 
-    private void contour(BufferedImage img, int edgeColor) {
+    private int[] getNeighbours(BufferedImage img, int x, int y) {
+        ArrayList<Integer> neighb = new ArrayList<>();
+        neighb.add(img.getRGB(x, y));
+        neighb.add(img.getRGB(x - 1, y));
+        neighb.add(img.getRGB(x - 1, y - 1));
+        neighb.add(img.getRGB(x, y - 1));
+        return neighb.stream().mapToInt(i -> i).toArray();
+    }
+
+    private void contour(BufferedImage img) {
         int[] colors;
+        ColorModel cm = img.getColorModel();
+        boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
+        WritableRaster raster = img.copyData(null);
+        BufferedImage temp = new BufferedImage(cm, raster, isAlphaPremultiplied, null);
         for (int x = 1; x < img.getWidth() - 1; x++) {
             for (int y = 1; y < img.getHeight() - 1; y++) {
-                colors = new int[]{img.getRGB(x - 1, y - 1), img.getRGB(x, y - 1), img.getRGB(x + 1, y - 1),
-                        img.getRGB(x - 1, y), img.getRGB(x + 1, y),
-                        img.getRGB(x - 1, y + 1), img.getRGB(x, y + 1), img.getRGB(x + 1, y + 1)};
+                colors = getNeighbours(temp, x, y);
 
-                if (Arrays.stream(colors).filter(b -> (b & 0xffffff) != edgeColor).distinct().toArray().length > 1) {
-                    img.setRGB(x, y, edgeColor);
+                if (Arrays.stream(colors).distinct().toArray().length > 1) {
+                    //float hue = (float) Arrays.stream(colors).map(i -> (int) (Color.RGBtoHSB((i >> 16) & 255, (i >> 8) & 255, i & 255, null)[0] * 360)).average().getAsDouble();
+                    //img.setRGB(x, y, Color.HSBtoRGB(hue / 360f, 255, 120));
+                    img.setRGB(x, y, 0);
                 }
             }
         }
@@ -620,7 +684,6 @@ public class HashDrawer extends JPanel {
         curr_ind -= 8;
 
         for (int i = 3; i >= 0; i--) {
-            // System.out.println((((colors >> (2 * i)) & 0b11) + 4));
             drawMountain(g2d, i, (sizes >> i) & 1, (shapes >> i) & 1, palette[((colors >> (2 * i)) & 0b11) + 4], shift);
         }
 

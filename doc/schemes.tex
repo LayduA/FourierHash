@@ -108,9 +108,57 @@ $$h = \underbrace{\textcolor{red}{\underline{1}100}}_{f_1} \dashline \underbrace
 	    \end{cases}
 \end{equation*}
 
-\vspace{8pt}
+
+\vspace {8pt}
+
 \def\palette{
     0/red/11111,1/blue/11110,2/green/11101,3/gray/11100,4/white/\vdots,5/orange/00011,6/yellow/00010,7/brown/00001,8/violet/00000}
+
+%First palette drawing
+\def\firstthird{\scl*4*2.5}
+\begin{tikzpicture}
+ \node[rectangle, draw=black, minimum width = \scl*6 cm, minimum height = \scl*2.5 cm] (r) at (0, \scl * 10.5cm){$p_0 := \bigoplus\limits_{k=0}^9 b_{12k}$};
+ \node[rectangle, draw=black, minimum width = \scl*6 cm, minimum height = \scl*2.5 cm] (r) at (0, \scl * 8cm){$p_1 := \bigoplus\limits_{k=0}^9 b_{12k + 1}$};
+ \node[rectangle, draw=black, minimum width = \scl*6 cm, minimum height = \scl*2 cm] (r) at (0, \scl * 5.75cm){$\vdots$};
+ \node[rectangle, draw=black, minimum width = \scl*6 cm, minimum height = \scl*2.5 cm] (r) at (0, \scl * 3.5cm){$p_{14} := b_{122} \oplus b_{126} $};
+ \node[rectangle, draw=black, minimum width = \scl*6 cm, minimum height = \scl*2.5 cm] (r) at (0, \scl * 1cm){$p_{15} := b_{123}\oplus b_{127}$};
+
+\draw[thick]  (\scl*3cm, 10.5*\scl) --  (\scl*5, 10.5*\scl);
+\draw[thick]  (\scl*3cm, 8*\scl) --  (\scl*5, 8*\scl);
+\draw[thick]  (\scl*5cm, 10.5*\scl) --  (\scl*5, 9.5*\scl);
+\draw[thick]  (\scl*5cm, 8*\scl) --  (\scl*5, 9*\scl);
+\draw[thick,->]  (\scl*5cm, 9.5*\scl) --  (\firstthird-2.25*\scl, 9.5*\scl);
+\draw[thick,->]  (\scl*5cm, 9*\scl) --  (\firstthird-2.25*\scl, 9*\scl);
+
+\draw[thick]  (\scl*3cm, 3.5*\scl) --  (\scl*5, 3.5*\scl);
+\draw[thick]  (\scl*3cm, 1*\scl) --  (\scl*5, 1*\scl);
+\draw[thick]  (\scl*5cm, 3.5*\scl) --  (\scl*5, 2.5*\scl);
+\draw[thick]  (\scl*5cm, 1*\scl) --  (\scl*5, 2*\scl);
+\draw[thick,->]  (\scl*5cm, 2.5*\scl) --  (\firstthird-2.25*\scl, 2.5*\scl);
+\draw[thick,->]  (\scl*5cm, 2*\scl) --  (\firstthird-2.25*\scl, 2*\scl);
+
+ \node[rectangle, draw=black, minimum width = \scl*4.5 cm, minimum height = \scl*2.5 cm] (r) at (\firstthird, \scl * 9.5cm){$c_0 := p_0||p_1$};
+ \node[rectangle, draw=black, minimum width = \scl*4.5 cm, minimum height = \scl*2.5 cm] (r) at (\firstthird, \scl * 2cm){$c_7 := p_{14}||p_{15}$};
+ \node[rectangle, draw=black, minimum width = \scl*4.5 cm, minimum height = \scl*5 cm] (r) at (\firstthird, \scl * 5.75cm){$\vdots$};
+
+
+\draw[thick] (\firstthird + 2.25*\scl, \scl * 9.5cm) -- (\firstthird + 4.25*\scl, \scl * 9.5cm);
+\draw[thick] (\firstthird + 4.25*\scl, \scl * 9.5cm) -- (\firstthird + 4.25*\scl, \scl * 12cm);
+\draw[thick,->] (\firstthird + 4.25*\scl, \scl * 12cm) -- (7*2.5*\scl, \scl * 12cm);
+
+\draw[thick] (\firstthird + 2.25*\scl, \scl * 2cm) -- (\firstthird + 4.25*\scl, \scl * 2cm);
+\draw[thick] (\firstthird + 4.25*\scl, \scl * 2cm) -- (\firstthird + 4.25*\scl, \scl * 3.25cm);
+\draw[thick,->] (\firstthird + 4.25*\scl, \scl * 3.25cm) -- (7*2.5*\scl, \scl * 3.25cm);
+
+\foreach \Y/\Col/\Lab in \palette{
+        \node[rectangle,fill=\Col,  minimum width = \scl*5 cm, minimum height = \scl*1.5 cm] (r) at (\scl*8*2.5, \scl * \Y * 1.5) {\texttt{\Lab}};
+    }
+    \draw [decorate,
+    decoration = {brace, mirror}, ultra thick] (\scl*9*2.5 + 0.25*\scl,-0.75*\scl) --  (\scl*9*2.5+ 0.25*\scl,8*1.5*\scl + 0.75*\scl) node[pos=0.5,right=10pt,black]{32 colors};
+\end{tikzpicture}
+\vspace{8pt}
+
+%Palette shift drawing
 \def\paletteshifted{
     0/green/11111,1/gray/11110,2/green!60!black/11101,3/pink/11100,4/white/\vdots,5/brown/00011,6/violet/00010,7/red/00001,8/blue/00000}
 \def\maxy{8*1.5*\scl + 0.75*\scl}
@@ -206,5 +254,108 @@ Lots (sum of 4 indices that are for the same function divide 31)
 
 %>>> [(2 ** (12*m)) % 23 for m in range(11)]
 %[1, 2, 4, 8, 16, 9, 18, 13, 3, 6, 12]
+
+Properties:
+\begin{itemize}
+	\item Color choices : $\{\left(b_0  \oplus b_{12} \oplus \dots \oplus b_{108}\right), \left(b_1 \oplus b_{13} \oplus \dots \oplus b_{109}\right), \cdots, \left(b_{11} \oplus \dots \oplus b_{119}\right)\}$
+	\item Palette shift : $h \mod 23$
+	\item Invert palette direction : $w(h) \mod 2$
+	\item Symmetry mode : $\sum\limits_{i : h_i = 1}i + 11 \mod 13$
+\end{itemize}
+
+Keeping same parity bits :
+$$b^\prime_0 \oplus b^\prime_{12} \oplus \dots \oplus b^\prime _{108} = b_0  \oplus b_{12} \oplus \dots \oplus b_{108}$$
+
+$$\bigoplus\limits_{i=0}^{9} b^\prime_{12i} = \bigoplus\limits_{i=0}^{10} b_{12i}$$
+Implications :
+\begin{itemize}
+	\item If $b^\prime_i \neq b_i$ for an odd number of $i$, then the parity of the weight of $h$ changes and the palette is flipped.
+	\item To keep the same palette shift, we must have $h = h^\prime \mod 23$, with $h^\prime = h + \sum\limits_k 2^k - \sum\limits_\ell 2^\ell$ for all $k : b_k = 0 \wedge b^\prime_k = 1$ and $\ell : b_\ell = 1 \wedge b^\prime_\ell = 0$. Because of the previous point, we must have $k + \ell = 0 \mod 2$.
+\end{itemize}
+
+\begin{align*}
+	 h + \sum\limits_k 2^k - \sum\limits_\ell 2^\ell &= h \mod 23\\
+	\sum\limits_k 2^k - \sum\limits_\ell 2^\ell &= 0 \mod 23
+\end{align*}
+$|2| \mod 23 = 11 \implies 2^{12i} \mod 23 = \left(2^{12}\right)^i \mod 23= \left( 2 \cdot 2^{11} \right)^i \mod 23= 2^i \mod 23$.
+
+$2^{12i} \mod 23 = 2^i \mod 23$ for $i \in \{0, \cdots, 9\} = \{1, 2, 4, 8, 16, 9, 18, 13, 3, 6\} := M$
+
+For $n = 2,4,6,8,10$ : find $n$ distinct elements $m_i \in M$ and a vector $\alpha \in \{-1, 1\}^n$ such that $\sum\limits_{i = 0}^9 \alpha_i m_i = 0 \mod 23$
+
+\begin{itemize}
+	\item $n=2$: It is impossible to find $m_1 \neq m_2$ such that $m_1 \pm m_2 = 0 \mod 23$.
+	\item $n=4$: With Python, we found there are 84 possible choices for $m_0, m_1, m_2, m_3$ such that we can find a fitting $\alpha$. For example, $m_1 = 2, m_2 = 4, m_3 = 16, m_4 = 18$, we find $\alpha = \{1, -1, -1,1\}$.
+	\item $n=6$: We found there are 280 possible choices for $m_0$ to $m_5$ such that we can find a fitting $\alpha$.
+	\item $n=8$: We found there are 255 possible choices for $m_0$ to $m_7$ such that we can find a fitting $\alpha$.
+	\item $n=10$: Picking $m_0$ to $m_9$ as every element of $M$, we can find (for example) $\alpha = \{1, -1, -1, 1,-1,1,-1,1,1,1\}$ that is fitting.
+	\item In total, 620 "collisions" with same parity and same palette shift
+\end{itemize}
+Introducing the symmetries: in order to keep the same symmetry, we must have $\sum\limits_{i : h_i =1}i + 11 \mod 13 = \sum\limits_{i : h^\prime_i =1}i + 11 \mod 13$. That means a collision must have $\sum 12m_i\alpha_i = 0\mod 13$
+\begin{itemize}
+	\item $n=4$: The number of collision drops to 53 (IN TOTAL):.
+	\item $n=6$: We found there are 292 (IN TOTAL) possible collisions.
+	\item $n=8$: We found there are 230 (IN TOTAL) possible collisions.
+	\item $n=10$:We found there are 25 (IN TOTAL) possible collisions).
+	\item In total, 620 "collisions" with same parity and same palette shift
+	\item However, each requires a specific combination of bits to be possible. Some of them are mutually exclusive. $\rightarrow$ divide by $\approx$ 16, 32, 64 $\rightarrow$  
+\end{itemize}
+
+If the bits are not from the same parity:
+
+If two flipped bits of same value:
+
+Same shift : 
+\begin{align*}
+	h + 2^k + 2^\ell &= h \mod 23 \\
+	2^k + 2\ell &= 0 \mod 23\\
+	2^\ell( 2^{k-\ell} + 1) &= 0 \mod 23\\
+ 	2^{k-\ell} &= -1 \mod 23\\
+\end{align*}
+Which is not possible. (see modulo previously)
+
+Same shift : 
+\begin{align*}
+	h + 2^k - 2^\ell &= h \mod 23 \\
+	2^k - 2\ell &= 0 \mod 23\\
+	2^\ell( 2^{k-\ell} - 1) &= 0 \mod 23\\
+ 	2^{k-\ell} &= 1 \mod 23\\
+	k - \ell &= 0 \mod (|2| \mod 23)\\
+	k - \ell &= 0 \mod 11
+\end{align*}
+
+Same symmetry :
+
+\begin{align*}
+	Ind(h) + k - \ell &= Ind(h) \mod 13 \\
+	k - \ell &= 0 \mod 13
+\end{align*}	
+
+Having both yield
+
+$$k - \ell = 0 \mod \gcd(11,13) = 0 \mod 143$$
+
+Which is greater than 128.
+
+%Space for compilation window
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 \end{document}

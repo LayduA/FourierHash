@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 public interface HashTransform {
 
@@ -250,19 +249,17 @@ public interface HashTransform {
         return new BigInteger(new StringBuilder(hexToBin(hash)).reverse().toString(), 2).mod(BigInteger.valueOf(23)).intValue();
     }
 
+    int INDEX_SHIFT = 0;
     static int getSymmetry(String hash){
-        //TODO -> Incorporate that mod 13
-        //TODO -> see combinatorial2.py
-        //TODO -> prove thingies
-        String temp = new StringBuilder(hexToBin(hash)).toString();
+        String temp = hexToBin(hash);
         int count = 0;
         for (int i = 0; i < temp.length(); i++) {
             if (temp.charAt(i) == '1'){
-                count += i == 0 ? 5 : i;
+                count += (i + INDEX_SHIFT);
             }
         }
-        System.out.println(count);
-        return count % 8;
+
+        return count % 13;
     }
 
 
@@ -279,7 +276,6 @@ public interface HashTransform {
         StringBuilder sb = new StringBuilder();
         assert (pixels1.length == 256 * 256 && pixels2.length == 256 * 256);
         try {
-            long time = System.currentTimeMillis();
             String path1 = "src/temp/" + fileName + "_1.csv";
             String path2 = "src/temp/" + fileName + "_2.csv";
             File csvOutputFile = new File(path1);
@@ -298,7 +294,6 @@ public interface HashTransform {
             for (byte result : results) {
                 sb.append((char) result);
             }
-            //System.out.println((System.currentTimeMillis() - time) / 1000.0 + "s elapsed.");
         } catch (Exception e) {
             System.out.println("Ah non pas une error oh non " + e);
         }
@@ -365,7 +360,7 @@ public interface HashTransform {
         int[] ref = new int[0];
         double shiftCoeff = r == null ? params.prng().rand() : r.nextDouble();
         float shift = (360f / n) * (float) shiftCoeff;
-        //System.out.println(shift + " " + shiftCoeff + " " + (float)shiftCoeff);
+
         for (int i = 0; i < n; i++) {
             if (n == 16) {
                 // [0 1 2 3 4 5 6 7 8 9 a b c d e f] -> [0 3 6 9 c f 1 4 7 a d 2 5 8 b e]
