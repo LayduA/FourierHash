@@ -67,24 +67,24 @@ powershifted = np.zeros((12, nVar))
 for i in range(12):
     powershifted[i] = powerShifted(i)
 
-def getSum(x, i):
-    return (combinations[x] * powershifted[i]).sum() % 23
+def getSumModP(x, i, p):
+    return (combinations[x] * powershifted[i]).sum() % p
 
 count = 0
 for s in range(12):
     for c in range(combinations.shape[0]):
-        if getSum(c, s) == 0 and combinations[c].sum() != 0:
-            t = (12 * (np.where(combinations[c] == 1)[0]))
-            tRepl = t + 7
-            if tRepl.sum() % 13 == 0:
-                #print(combinations[c], powershifted[s], tRepl)
-                count += 1
+        if getSumModP(c, s, 23) == 0 and getSumModP(c, s, 29)==0 and combinations[c].sum() != 0:
+            print(combinations[c], powershifted[s])
+            count += 1
 if count == 0:
     print('oui')
 zeroVal = 3
 
 
 count = 0
+mod23 = (2**((np.arange(10) * 12) % 22) % 23)
+mod29 = (2**((np.arange(10) * 12) % 28) % 29)
+print(mod23, mod29)
 for s in range(12):
 
     for n in range(4,5,2):
@@ -95,10 +95,14 @@ for s in range(12):
         plusMinusBits = plusMinusBits.reshape((2**n, n))
 
         for comb in nChooseK(10, n):
+            if len(np.unique(comb)) == len(comb):
             #print(comb, 2**(12*comb % 22) % 23)
-            indices = (12 * comb) + s
-            for signs in plusMinusBits:
-                if (np.sum(2**(indices % 22) % 23 * signs).sum() % 23) == 0 and signs[0] > 0 and ((indices) * signs).sum() % 13 == 0:
-                    print(indices * signs) #print(comb, 2**(indices % 22) % 23, signs, ((indices) * signs))
-                    count += 1
+                indices = (12 * comb) + s
+                for signs in plusMinusBits:
+                    mod23 = (2**(indices % 22) % 23 * signs)
+                    mod29 = (2**(indices % 28) % 29 * signs)
+                    if np.sum(mod23) % 23 == 0 and np.sum(mod29) % 29 == 0:
+                        #if signs[0] > 0:
+                        print(indices * signs)#, comb, s, mod23, mod29, np.sum(mod29)) #print(comb, 2**(indices % 22) % 23, signs, ((indices) * signs))
+                        count += 1
 print(count)

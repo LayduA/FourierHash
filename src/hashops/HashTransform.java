@@ -16,6 +16,9 @@ import java.util.stream.IntStream;
 
 public interface HashTransform {
 
+    int SYMMETRY_PRIME = 23;
+    int SHIFT_PRIME = 29;
+
     /**
      * Flips the bit of given index in the input hash and outputs the result as a hex string.
      *
@@ -246,20 +249,20 @@ public interface HashTransform {
     }
 
     static int getPaletteShift(String hash){
-        return new BigInteger(new StringBuilder(hexToBin(hash)).reverse().toString(), 2).mod(BigInteger.valueOf(23)).intValue();
+        return new BigInteger(new StringBuilder(hexToBin(hash)).reverse().toString(), 2).mod(BigInteger.valueOf(SHIFT_PRIME)).intValue();
     }
 
-    int INDEX_SHIFT = 0;
     static int getSymmetry(String hash){
-        String temp = hexToBin(hash);
-        int count = 0;
-        for (int i = 0; i < temp.length(); i++) {
-            if (temp.charAt(i) == '1'){
-                count += (i + INDEX_SHIFT);
-            }
-        }
-
-        return count % 13;
+//        String temp = hexToBin(hash);
+//        int count = 0;
+//        for (int i = 0; i < temp.length(); i++) {
+//            if (temp.charAt(i) == '1'){
+//                count += (i + INDEX_SHIFT);
+//            }
+//        }
+//
+//        return count % 13;
+        return new BigInteger(new StringBuilder(hexToBin(hash)).reverse().toString(), 2).mod(BigInteger.valueOf(SYMMETRY_PRIME)).intValue();
     }
 
 

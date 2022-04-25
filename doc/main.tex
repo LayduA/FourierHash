@@ -432,22 +432,25 @@ There is a symmetry in the output space: indeed, we have
 \end{align*}
 where $(\cdot)^*$ denotes the complex conjugate. That means we actually have to sample $MN/2$ complex numbers in order to generate a $M \times N$ spectrum.
 
-The way we map bits the frequences is as follows:
-$$w_i = d_i(0.5 + 0.5b_{2i})\exp(b_{2i+1} \cdot \pi \cdot i)$$
-
 Figure X shows a graphical representation of how we generate our spectrum. The darker squares represent a number with a greater module.
 
 [SOMETHING ABOUT DISTANCE HERE PROBABLY]
 
-Once the spectrum is generated, the 2DIDFT is applied. The resulting array is then scaled by the inverse of its mean in order to have a mean of 1 [bc very few have values $> 1$], and then multiplied by 255 to get an array of gray pixels. We apply the modulo 255 operator to values greater than 255 to generate the final pixel array. \Cref{fig:unfiltered} shows the resulting fingerprints of [$h$ and $h^\prime$], that differ only at bit 67. This pair yields a Haar-PSI value of 0.883, which is much more than the threshold value [OF X]
+Once the spectrum is generated, the 2DIDFT is applied. The resulting array is then scaled by the inverse of its mean in order to have a mean of 1 [bc very few have values $> 1$], and then multiplied by 255 to get an array of gray pixels. We apply the modulo 255 operator to values greater than 255 to generate the final pixel array. 
+
+\subsubsection{Mapping bits to frequences}
+We would like every bit to have roughly the same "importance" with respect to the final image. Therefore, we map words of 4 bits to frequences according to the encoding depicted on figure [FIGURE ENCODING], in which flipping one bit changes both the phase and the module of the resulting frequence. One word is mapped to 2 frequences, which are places according to [FIGURE SPECTRUM].
+
+\Cref{fig:nothing}- shows the resulting fingerprints wits $h = \dots$ and $h^\prime = \dots$. We can see that the results are very hard to distinguish, with a PSI of 0.69 confirming that claim.
 
 \begin{center}
-\begin{figure}[h]
+\begin{figure}
     \centering
-    \includegraphics[width=3cm]{figures/OneFunc_Unfiltered.png}
-    \includegraphics[width=3cm]{figures/OneFuncP67_Unfiltered.png}
-    \caption{Two fingerprints that differ only in one bit}
-    \label{fig:unfiltered}
+    \includegraphics[width=3cm]{figures/Nothing.png}
+    \hspace{4pt}
+    \includegraphics[width=3cm]{figures/NothingP67Psi0664}
+    \caption{Two fingerprints with one bit flipped}
+    \label{fig:nothing}
 \end{figure}
 \end{center}
 
@@ -458,12 +461,13 @@ $$f(a, x,y) = \begin{cases}255 & \text{if }  a(x,y) \geq 0.5\\
 			0 & \text{otherwise} \end{cases}$$
 
 \begin{center}
-\Cref{fig:oneFunc}- shows the two same $h$ and $h^\prime$. The PSI is 0.496
+\Cref{fig:oneFunc}- shows the two same $h$ and $h^\prime$. As expected, the two images are more easily distinguished (although we will not consider such a small difference to be acceptable). The PSI is 0.242.
 
 \begin{figure}
     \centering
-    \includegraphics[width=3cm]{figures/OneFunc.png}
-    \includegraphics[width=3cm]{figures/OneFuncP67.png}
+    \includegraphics[width=3cm]{figures/Filtered.png}
+    \hspace{4pt}
+    \includegraphics[width=3cm]{figures/FilteredP67Psi0242.png}
     \caption{The two fingerprints, filtered}
     \label{fig:oneFunc}
 \end{figure}
@@ -472,13 +476,13 @@ $$f(a, x,y) = \begin{cases}255 & \text{if }  a(x,y) \geq 0.5\\
 \subsubsection{Number of functions}
 \label{rgbSect}
 
-Because we have to sample a lots of frequencies in order to get every bit of information, the ones on the far side of the spectrum have little to no influence on the resulting fingerprints. Furthermore, having frequencies that are so far from the origin creates some noisy images that result in a lot of small shapes, which is harder to differentiate. To address those problems, we repeat the sampling [3] times. That way we have 3 spectra, each corresponding to one color channel. The color of a pixel at position is $C(x,y) := (f(a_{red}, x, y), f(a_{green}, x, y), f(a_{blue}, x, y))$. The PSI is 0.47
+While filtering offers a clear improvement, there is still an issue: we have to map $|h|$ bits to frequences, which results in having to sample spectrum too far away from the axes. To address this problem, we instead perform the sampling procedure [3] times. That way we have 3 spectra array $a_{red}, a_{green}, a_{blue}$, each corresponding to one color channel. The color of a pixel at position is $C(x,y) := (f(a_{red}, x, y), f(a_{green}, x, y), f(a_{blue}, x, y))$ where $f$ is the same filter as in the previous section. \Cref{fig:threeFuncs} shows the two same hashes. We can see that flipping one bit changes one spectrum (in this case, the spectrum corresponding to the blue channel). The resulting images are therefore similarly close to the previous step (Haar-PSI = 0.23).
 
 \begin{center}
 \begin{figure}
     \centering
     \includegraphics[width=3cm]{figures/ThreeFuncs.png}
-    \includegraphics[width=3cm]{figures/ThreeFuncsP67.png}
+    \includegraphics[width=3cm]{figures/ThreeFuncsP67Psi0232.png}
     \caption{The two fingerprints, with 3 functions}
     \label{fig:threeFuncs}
 \end{figure}
@@ -486,19 +490,23 @@ Because we have to sample a lots of frequencies in order to get every bit of inf
 
 \subsubsection{Colors}
 
-Having all fingerprints being made of the same colors is certainly not a good idea. For that reason, we introduce parity bits to create fingerprints with different colors. Since we will use colors that are not purely made of one channel, we must slightly change the way we assign a color to a pixel: we must choose $2^3$ colors to account for every possibility of the filtered values of $a_0, a_1$ and $a_2$. Suppose we have an array named $Colors$ of length 8, containing rgb encodings.
-
-\begin{tabular}{c|c}
-	Filtered values of $a_0(x,y)$, $a_1(x,y)$, $a_2(x,y)$ & $C(x,y)$\\
-	\hline 0,   0,   0 & $Colors[0]$\\
-	 0,   0, 255 & $Colors[1]$\\
-	 0, 255,   0 & $Colors[2]$\\
-	 0, 255, 255 & $Colors[3]$\\
-	 255,   0,   0 & $Colors[4]$\\
-	 255,   0, 255 & $Colors[5]$\\
-	 255, 255,   0 & $Colors[6]$\\
-	255, 255, 255 & $Colors[7]$\\
-\end{tabular}
+As we have just seen, a difference in colors helps with distingishibility. We would thus have a lot to gain picking a different set of colors for different hashes. As we would like to use colors more colors than the combinations of the pure colors (colors that have only one non-zero), we must slightly change the way we assign a color to a pixel: we must choose $2^3$ colors to account for every possibility of the filtered values of $a_0, a_1$ and $a_2$. Suppose we have an array named $Colors$ of length 8, containing rgb encodings.
+\begin{table}
+	\begin{center}
+	\begin{tabular}{c|c}
+		Filtered values of $a_0(x,y)$, $a_1(x,y)$, $a_2(x,y)$ & $C(x,y)$\\
+		\hline 0,   0,   0 & $Colors[0]$\\
+		 0,   0, 255 & $Colors[1]$\\
+		 0, 255,   0 & $Colors[2]$\\
+		 0, 255, 255 & $Colors[3]$\\
+		 255,   0,   0 & $Colors[4]$\\
+		 255,   0, 255 & $Colors[5]$\\
+		 255, 255,   0 & $Colors[6]$\\
+		255, 255, 255 & $Colors[7]$\\
+	\end{tabular}
+	\caption{Color mapping}
+	\end{center}
+\end{table}
 
 Note that the system described in \cref{rgbSect} corresponds to picking the color to be the filtered values directly. To choose the set of 8 colors that will make the output set of $C(x,y)$, we use parity bits:
 
@@ -514,8 +522,63 @@ We compute the colors indices:
  $$c_j = p_{2j} || p_{2j+1} \text{ for } j \in \{0,\dotsc,7\}$$ where $||$ denotes concatenation, therefore $c_j \in \{0,1,2,3\}$.
  Let $Palette$ be a fixed 32 colors palette. We fill $Colors$ as :
 $$Colors[j] = Palette[4j + c_j] \text{ for } j \in \{0, \dotsc, 7\}$$
+Figure [FIGURE] depicts this process, and \cref{fig:threeFuncsColor} shows the two hashes. We can see that flipping one bit results in one color change. While in our case the results are quite obviously different (Haar PSI = 0.25 [COMMENT ON THIS]), there are cases where only a very small portion of the image is of a certain color, which would yield almost no difference should this color be changed.
 
+\begin{center}
+\begin{figure}
+    \centering
+    \includegraphics[width=3cm]{figures/Colors.png}
+    \includegraphics[width=3cm]{figures/ColorsP67Psi0255.png}
+    \caption{The two fingerprints, with 3 functions}
+    \label{fig:threeFuncsColor}
+\end{figure}
+\end{center}
 
+An even stronger attack would be to flip 2 bits that correspond to the same parity bit: flipping both $b_j$ and $b_{j+12k}$ yields a fingerprint that differs only in the shapes of the patterns, which may not be significant enough.
+
+\subsubsection{Palette shifting and reversing}
+As having only one color changed may result in very little zones switching colors, we would like to change more than one color if one bit is flipped. To achieve that, we apply a transformation to the palette before extracting the colors: namely, we shift it by $h \mod p$, where $h$ is interpreted as a 128-bit integer, and $p$ is a prime number less than 32 [MAYBE JUST ODD NUMBER] to be determined later. In addition, if the Hamming weight of the hash is odd, that is, if $\sum\limits_i b_i \mod 2 = 1$, we reverse the palette. That way, flipping an odd number of bits is guaranteed to have almost every color changed [PROOF?]. There are still possible collisions though: due to the fact that we have to pick a small prime, there exists some $h^\prime$ that differ from $h$ at an even number of indices that use the same palette and colors as $h$. For example, if we were to flip two bits at indices $\ell$ and $k$,  we would have the same palette shift if 
+$h^\prime = h + 2^\ell - 2^k = h \mod p$ and the bits at indices $k$ and $\ell$ are different, or if $h^\prime + 2^\ell + 2^k = h \mod p$ and the bits at indices $k$ and $\ell$ are equal. The scenario we want to avoid is two have both $h$ and $h^\prime$ use the exact same colors, that is, have the same palette shift and the same parity bits.
+This happens if 
+
+$$	h + \sum\limits_\ell 2^\ell - \sum\limits_k 2^k = h \mod p $$
+
+If only two bits are changed we have
+\begin{align*}
+	h + 2^k - 2^{k+12m} &= h \mod p\\
+	h + 2^k(2^{12m} - 1) &= h \mod p \\
+	2^k (2^{12m} - 1) &= 0 \mod p \\
+	2^{12m} - 1 &= 0 \mod p \\
+	2^{12m} &= 1 \mod p \\
+	12m &= 0 \mod (|2| \mod p)
+\end{align*}
+
+This constraint helps with the choice of $p$: indeed, we would like to maximize lcm$(12, |2| \mod p)$ so that we minimize the number of pairs that satisfy the constraint. In particular, good candidates are $p= 23$ (lcm$(12, |2| \mod p) = 132$) and $p=29$ (lcm$(12, |2| \mod p) = 84$)
+
+\subsubsection{Symmetries}
+While changing colors is a great way to achieve significant visual differences, there humans tend to perform better at identifying symmetrical objects [ref]. Therefore, we would like our fingerprints to be symmetric. The way we do this is to first generate the fingerprint as we did previously, and then apply some symmetry according to a symmetry mode [DETAILS].
+
+In order to determine the symmetry mode, we simply compute $h \mod q$, where $q \neq p$ is a small prime (in the order of 20). 
+
+To have the same the same symmetry, one would have to achieve $k - \ell = 0\mod (|2| \mod q)$. Having the same palette shift AND same symmetry yields
+$$\begin{cases}
+k - \ell &= 0 \mod (|2| \mod p)\\
+k - \ell &= 0 \mod (|2| \mod q)
+\end{cases} \iff k - \ell = 0 \mod \text{lcm}(|2| \mod p, |2| \mod q)$$.
+
+Picking $p, q \in \{23, 29\}$ yields $\text{lcm}(|2| \mod p, |2| \mod q) = \text{lcm}(11, 28) = 308$. Therefore, if 2 bits are flipped, then either the palette is shifted differently, or the symmetry is not the same, or both. Either of these cases yields visually distinguishable results.
+
+\subsection{Worst cases}
+We now analyse the worst case scenarios against our scheme. Let us assume $n$ bits were flipped. Let us pick $p=29, q=23$. We have $pq = 667$, $|2| \mod p = 28, |q| \mod q = 11$
+\begin{itemize}
+	\item $n=1$ : The palette is flipped, the shift is different, the symmetry is different.
+	\item $n=2$ : Either the shift is different, the symmetry is different, or both.
+	\item $n > 2, n$ odd : The palette is flipped.
+\end{itemize}
+For an even $n > 2$, there are collisions in the sense that some pairs of hashes use the same palette, same colors and same symmetry.
+\begin{itemize}
+	\item For $n = 4$, we have $2^0 + 2^{84} + 2^{96} + 2^{108} \equiv 0 \mod 667$ which means flipping bits with indices $0 + d, 84 + d, 96 + d, 108 + d$ with $d \in \{0 \dots 11\}$ yields the same configuration if all the bits at these indices have the same value. We estimate the probability that $h$ contains a 4 bits of same value at at least one of the possibilities for $d$ to be $\left(1 - \frac{1}{8}\right)^{12} = \left(\frac{7}{8}\right)^{12} \approx \frac{1}{5}$. (Note that this estimation assumes independent and uniform bits, which is not guaranteed but we just want to show that the probability is very big). Because that is a very high probability, we need patterns to change enough when 4 frequences are changed. Empirically, this seems to be the case
+\end{itemize}
 
 \subsection{Randomness}
 While having a scheme relying entirely on a PRG is not desirable [WHY?], we may use randomness when generating the $\omega_i$ in order to achieve intermediate pre-image resistance. In particular, we tried randomizing any combination of the $\omega_i$ moduli and phases. \Cref{tab:detvsrand} shows the computation of the $\omega_i$, where $d_i$ is the evaluation of a distance function at the coordinates of the pixel corresponding to $b_i$. The exact formula for $d_i$ is described [LATER].
@@ -681,3 +744,18 @@ For that reason we introduce the RGB-Hamming distance:
 
 $$d_H^\mathsf{RGB} (F_1,F_2)= \frac{1}{256^3mn}\sum\limits_{i=0}^{m-1}\sum\limits_{j=0}^{n-1}\sum_{c = \{R,G,B\}}(F_1[i][j])_c - (F_2[i][j])_c$$
 where $F_1,F_2 \in \prgb ^{m\times n}$ and $(F_x[i][j])_c \in \{0, \dotsc ,255\}$ denotes the value of the color channel corresponding to $c$ of the pixel at position $(i,j)$ of $F_x$
+
+
+
+
+\Cref{fig:unfiltered} shows the resulting fingerprints of [$h$ and $h^\prime$], that differ only at bit 67. This pair yields a Haar-PSI value of 0.883, which is much more than the threshold value [OF X]
+
+\begin{center}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=3cm]{figures/OneFunc_Unfiltered.png}
+    \includegraphics[width=3cm]{figures/OneFuncP67_Unfiltered.png}
+    \caption{Two fingerprints that differ only in one bit}
+    \label{fig:unfiltered}
+\end{figure}
+\end{center}

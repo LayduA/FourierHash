@@ -13,9 +13,7 @@ import java.awt.*;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Path2D;
-import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
-import java.awt.image.WritableRaster;
+import java.awt.image.*;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,7 +27,7 @@ import static src.ui.Applet.*;
 
 public class HashDrawer extends JPanel {
 
-    private static final int DEPTH = 4;
+    private static final int DEPTH = 10;
     public static int[][] horribleMagic = new int[][]{
             {-1, 10, -1, -1, -1},
             {-1, 6, 11, -1, -1},
@@ -48,6 +46,7 @@ public class HashDrawer extends JPanel {
     };
     private final double[] reals = new double[]{-0.5, -0.5, 1.0, 1.0, 0.5, 0.5, -1.0, -1.0, 1.0, 1.0, -0.5, -0.5, -1.0, -1.0, 0.5, 0.5};
     private final double[] ims = new double[]{0.5, -1.0, -0.5, 1.0, -1.0, 0.5, 1.0, -0.5, 0.5, -1.0, -0.5, 1.0, -1.0, 0.5, 1.0, 0.5};
+    private int spectrumHeight;
 
     public static BufferedImage scale(BufferedImage src, int w, int h) {
         BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
@@ -260,6 +259,8 @@ public class HashDrawer extends JPanel {
                 break;
             case 3:
                 colors = new int[]{0, 0xc5e4, 0xff00, 0xffff, 0xff0000, 0xffc5e4, 0xffff00, 0xffffff};
+                //HERE TO PUT IN BLACK AND WHITE
+                //colors = new int[]{0, 0xffffff, 0, 0xffffff, 0, 0xffffff, 0, 0xffffff};
                 break;
             case 4:
                 colors = new int[]{0, 0x80, 0xff, 0x8000, 0xff00, 0x8080, 0xffff, 0x800000, 0xff0000, 0x800080, 0xff00ff, 0x808000, 0xffff00, 0x808080, 0xffffff, 0x123456};
@@ -275,9 +276,9 @@ public class HashDrawer extends JPanel {
             int[] palette = params.paletteRGB(32, null);
             int shiftPalette = HashTransform.getPaletteShift(hash);
 
-            //palette = rotate(palette, shiftPalette, 0);
+            palette = rotate(palette, shiftPalette, 0);
             int globalParity = binHash.chars().map(b -> b - '0').sum() % 2;
-            if (globalParity == 1 && false) {
+            if (globalParity == 1) {
                 List<Object> li = Arrays.asList(Arrays.stream(palette).boxed().toArray());
                 Collections.reverse(li);
                 palette = li.stream().mapToInt(I -> (Integer) I).toArray();
@@ -300,7 +301,7 @@ public class HashDrawer extends JPanel {
 
             nBitsPerElement = 4;
 
-            int groupSize = nFunc * nBitsPerElement;
+            int groupSize = nBitsPerElement * 3; // nFunc;
             int nGroups = params.getMode().length() / groupSize;
             int maxInd = nGroups * groupSize;
             int remainder = params.getMode().length() - maxInd;
@@ -338,7 +339,7 @@ public class HashDrawer extends JPanel {
                 int x = horribleMagicIndex[maxInd / groupSize][0];
                 int y = horribleMagicIndex[maxInd / groupSize][1];
                 //BEGIN FREQUENCES SAMPLING
-                for (int i = 0; i < remainder / nBitsPerElement; i++) {
+                for (int i = 4; i < remainder / nBitsPerElement; i++) {
                     complexes[i] = mapToComplex(Integer.parseInt(binTemp.substring(ind + nBitsPerElement * i, ind + nBitsPerElement * (i + 1)), 2));
                     moduli[i] = params.dist(x, y) * Math.sqrt(complexes[i][0] * complexes[i][0] + complexes[i][1] * complexes[i][1]);
                     phis[i] = Math.atan2(complexes[i][1], complexes[i][0]);
@@ -369,8 +370,9 @@ public class HashDrawer extends JPanel {
                                 moduli[k] = frequencyCoeff;
                             } else if (params.getModDet() == DET) {
                                 moduli[k] = frequencyCoeff * 0.5 * (binHash.charAt(ind) - '0' + 1);
-                                if((frequencyCoeff > 0 && !(0 < i && i < spectrumWidth / 2 && j == 0))) ind = (ind + 1) % binHash.length();
-                            } else if (params.getModDet() == DOUBLE){
+                                if ((frequencyCoeff > 0 && !(0 < i && i < spectrumWidth / 2 && j == 0)))
+                                    ind = (ind + 1) % binHash.length();
+                            } else if (params.getModDet() == DOUBLE) {
                                 System.out.println("Erhm modulus should not really be double");
                             }
                             if (params.getPhaseDet() == RAND) {
@@ -378,9 +380,10 @@ public class HashDrawer extends JPanel {
                             } else if (params.getPhaseDet() == DOUBLE) {
                                 nBitsPerElement += 2;
                                 phis[k] = Math.PI / 2.0 * Integer.parseInt(binHash.charAt((ind + 2 * k) % binHash.length()) + Character.toString(binHash.charAt((ind + 2 * k + 1) % binHash.length())), 2);
-                            } else{
+                            } else {
                                 phis[k] = Math.PI * binHash.charAt(ind) - '0';
-                                if((frequencyCoeff > 0 && !(0 < i && i < spectrumWidth / 2 && j == 0))) ind = (ind + 1) % binHash.length();
+                                if ((frequencyCoeff > 0 && !(0 < i && i < spectrumWidth / 2 && j == 0)))
+                                    ind = (ind + 1) % binHash.length();
                             }
                         }
                         setValues(i, j, dataSpectrums, moduli, phis, spectrumWidth);
@@ -435,7 +438,12 @@ public class HashDrawer extends JPanel {
             }
         }
 
-        if (params.isContoured()) contour(res);
+        if (params.isContoured()) {
+
+            for (int i = 0; i < 1; i++) {
+                contour(res);
+            }
+        }
 
         if (params.isSymmetric()) {
             symmetrify(res, params.getSymmetry() == DrawParams.SymMode.FROM_HASH ? DrawParams.SymMode.values()[HashTransform.getSymmetry(hash)] : params.getSymmetry());
@@ -458,7 +466,7 @@ public class HashDrawer extends JPanel {
         BufferedImage centerPhase = new BufferedImage(spectrumWidth, spectrumHeight, BufferedImage.TYPE_INT_RGB);
         for (int i = 0; i < spectrumWidth; i++) {
             for (int j = 0; j < spectrumWidth; j++) {
-                centerSpectrum.setRGB(i, j, (Math.min(255, (int) (bigMags[0][i + j * spectrumWidth] * 255)) << 16) | (Math.min(255, (int) (bigMags[Math.min(1, nFunc-1)][i + j * spectrumWidth] * 255)) << 8) | Math.min(255, (int) (bigMags[Math.min(2, nFunc-1)][i + j * spectrumWidth] * 255)));
+                centerSpectrum.setRGB(i, j, (Math.min(255, (int) (bigMags[0][i + j * spectrumWidth] * 255)) << 16) | (Math.min(255, (int) (bigMags[Math.min(1, nFunc - 1)][i + j * spectrumWidth] * 255)) << 8) | Math.min(255, (int) (bigMags[Math.min(2, nFunc - 1)][i + j * spectrumWidth] * 255)));
                 if (bigPhase[i + j * spectrumWidth] == 0) {
                     centerPhase.setRGB(i, j, 0);
                 } else if (bigPhase[i + j * spectrumWidth] > 0) {
@@ -473,9 +481,9 @@ public class HashDrawer extends JPanel {
         }
         ;
 
-        if (shift == 1 || shift == 2) {
-            g.drawImage(scale((params.isSeePhase() ? centerPhase : centerSpectrum), getHashWidth(shift), getHashHeight(shift)), getShiftX(shift) + (int) (getHashWidth(shift) * 1.1), getShiftY(shift), null);
-        }
+//        if (shift == 1 || shift == 2) {
+//            g.drawImage(scale((params.isSeePhase() ? centerPhase : centerSpectrum), getHashWidth(shift), getHashHeight(shift)), getShiftX(shift) + (int) (getHashWidth(shift) * 1.1), getShiftY(shift), null);
+//        }
         return fingerprintInt;
 
     }
@@ -486,13 +494,43 @@ public class HashDrawer extends JPanel {
         //Giga yikes
         for (int i = 1; i < res.getWidth() - 1; i++) {
             for (int j = 1; j < res.getHeight() - 1; j++) {
-                if (symMode == DrawParams.SymMode.HORIZONTAL_LEFT && i > spectrumWidth / 2) {
+
+                if (symMode == DrawParams.SymMode.ROWS_BOTTOMEST && j >= spectrumWidth / 2) {
+                    if (j <= 3 * spectrumWidth / 4) {
+                        res.setRGB(i, j, res.getRGB(i, Math.min(6 * spectrumWidth / 4 - j, 255)));
+                    }
+                    res.setRGB(i, spectrumHeight - j, res.getRGB(i, j));
+                }
+                if (symMode.toString().contains("ROWS_TOP") && j <= spectrumHeight / 2) {
+                    int sign = (symMode.toString().contains("EST") ? -1 : 1);
+
+                    if (sign * j <= sign * spectrumHeight / 4) {
+                        res.setRGB(i, j, res.getRGB(i, spectrumWidth / 2 - j));
+                    }
+                    res.setRGB(i, spectrumHeight - j, res.getRGB(i, j));
+
+                }
+                if (symMode.toString().contains("COLUMNS_LEFT") && i <= spectrumWidth / 2) {
+                    int sign = (symMode.toString().contains("EST") ? -1 : 1);
+                    if (sign * i <= sign * spectrumWidth / 4) {
+                        res.setRGB(i, j, res.getRGB(spectrumWidth / 2 - i, j));
+                    }
+                }
+                if (symMode.toString().contains("COLUMNS_RIGHT") && i >= spectrumWidth / 2) {
+                    int sign = (symMode.toString().contains("EST") ? 1 : -1);
+                    if (sign * i <= sign * 3 * spectrumWidth / 4) {
+                        res.setRGB(i, j, res.getRGB(Math.min(6 * spectrumWidth / 4 - i, 255), j));
+                    }
+                    res.setRGB(spectrumWidth - i, j, res.getRGB(i, j));
+                }
+
+                if ((symMode == DrawParams.SymMode.HORIZONTAL_LEFT || symMode.toString().contains("COLUMNS_LEFT")) && i > spectrumWidth / 2) {
                     res.setRGB(i, j, res.getRGB(spectrumWidth - i, j));
                 }
-                if (symMode == DrawParams.SymMode.HORIZONTAL_RIGHT && i < spectrumWidth / 2) {
+                if ((symMode == DrawParams.SymMode.HORIZONTAL_RIGHT) && i < spectrumWidth / 2) {
                     res.setRGB(i, j, res.getRGB(spectrumWidth - i, j));
                 }
-                if (symMode == DrawParams.SymMode.VERTICAL_LEFT && j > spectrumHeight / 2) {
+                if ((symMode == DrawParams.SymMode.VERTICAL_LEFT || symMode == DrawParams.SymMode.ROWS_TOPPEST) && j > spectrumHeight / 2) {
                     res.setRGB(i, j, res.getRGB(i, spectrumHeight - j));
                 }
                 if (symMode == DrawParams.SymMode.VERTICAL_RIGHT && j < spectrumHeight / 2) {
@@ -543,6 +581,8 @@ public class HashDrawer extends JPanel {
                     res.setRGB(spectrumHeight - j, spectrumWidth - i, col);
                     res.setRGB(spectrumHeight - i, spectrumWidth - j, col);
                 }
+
+
             }
         }
     }
@@ -572,7 +612,7 @@ public class HashDrawer extends JPanel {
             return colors[color];
         } else {
             int n = params.getNFunc();
-            return (int) (255 * corr * funcs[0][index]) % 255 << 16 | (int) (255 * corr * funcs[Math.min(1, n - 1)][index]) % 255 << 8 | (int) (255 * corr * funcs[Math.min(2, n - 1)][index]) % 255;
+            return (int) (255 * corr * funcs[0][index]) % 255 << 16 | (int) (255 * corr * funcs[Math.min(0, n - 1)][index]) % 255 << 8 | (int) (255 * corr * funcs[Math.min(0, n - 1)][index]) % 255;
         }
     }
 
@@ -596,9 +636,10 @@ public class HashDrawer extends JPanel {
                 colors = getNeighbours(temp, x, y);
 
                 if (Arrays.stream(colors).distinct().toArray().length > 1) {
-                    //float hue = (float) Arrays.stream(colors).map(i -> (int) (Color.RGBtoHSB((i >> 16) & 255, (i >> 8) & 255, i & 255, null)[0] * 360)).average().getAsDouble();
-                    //img.setRGB(x, y, Color.HSBtoRGB(hue / 360f, 255, 120));
-                    img.setRGB(x, y, 0);
+                    int red = (int) Arrays.stream(colors).map(i -> (i >> 16) & 255).average().orElseThrow();
+                    int green = (int) Arrays.stream(colors).map(i -> (i >> 8) & 255).average().orElseThrow();
+                    int blue = (int) Arrays.stream(colors).map(i -> i & 255).average().orElseThrow();
+                    img.setRGB(x, y, red << 16 | green << 8 | blue);
                 }
             }
         }

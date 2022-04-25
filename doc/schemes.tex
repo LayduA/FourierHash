@@ -125,17 +125,17 @@ $$h = \underbrace{\textcolor{red}{\underline{1}100}}_{f_1} \dashline \underbrace
 
 \draw[thick]  (\scl*3cm, 10.5*\scl) --  (\scl*5, 10.5*\scl);
 \draw[thick]  (\scl*3cm, 8*\scl) --  (\scl*5, 8*\scl);
-\draw[thick]  (\scl*5cm, 10.5*\scl) --  (\scl*5, 9.5*\scl);
-\draw[thick]  (\scl*5cm, 8*\scl) --  (\scl*5, 9*\scl);
-\draw[thick,->]  (\scl*5cm, 9.5*\scl) --  (\firstthird-2.25*\scl, 9.5*\scl);
-\draw[thick,->]  (\scl*5cm, 9*\scl) --  (\firstthird-2.25*\scl, 9*\scl);
+\draw[thick]  (\scl*5cm, 10.5*\scl) --  (\scl*5, 9.75*\scl);
+\draw[thick]  (\scl*5cm, 8*\scl) --  (\scl*5, 9.25*\scl);
+\draw[thick,->]  (\scl*5cm, 9.75*\scl) --  (\firstthird-2.25*\scl, 9.75*\scl);
+\draw[thick,->]  (\scl*5cm, 9.25*\scl) --  (\firstthird-2.25*\scl, 9.25*\scl);
 
 \draw[thick]  (\scl*3cm, 3.5*\scl) --  (\scl*5, 3.5*\scl);
 \draw[thick]  (\scl*3cm, 1*\scl) --  (\scl*5, 1*\scl);
-\draw[thick]  (\scl*5cm, 3.5*\scl) --  (\scl*5, 2.5*\scl);
-\draw[thick]  (\scl*5cm, 1*\scl) --  (\scl*5, 2*\scl);
-\draw[thick,->]  (\scl*5cm, 2.5*\scl) --  (\firstthird-2.25*\scl, 2.5*\scl);
-\draw[thick,->]  (\scl*5cm, 2*\scl) --  (\firstthird-2.25*\scl, 2*\scl);
+\draw[thick]  (\scl*5cm, 3.5*\scl) --  (\scl*5, 2.25*\scl);
+\draw[thick]  (\scl*5cm, 1*\scl) --  (\scl*5, 1.75*\scl);
+\draw[thick,->]  (\scl*5cm, 1.75*\scl) --  (\firstthird-2.25*\scl, 1.75*\scl);
+\draw[thick,->]  (\scl*5cm, 2.25*\scl) --  (\firstthird-2.25*\scl, 2.25*\scl);
 
  \node[rectangle, draw=black, minimum width = \scl*4.5 cm, minimum height = \scl*2.5 cm] (r) at (\firstthird, \scl * 9.5cm){$c_0 := p_0||p_1$};
  \node[rectangle, draw=black, minimum width = \scl*4.5 cm, minimum height = \scl*2.5 cm] (r) at (\firstthird, \scl * 2cm){$c_7 := p_{14}||p_{15}$};
@@ -147,8 +147,8 @@ $$h = \underbrace{\textcolor{red}{\underline{1}100}}_{f_1} \dashline \underbrace
 \draw[thick,->] (\firstthird + 4.25*\scl, \scl * 12cm) -- (7*2.5*\scl, \scl * 12cm);
 
 \draw[thick] (\firstthird + 2.25*\scl, \scl * 2cm) -- (\firstthird + 4.25*\scl, \scl * 2cm);
-\draw[thick] (\firstthird + 4.25*\scl, \scl * 2cm) -- (\firstthird + 4.25*\scl, \scl * 3.25cm);
-\draw[thick,->] (\firstthird + 4.25*\scl, \scl * 3.25cm) -- (7*2.5*\scl, \scl * 3.25cm);
+\draw[thick] (\firstthird + 4.25*\scl, \scl * 2cm) -- (\firstthird + 4.25*\scl, \scl * 3cm);
+\draw[thick,->] (\firstthird + 4.25*\scl, \scl * 3cm) -- (7*2.5*\scl, \scl * 3cm);
 
 \foreach \Y/\Col/\Lab in \palette{
         \node[rectangle,fill=\Col,  minimum width = \scl*5 cm, minimum height = \scl*1.5 cm] (r) at (\scl*8*2.5, \scl * \Y * 1.5) {\texttt{\Lab}};
@@ -307,38 +307,51 @@ If two flipped bits of same value:
 
 Same shift : 
 \begin{align*}
-	h + 2^k + 2^\ell &= h \mod 23 \\
-	2^k + 2\ell &= 0 \mod 23\\
-	2^\ell( 2^{k-\ell} + 1) &= 0 \mod 23\\
- 	2^{k-\ell} &= -1 \mod 23\\
+	h + 2^k + 2^\ell &= h \mod p \\
+	2^k + 2\ell &= 0 \mod p\\
+	2^\ell( 2^{k-\ell} + 1) &= 0 \mod p\\
+ 	2^{k-\ell} &= -1 \mod p\\
 \end{align*}
-Which is not possible. (see modulo previously)
+Which is not possiblle as long as we pick $p \neq 5$ and $p \neq 17$
 
 Same shift : 
 \begin{align*}
-	h + 2^k - 2^\ell &= h \mod 23 \\
-	2^k - 2\ell &= 0 \mod 23\\
-	2^\ell( 2^{k-\ell} - 1) &= 0 \mod 23\\
- 	2^{k-\ell} &= 1 \mod 23\\
-	k - \ell &= 0 \mod (|2| \mod 23)\\
-	k - \ell &= 0 \mod 11
+	h + 2^k - 2^\ell &= h \mod p \\
+	2^k - 2\ell &= 0 \mod p\\
+	2^\ell( 2^{k-\ell} - 1) &= 0 \mod p\\
+ 	2^{k-\ell} &= 1 \mod p\\
+	k - \ell &= 0 \mod (|2| \mod p)\\
 \end{align*}
 
 Same symmetry :
-
-\begin{align*}
-	Ind(h) + k - \ell &= Ind(h) \mod 13 \\
-	k - \ell &= 0 \mod 13
-\end{align*}	
+$$k - \ell = 0 \mod (|2| \mod q)$$
 
 Having both yield
 
-$$k - \ell = 0 \mod \gcd(11,13) = 0 \mod 143$$
+$$k - \ell = 0 \mod \text{lcm}(|2| \mod p,|2| \mod q)$$
 
-Which is greater than 128.
+If we pick $p = 29, q = 23$ we have $(|2| \mod p,|2| \mod q) = (28, 11)$ and $\text{lcm}(28,11) = 308 > 256$
 
 %Space for compilation window
+\end{document}
 
+\begin{itemize}
+	\item $n=2$: It is impossible to find $m_1 \neq m_2$ such that $m_1 \pm m_2 = 0 \mod 23$.
+	\item $n=4$: With Python, we found there are 84 possible choices for $m_0, m_1, m_2, m_3$ such that we can find a fitting $\alpha$. For example, $m_1 = 2, m_2 = 4, m_3 = 16, m_4 = 18$, we find $\alpha = \{1, -1, -1,1\}$.
+	\item $n=6$: We found there are 280 possible choices for $m_0$ to $m_5$ such that we can find a fitting $\alpha$.
+	\item $n=8$: We found there are 255 possible choices for $m_0$ to $m_7$ such that we can find a fitting $\alpha$.
+	\item $n=10$: Picking $m_0$ to $m_9$ as every element of $M$, we can find (for example) $\alpha = \{1, -1, -1, 1,-1,1,-1,1,1,1\}$ that is fitting.
+	\item In total, 620 "collisions" with same parity and same palette shift
+\end{itemize}
+Introducing the symmetries: in order to keep the same symmetry, we must have $\sum\limits_{i : h_i =1}i + 11 \mod 13 = \sum\limits_{i : h^\prime_i =1}i + 11 \mod 13$. That means a collision must have $\sum 12m_i\alpha_i = 0\mod 13$
+\begin{itemize}
+	\item $n=4$: The number of collision drops to 53 (IN TOTAL):.
+	\item $n=6$: We found there are 292 (IN TOTAL) possible collisions.
+	\item $n=8$: We found there are 230 (IN TOTAL) possible collisions.
+	\item $n=10$:We found there are 25 (IN TOTAL) possible collisions).
+	\item In total, 620 "collisions" with same parity and same palette shift
+	\item However, each requires a specific combination of bits to be possible. Some of them are mutually exclusive. $\rightarrow$ divide by $\approx$ 16, 32, 64 $\rightarrow$  
+\end{itemize}
 
 
 

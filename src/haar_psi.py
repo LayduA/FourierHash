@@ -129,7 +129,7 @@ def haar_psi_numpy(reference_image,
 
     # The HaarPSI algorithm requires two constants, C and alpha, that have been experimentally determined
     # to be C = 30 and alpha = 4.2
-    C = 30.0
+    C = 15.0
     alpha = 4.2
 
     # If the images are in RGB, then they are transformed to the YIQ color space
@@ -309,7 +309,7 @@ def haar_psi_tensorflow(reference_image,
 
     # The HaarPSI algorithm requires two constants, C and alpha, that have been experimentally determined
     # to be C = 30 and alpha = 4.2
-    C = tf.constant(30.0, dtype=tf.float32)
+    C = tf.constant(20.0, dtype=tf.float32)
     alpha = tf.constant(4.2, dtype=tf.float32)
 
     # If the images are in RGB, then they are transformed to the YIQ color space

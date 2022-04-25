@@ -40,7 +40,7 @@ public class Applet extends JFrame {
     private final static int[] SHIFTS_X = {0, HASH_X_0, HASH_X_1};
     public final static int HASH_Y = (WINDOW_H - HASH_H - BANNER_H) / 2;
     public final static int[] SHIFTS_Y = {0, HASH_Y, HASH_Y * 3 / 2};
-    public final static String DEFAULT_HASH = "e7e6bda1152e60ec0f2082cd841e2cdce7e6bda1152e60ec0f2082cd841e2cdc";
+    public final static String DEFAULT_HASH = "75b9bce343839d7faa6c3e0c9152fa0c75b9bce343839d7faa6c3e0c9152fa0c";
     public DrawParams params;
     private HashDrawer canvas;
     private JTextArea psiDisplay;
@@ -160,7 +160,7 @@ public class Applet extends JFrame {
         psiDisplay = new JTextArea("psi = ");
         JButton distButtonOnce = new JButton("Psi");
         distButtonOnce.addActionListener(l ->
-                psiDisplay.setText(Double.toString(psiDist(canvas, inputL.getText(), inputR.getText(), params, "image")).substring(0,5)));
+                psiDisplay.setText(Double.toString(psiDist(canvas, inputL.getText(), inputR.getText(), params, "image")).substring(0,6)));
 
         JButton distButton = new JButton("Comp");
         distButton.addActionListener(l -> {
