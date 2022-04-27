@@ -215,7 +215,7 @@ public interface HashTransform {
     }
 
 
-    static Boolean[] getParities(String hash, DrawParams params){
+    static Boolean[] getParities(String hash, DrawParams params) {
         String binHash = hexToBin(hash);
         int nBitsPerElement = 4;
 
@@ -238,7 +238,7 @@ public interface HashTransform {
         return groupParities;
     }
 
-    static int[] parityDist(String hash1, String hash2, DrawParams params){
+    static int[] parityDist(String hash1, String hash2, DrawParams params) {
         Boolean[] par1 = getParities(hash1, params);
         Boolean[] par2 = getParities(hash2, params);
         IntStream diff = IntStream.of();
@@ -248,11 +248,11 @@ public interface HashTransform {
         return diff.toArray();
     }
 
-    static int getPaletteShift(String hash){
+    static int getPaletteShift(String hash) {
         return new BigInteger(new StringBuilder(hexToBin(hash)).reverse().toString(), 2).mod(BigInteger.valueOf(SHIFT_PRIME)).intValue();
     }
 
-    static int getSymmetry(String hash){
+    static int getSymmetry(String hash) {
 //        String temp = hexToBin(hash);
 //        int count = 0;
 //        for (int i = 0; i < temp.length(); i++) {
@@ -325,40 +325,114 @@ public interface HashTransform {
     static Color[] buildHSVWheel(int n, DrawParams params, Random r) {
         Color[] wheel = new Color[n];
         if (n == 32) {
+            /*
+             return new Color[]{
+             new Color(0xdf7126),
+             new Color(0xffffff),
+             new Color(0x000000),
+             new Color(0x696a6a),
+             new Color(0x639bff),
+             new Color(0x663931),
+             new Color(0x99e550),
+             new Color(0xeec39a),
+             new Color(0x9badb7),
+             new Color(0x222034),
+             new Color(0x5b6ee1),
+             new Color(0x45283c),
+             new Color(0x4b692f),
+             new Color(0xd95763),
+             new Color(0xfbf236),
+             new Color(0x8f563b),
+             new Color(0x3f3f74),
+             new Color(0x76428a),
+             new Color(0xd9a066),
+             new Color(0x524b24),
+             new Color(0x847e87),
+             new Color(0x323c39),
+             new Color(0x306082),
+             new Color(0x8f974a),
+             new Color(0x37946e),
+             new Color(0xcbdbfc),
+             new Color(0x595652),
+             new Color(0x6abe30),
+             new Color(0xd77bba),
+             new Color(0xac3232),
+             new Color(0x8a6f30),
+             new Color(0x5fcde4)
+             };
+             */
+             /*
             return new Color[]{
-                    new Color(0xdf7126),
-                    new Color(0xffffff),
-                    new Color(0x000000),
-                    new Color(0x696a6a),
-                    new Color(0x639bff),
-                    new Color(0x663931),
-                    new Color(0x99e550),
-                    new Color(0xeec39a),
-                    new Color(0x9badb7),
-                    new Color(0x222034),
-                    new Color(0x5b6ee1),
-                    new Color(0x45283c),
-                    new Color(0x4b692f),
-                    new Color(0xd95763),
-                    new Color(0xfbf236),
-                    new Color(0x8f563b),
-                    new Color(0x3f3f74),
-                    new Color(0x76428a),
-                    new Color(0xd9a066),
-                    new Color(0x524b24),
-                    new Color(0x847e87),
-                    new Color(0x323c39),
-                    new Color(0x306082),
-                    new Color(0x8f974a),
-                    new Color(0x37946e),
-                    new Color(0xcbdbfc),
-                    new Color(0x595652),
-                    new Color(0x6abe30),
-                    new Color(0xd77bba),
-                    new Color(0xac3232),
-                    new Color(0x8a6f30),
-                    new Color(0x5fcde4)};
 
+                    new Color(0x000000),
+                    new Color(0x222222),
+                    new Color(0x555555),
+                    new Color(0x888888),
+                    new Color(0xcdcdcd),
+                    new Color(0xffffff),
+                    new Color(0xffd5bc),
+                    new Color(0xffb783),
+                    new Color(0xb66d3d),
+                    new Color(0x77431f),
+                    new Color(0xfc7510),
+                    new Color(0xfca80e),
+                    new Color(0xfde817),
+                    new Color(0xfff491),
+                    new Color(0xbeff40),
+                    new Color(0x70dd13),
+                    new Color(0x31a117),
+                    new Color(0x0b5f35),
+                    new Color(0x277e6c),
+                    new Color(0x32b69f),
+                    new Color(0x88fff3),
+                    new Color(0x24b5fe),
+                    new Color(0x125cc7),
+                    new Color(0x262960),
+                    new Color(0x8b2fa8),
+                    new Color(0xd24ce9),
+                    new Color(0xff59ef),
+                    new Color(0xffa9d9),
+                    new Color(0xff6474),
+                    new Color(0xf02523),
+                    new Color(0xb11206),
+                    new Color(0x740c00)
+
+            };
+             */
+            return new Color[]{
+                    new Color(0x000000),
+                    new Color(0x424242),
+                    new Color(0x7f7e7f),
+                    new Color(0xbebebe),
+                    new Color(0xffffff),
+                    new Color(0xff9c7c),
+                    new Color(0xff0000),
+                    new Color(0x9d1636),
+                    new Color(0x43142b),
+                    new Color(0x8c3a21),
+                    new Color(0xc96e19),
+                    new Color(0xefb300),
+                    new Color(0xffff00),
+                    new Color(0x04be00),
+                    new Color(0x0c7a42),
+                    new Color(0x113939),
+                    new Color(0x0000ff),
+                    new Color(0x3776ff),
+                    new Color(0x37bbff),
+                    new Color(0x04ffff),
+                    new Color(0xffb5ec),
+                    new Color(0xff00ff),
+                    new Color(0xa018cf),
+                    new Color(0x4e1f7f),
+                    new Color(0x131225),
+                    new Color(0x38466c),
+                    new Color(0x32421b),
+                    new Color(0x5e5e39),
+                    new Color(0xa9e0a),
+                    new Color(0xf4d1c3),
+                    new Color(0x4f3835),
+                    new Color(0x1d1918),
+            };
         }
         int[] ref = new int[0];
         double shiftCoeff = r == null ? params.prng().rand() : r.nextDouble();

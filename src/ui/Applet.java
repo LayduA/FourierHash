@@ -333,9 +333,9 @@ public class Applet extends JFrame {
             frame.setVisible(true);
         });
 
-        JCheckBox setContourBox = new JCheckBox("Cont");
-        setContourBox.addActionListener(l -> params.setContoured(setContourBox.isSelected()));
-        setContourBox.setSelected(params.isContoured());
+        JComboBox contourBox = new JComboBox(DrawParams.Contour.values());
+        contourBox.addActionListener(l -> params.setContour((DrawParams.Contour) contourBox.getSelectedItem()));
+        contourBox.setSelectedItem(params.getContour());
 
         JComboBox<DrawParams.SymMode> symmetryIndex = new JComboBox<>(DrawParams.SymMode.values());
         symmetryIndex.addActionListener(l -> params.setSymmetry((DrawParams.SymMode) symmetryIndex.getSelectedItem()));
@@ -365,7 +365,7 @@ public class Applet extends JFrame {
         southL.add(distButton, BorderLayout.CENTER);
         //southL.add(plotButton, BorderLayout.CENTER);
         southL.add(saveButtonL, BorderLayout.CENTER);
-        southL.add(setContourBox, BorderLayout.CENTER);
+        southL.add(contourBox, BorderLayout.CENTER);
         southL.add(symmetryIndex, BorderLayout.CENTER);
         southL.add(botRowL, BorderLayout.SOUTH);
         southL.setPreferredSize(new Dimension(WINDOW_W, BANNER_H));
@@ -730,7 +730,7 @@ public class Applet extends JFrame {
         }
     }
 
-    private String newHash(int length) {
+    public static String newHash(int length) {
         return SecureCrypto.getHash(
                         Integer.toHexString(ThreadLocalRandom.current().nextInt(Integer.MIN_VALUE, Integer.MAX_VALUE)))
                 .substring(0, length);

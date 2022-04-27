@@ -28,13 +28,18 @@ public class DrawParams {
     private boolean symmetric;
     private SymMode symmetry;
     private double threshold;
-    private boolean contoured;
+    private Contour contour;
+    public boolean dontScale;
 
     public enum SymMode{
         HORIZONTAL_LEFT, HORIZONTAL_RIGHT, VERTICAL_LEFT, VERTICAL_RIGHT, DIAGONAL_LEFT, DIAGONAL_RIGHT, ANTIDIAGONAL_LEFT, ANTIDIAGONAL_RIGHT,
         CROSS_TOPLEFT, CROSS_TOPRIGHT, CROSS_BOTLEFT, CROSS_BOTRIGHT, CROSSX_LEFT, CROSSX_TOP, CROSSX_RIGHT, CROSSX_BOT,
         COLUMNS_LEFTEST, COLUMNS_LEFT, COLUMNS_RIGHT, COLUMNS_RIGHTEST, ROWS_TOPPEST, ROWS_TOP, ROWS_BOTTOMEST,
         NONE, FROM_HASH
+    }
+
+    public enum Contour{
+        SMOOTH, BLACK, NONE, ONLY, ONLY_SMOOTH
     }
 
     public DrawParams(DrawMode mode, Distance distance, PRNG128BitsInsecure prng, double corr, Distance.Shape distMode) {
@@ -53,7 +58,8 @@ public class DrawParams {
         symmetric = true;
         symmetry = SymMode.FROM_HASH;
         threshold = 0.5;
-        contoured = false;
+        contour = Contour.SMOOTH;
+        dontScale = false;
     }
 
     public DrawParams(DrawParams other) {
@@ -211,12 +217,12 @@ public class DrawParams {
         this.phaseDet = phaseDet;
     }
 
-    public boolean isContoured() {
-        return contoured;
+    public Contour getContour() {
+        return contour;
     }
 
-    public void setContoured(boolean contoured) {
-        this.contoured = contoured;
+    public void setContour(Contour contour) {
+        this.contour = contour;
     }
 
     public DrawMode getMode() {

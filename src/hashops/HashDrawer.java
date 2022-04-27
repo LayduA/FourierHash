@@ -13,7 +13,9 @@ import java.awt.*;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Path2D;
-import java.awt.image.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.WritableRaster;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -258,7 +260,16 @@ public class HashDrawer extends JPanel {
                 colors = new int[]{0, 0xff, 0xff00, 0xffff};
                 break;
             case 3:
+                // RGB basic
                 colors = new int[]{0, 0xc5e4, 0xff00, 0xffff, 0xff0000, 0xffc5e4, 0xffff00, 0xffffff};
+                // RED TO BLUE
+                // colors = new int[]{0xd73027, 0xf46d43, 0xfdae61, 0xfee090, 0xe0f3f8, 0xabd9e9, 0x74add1, 0x4575b4};
+                // RED TO BLUE COLOR-BLIND
+                // colors = new int[]{0xb2182b, 0xd6604d, 0xf4a582, 0xfddbc7, 0xd1e5f0, 0x92c5de, 0x4393c3, 0x2166ac};
+                // BROWN TO PURPLE COLOR-BLIND
+                // colors = new int[] {0xb35806, 0xe08214, 0xfdb863, 0xfee0b6, 0xd8daeb, 0xb2abd2, 0x8073ac, 0x542788};
+                // PURPLE TO GREEN COLOR-BLIND
+                //colors = new int[] {0x762a83, 0x9970ab, 0xc2a5cf, 0xe7d4e8, 0xd9f0d3, 0xa6dba0, 0x5aae61, 0x1b7837};
                 //HERE TO PUT IN BLACK AND WHITE
                 //colors = new int[]{0, 0xffffff, 0, 0xffffff, 0, 0xffffff, 0, 0xffffff};
                 break;
@@ -438,11 +449,8 @@ public class HashDrawer extends JPanel {
             }
         }
 
-        if (params.isContoured()) {
-
-            for (int i = 0; i < 1; i++) {
-                contour(res);
-            }
+        if (params.getContour() != DrawParams.Contour.NONE) {
+                contour(res, params);
         }
 
         if (params.isSymmetric()) {
@@ -476,7 +484,8 @@ public class HashDrawer extends JPanel {
                 }
             }
         }
-        if (!g.drawImage(scale(res, getHashWidth(shift), getHashHeight(shift)), getShiftX(shift), getShiftY(shift), null)) {
+        if (!g.drawImage(scale(res, getHashWidth(params.dontScale ? 0 : shift), getHashHeight(params.dontScale ? 0 : shift)),
+                getShiftX(shift) - (params.dontScale ? 100 : 0), getShiftY(params.dontScale ? 1 : shift), null)) {
             System.out.println("error drawing image");
         }
         ;
@@ -492,14 +501,14 @@ public class HashDrawer extends JPanel {
         int spectrumWidth = res.getWidth();
         int spectrumHeight = res.getHeight();
         //Giga yikes
-        for (int i = 1; i < res.getWidth() - 1; i++) {
-            for (int j = 1; j < res.getHeight() - 1; j++) {
+        for (int i = 0; i < res.getWidth() - 1; i++) {
+            for (int j = 0; j < res.getHeight() - 1; j++) {
 
                 if (symMode == DrawParams.SymMode.ROWS_BOTTOMEST && j >= spectrumWidth / 2) {
                     if (j <= 3 * spectrumWidth / 4) {
                         res.setRGB(i, j, res.getRGB(i, Math.min(6 * spectrumWidth / 4 - j, 255)));
                     }
-                    res.setRGB(i, spectrumHeight - j, res.getRGB(i, j));
+                    res.setRGB(i, spectrumHeight - 1 - j, res.getRGB(i, j));
                 }
                 if (symMode.toString().contains("ROWS_TOP") && j <= spectrumHeight / 2) {
                     int sign = (symMode.toString().contains("EST") ? -1 : 1);
@@ -507,7 +516,7 @@ public class HashDrawer extends JPanel {
                     if (sign * j <= sign * spectrumHeight / 4) {
                         res.setRGB(i, j, res.getRGB(i, spectrumWidth / 2 - j));
                     }
-                    res.setRGB(i, spectrumHeight - j, res.getRGB(i, j));
+                    res.setRGB(i, spectrumHeight - 1 - j, res.getRGB(i, j));
 
                 }
                 if (symMode.toString().contains("COLUMNS_LEFT") && i <= spectrumWidth / 2) {
@@ -521,26 +530,26 @@ public class HashDrawer extends JPanel {
                     if (sign * i <= sign * 3 * spectrumWidth / 4) {
                         res.setRGB(i, j, res.getRGB(Math.min(6 * spectrumWidth / 4 - i, 255), j));
                     }
-                    res.setRGB(spectrumWidth - i, j, res.getRGB(i, j));
+                    res.setRGB(spectrumWidth - 1 - i, j, res.getRGB(i, j));
                 }
 
                 if ((symMode == DrawParams.SymMode.HORIZONTAL_LEFT || symMode.toString().contains("COLUMNS_LEFT")) && i > spectrumWidth / 2) {
-                    res.setRGB(i, j, res.getRGB(spectrumWidth - i, j));
+                    res.setRGB(i, j, res.getRGB(spectrumWidth - 1 - i, j));
                 }
                 if ((symMode == DrawParams.SymMode.HORIZONTAL_RIGHT) && i < spectrumWidth / 2) {
-                    res.setRGB(i, j, res.getRGB(spectrumWidth - i, j));
+                    res.setRGB(i, j, res.getRGB(spectrumWidth - 1 - i, j));
                 }
                 if ((symMode == DrawParams.SymMode.VERTICAL_LEFT || symMode == DrawParams.SymMode.ROWS_TOPPEST) && j > spectrumHeight / 2) {
-                    res.setRGB(i, j, res.getRGB(i, spectrumHeight - j));
+                    res.setRGB(i, j, res.getRGB(i, spectrumHeight - 1 - j));
                 }
                 if (symMode == DrawParams.SymMode.VERTICAL_RIGHT && j < spectrumHeight / 2) {
-                    res.setRGB(i, j, res.getRGB(i, spectrumHeight - j));
+                    res.setRGB(i, j, res.getRGB(i, spectrumHeight - 1 - j));
                 }
                 if (symMode == DrawParams.SymMode.DIAGONAL_LEFT && i + j > spectrumWidth) {
-                    res.setRGB(i, j, res.getRGB(spectrumWidth - j, spectrumHeight - i));
+                    res.setRGB(i, j, res.getRGB(spectrumWidth - 1 - j, spectrumHeight - 1 - i));
                 }
                 if (symMode == DrawParams.SymMode.DIAGONAL_RIGHT && i + j < spectrumWidth) {
-                    res.setRGB(i, j, res.getRGB(spectrumWidth - j, spectrumHeight - i));
+                    res.setRGB(i, j, res.getRGB(spectrumWidth - 1 - j, spectrumHeight - 1 - i));
                 }
                 if (symMode == DrawParams.SymMode.ANTIDIAGONAL_LEFT && i > j) {
                     res.setRGB(i, j, res.getRGB(j, i));
@@ -548,38 +557,24 @@ public class HashDrawer extends JPanel {
                 if (symMode == DrawParams.SymMode.ANTIDIAGONAL_RIGHT && i < j) {
                     res.setRGB(i, j, res.getRGB(j, i));
                 }
-                if (symMode == DrawParams.SymMode.CROSS_TOPLEFT && (i <= spectrumWidth / 2 && j <= spectrumHeight / 2)) {
+                if (symMode == DrawParams.SymMode.CROSS_TOPLEFT && (i <= spectrumWidth / 2 && j <= spectrumHeight / 2)
+                        || (symMode == DrawParams.SymMode.CROSS_BOTLEFT && (i <= spectrumWidth / 2 && j >= spectrumHeight / 2))
+                        || (symMode == DrawParams.SymMode.CROSS_BOTRIGHT && (i >= spectrumWidth / 2 && j >= spectrumHeight / 2))
+                        || (symMode == DrawParams.SymMode.CROSS_TOPRIGHT && (i >= spectrumWidth / 2 && j <= spectrumHeight / 2))) {
                     int col = res.getRGB(i, j);
-                    res.setRGB(spectrumWidth - i, j, col);
-                    res.setRGB(i, spectrumHeight - j, col);
-                    res.setRGB(spectrumWidth - i, spectrumHeight - j, col);
+                    res.setRGB(spectrumWidth - 1 - i, j, col);
+                    res.setRGB(i, spectrumHeight - 1 - j, col);
+                    res.setRGB(spectrumWidth - 1 - i, spectrumHeight - 1 - j, col);
                 }
-                if (symMode == DrawParams.SymMode.CROSS_TOPRIGHT && (i >= spectrumWidth / 2 && j <= spectrumHeight / 2)) {
-                    int col = res.getRGB(i, j);
-                    res.setRGB(spectrumWidth - i, j, col);
-                    res.setRGB(i, spectrumHeight - j, col);
-                    res.setRGB(spectrumWidth - i, spectrumHeight - j, col);
-                }
-                if (symMode == DrawParams.SymMode.CROSS_BOTLEFT && (i <= spectrumWidth / 2 && j >= spectrumHeight / 2)) {
-                    int col = res.getRGB(i, j);
-                    res.setRGB(spectrumWidth - i, j, col);
-                    res.setRGB(i, spectrumHeight - j, col);
-                    res.setRGB(spectrumWidth - i, spectrumHeight - j, col);
-                }
-                if (symMode == DrawParams.SymMode.CROSS_BOTRIGHT && (i >= spectrumWidth / 2 && j >= spectrumHeight / 2)) {
-                    int col = res.getRGB(i, j);
-                    res.setRGB(spectrumWidth - i, j, col);
-                    res.setRGB(i, spectrumHeight - j, col);
-                    res.setRGB(spectrumWidth - i, spectrumHeight - j, col);
-                }
+
                 if ((symMode == DrawParams.SymMode.CROSSX_LEFT && (i + j <= spectrumWidth && i <= j))
-                        || (symMode == DrawParams.SymMode.CROSSX_BOT && (i + j >= spectrumWidth && i <= j))
-                        || (symMode == DrawParams.SymMode.CROSSX_RIGHT && (i + j >= spectrumWidth && i >= j))
+                        || (symMode == DrawParams.SymMode.CROSSX_BOT && (i + j >= spectrumWidth - 1 && i <= j))
+                        || (symMode == DrawParams.SymMode.CROSSX_RIGHT && (i + j >= spectrumWidth - 1 && i >= j))
                         || (symMode == DrawParams.SymMode.CROSSX_TOP && (i + j <= spectrumWidth && i >= j))) {
                     int col = res.getRGB(i, j);
                     res.setRGB(j, i, col);
-                    res.setRGB(spectrumHeight - j, spectrumWidth - i, col);
-                    res.setRGB(spectrumHeight - i, spectrumWidth - j, col);
+                    res.setRGB(spectrumHeight - 1 - j, spectrumWidth - 1 - i, col);
+                    res.setRGB(spectrumHeight - 1 - i, spectrumWidth - 1 - j, col);
                 }
 
 
@@ -625,12 +620,14 @@ public class HashDrawer extends JPanel {
         return neighb.stream().mapToInt(i -> i).toArray();
     }
 
-    private void contour(BufferedImage img) {
+    private void contour(BufferedImage img, DrawParams params) {
         int[] colors;
+        //BEGIN COPYING IMAGE
         ColorModel cm = img.getColorModel();
         boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
         WritableRaster raster = img.copyData(null);
         BufferedImage temp = new BufferedImage(cm, raster, isAlphaPremultiplied, null);
+        //END COPYING IMAGE
         for (int x = 1; x < img.getWidth() - 1; x++) {
             for (int y = 1; y < img.getHeight() - 1; y++) {
                 colors = getNeighbours(temp, x, y);
@@ -639,7 +636,9 @@ public class HashDrawer extends JPanel {
                     int red = (int) Arrays.stream(colors).map(i -> (i >> 16) & 255).average().orElseThrow();
                     int green = (int) Arrays.stream(colors).map(i -> (i >> 8) & 255).average().orElseThrow();
                     int blue = (int) Arrays.stream(colors).map(i -> i & 255).average().orElseThrow();
-                    img.setRGB(x, y, red << 16 | green << 8 | blue);
+                    img.setRGB(x, y, params.getContour().toString().contains("SMOOTH") ? red << 16 | green << 8 | blue : 0);
+                } else if (params.getContour().toString().contains("ONLY")){
+                    img.setRGB(x, y, 0xffffff);
                 }
             }
         }

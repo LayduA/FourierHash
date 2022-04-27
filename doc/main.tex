@@ -31,18 +31,19 @@
  top=20mm,
  right=15mm,
  }
-\title{Masters Project - Research}
-\author{adrien.laydu}
-\date{February 2022}
+\title{Masters Project - Visual Hashes (temporary title)}
+\author{Adrien Laydu}
+\date{Sometime in 2022}
+
 
 \begin{document}
+\maketitle
+\section{Context [TO BE EXPANDED/CLARIFIED]}
 
-\section{Context}
-
-TrustID is an IDP, which stands for a (digital) IDentity Provider that can have various uses, such as 2-Factor Authentication (2FA) or digital signatures. As such, TrustID has to offer ways to securely identify, verify, and authenticate users. To achieve this, TrustID has a strong onboarding procedure, either using a video onboarding process or by having users physically go to an onboarding office, as well as providing an authenticator application for the user's mobile phone. Once onboarded, a user that wants to access a service secured by TrustID enter their credentials ([USERNAME] and password) on the TrustID website. The TrustID server then sends a challenge to the authenticator application, which then uses the unlocking mechanism of the phone to authentify the user: we assume only the targeted user can unlock their phone. The widespread use of biometrics as a way of unlocking phones (rather than traditional passwords or PINs) would ideally improve the security of this method drastically. However, unlocking processes typically offer one of the weaker methods as a fallback. Therefore, TrustID relies only on the ownership of the phone for security.
+TrustID is an Identity Provider (IDP) that can have various uses, such as 2-Factor Authentication (2FA) or digital signatures. As such, TrustID has to offer ways to securely identify, verify, and authenticate users. To achieve this, TrustID has a strong onboarding procedure, either using a video onboarding process or by having users physically go to an onboarding office, as well as providing an authenticator application for the user's mobile phone. Once onboarded, a user that wants to access a service secured by TrustID enter their credentials ([USERNAME] and password) on the TrustID website. The TrustID server then sends a challenge to the authenticator application, which then uses the unlocking mechanism of the phone to authentify the user: we assume only the targeted user can unlock their phone. The widespread use of biometrics as a way of unlocking phones (rather than traditional passwords or PINs) would ideally improve the security of this method drastically. However, unlocking processes typically offer one of the weaker methods as a fallback. Therefore, TrustID relies only on the ownership of the phone for security.
 
 \vspace{4pt}
-That brings us to our security issue: at time of the internship, When the user validates a [TRANSACTION] on their mobile phone (i.e press the ”accept” button of the authenticator app), they have no way of being sure that the prompt on their phone corresponds to the actual [TRANSACTION] they wish to effectuate. This could lead to some vulnerabilities: for example, an impersonation attack is possible, as shown here (we take the example of digital signatures for illustration purposes):
+That brings us to our security issue: at time of the internship, When the user validates a [transaction on their mobile phone (i.e press the ”accept” button of the authenticator app), they have no way of being sure that the prompt on their phone corresponds to the actual transaction they wish to effectuate. This could lead to some vulnerabilities: for example, an impersonation attack is possible, as shown here (we take the example of digital signatures for illustration purposes):
 
 Say an an attacker A wants to sign a document we will call $d_A$ while impersonating user U. U uses a weak password, which means A can log as U on the TrustID website.
 \begin{itemize}
@@ -54,10 +55,12 @@ Say an an attacker A wants to sign a document we will call $d_A$ while impersona
     \item If the challenge for $d_A$ came first, then the attacker successfully signed a document while impersonating U.
 \end{itemize}
 
-While not that impactful when used on digital signatures, the same attack could be used for other (much more sensitive) TrustID services, such as 2FA. This project is aimed at solving the security issue presented above. The way we will achieve it is to present the user with a unique, recognizable fingerprint of the document they requested a challenge for. While this could be achieved with traditional hash functions, the fact that human users will have to compare fingerprints calls for a more user-friendly solution. In particular, we want the fingerprints to have the form of pictures, as we hypothesize they are
+While not that impactful when used on digital signatures, the same attack could be used for other (much more sensitive) TrustID services, such as 2FA: the attack described above would make the second factor useless. 
+
+This project is aimed at solving the security issue presented above. The way we will achieve it is to present the user with a unique, recognizable fingerprint of the document they requested a challenge for. While this could be achieved with traditional hash functions, the fact that human users will have to compare fingerprints calls for a more user-friendly solution. In particular, we want the fingerprints to have the form of pictures, as we hypothesize they are
 less cumbersome to compare.
 
-\paragraph{Note:} in practice, A's and U's requests for challenges are augmented with metadata. Different metadata calls for different capabilities of A: a UserID would not call for anything more than assumed earlier. A timestamp (currently in use at time of writing) requires A to send their request simultaneously with U. A nonce would require A to guess the nonce. [MAYBE :] We will see [later] how the choice of metadata alter the probability of a successful attack.
+\paragraph{Note:} in practice, A's and U's requests for challenges are augmented with metadata. Different metadata calls for different capabilities of A: a UserID would not call for anything more than assumed earlier. A timestamp (currently in use at time of writing) requires A to send their request simultaneously with U. A nonce would require A to guess the nonce. [AT IMPLEMENTATION TIME] We will see [later] how the choice of metadata alter the probability of a successful attack.
 
 \section{Visual Hashing}
 
@@ -75,9 +78,11 @@ The values of $\ell,m,n$ depend on the value of $\lambda$.
 Whenever it is not explicitly needed, we omit the security parameter $\lambda$ in the notation. We call $h := H(x)$ a \textit{hash}, and $F := V(h)$ a \textit{fingerprint}. We note a visual hash function as $\hh = (H,V)$ or when contexts allows it, just $\hh$. 
 
 \subsubsection{Visual indistinguishability}
-For two fingerprints $F_1, F_2 \in \pmn$, we write $ F_1 \vis F_2$ if $F_1$ is \textit{visually indistinguishable} from $F_2$, that is, if a user thinks $F_1 = F_2$ by looking at them. Note that $F_1 = F_2 \implies F_1 \vis F_2$. [TO BE CLARIFIED / EXPANDED IN DEDICATED SECTION]
+ [TO BE CLARIFIED / EXPANDED IN DEDICATED SECTION]
+
+For two fingerprints $F_1, F_2 \in \pmn$, we write $ F_1 \vis F_2$ if $F_1$ is \textit{visually indistinguishable} from $F_2$, that is, if a user thinks $F_1 = F_2$ by looking at them. Note that $F_1 = F_2 \implies F_1 \vis F_2$.
 \subsubsection{Properties of visual hash functions}
-We adapt traditional hash functions properties to visual hash functions as follows [NOT SURE IF USEFUL YET]. When we say that an attack is "infeasible", we mean that an efficient [DEFINE EFFICIENT - PROBABLY POLY-TIME] adversary cannot realistically perform the attack because of its complexity. The properties are as follows:
+We adapt traditional hash functions properties to visual hash functions as follows [NOT SURE IF USEFUL YET]. When we say that an attack is "infeasible", we mean that an efficient [DEFINE EFFICIENT - POLY-TIME] adversary cannot realistically perform the attack because of its complexity. The properties are as follows:
 \begin{itemize}
     \item \textit{First pre-image resistance}: we say a visual hash function $\mathcal H$ is first pre-image resistant if given $F \in \pmn$, it is infeasible to find $x \in \bin^*$ such that $\mathcal H(x) \vis F$.
     \item \textit{Second pre-image resistance}: we say a visual hash function $\mathcal H$ is second pre-image resistant if given $y \in \bin^*$, it is infeasible to find $x \neq y \in \bin ^*$ such that $\mathcal H(x) \vis \mathcal H(y)$.
@@ -114,7 +119,7 @@ We consider the protocol shown in \cref{fig:no_adv}, in which a visual hash func
 
 \subsection{Threat models}
 \subsubsection{A realistic TrustID threat}
-[GIVE IDEA OF TRANSACTION VALIDATION PROTOCOL (perhaps simplified version of Antoine's UML sequence diagram)]. Following [that], we assume an adversary cannot impersonate the TrustID server. However, an attack by an external adversary is still possible. We define, for an adversary $\adv$, the following game:
+[GIVE IDEA OF TRANSACTION VALIDATION PROTOCOL (perhaps simplified version of Antoine's UML sequence diagram)]. Following [that], we assume an adversary cannot impersonate the TrustID server. However, an attack by an external adversary is still possible. We define, for an adversary $\adv$, the game $\Gamma_{\mathsf{TrustID}}$:
 
 \begin{pchstack}[space=2em,center]
     \pseudocode[head = $\mathsf{Game }$ $\Gamma_{\mathsf{TrustID}}$]{%
@@ -130,9 +135,9 @@ We consider the protocol shown in \cref{fig:no_adv}, in which a visual hash func
     }
 \end{pchstack}
 \newcommand{\gid}{\Gamma_{\mathsf{TrustID}}}
-Where $t^*$ denotes some part of $t$: depending on the metadata we choose, $\adv$ may know some bits of $t$ that are public (e.g, a timestamp or the user's ID). We consider our scheme achieves the minimal required security if for any efficient adversary $\adv$, $\advantage{\Gamma_{\mathsf{TrustID}}}{\adv}$ is negligible in $\lambda$, where $\advantage{\Gamma_{\mathsf{TrustID}}}{\adv} = \Pr[\Gamma_{\mathsf{TrustID}}$ returns 1]. \Cref{fig:ext_adv} illustrates how the game translates to a concrete implementation.
+Where $t^*$ denotes some part of $t$: depending on the metadata we choose, $\adv$ may know some bits of $t$ (e.g, the adversary knows at which time the transaction is made, or the user's ID). We assume however that the adversary doesn't know $m$. We consider our scheme achieves the minimal required security if for any efficient adversary $\adv$, $\advantage{\Gamma_{\mathsf{TrustID}}}{\adv}$ is negligible in $\lambda$, where $\advantage{\Gamma_{\mathsf{TrustID}}}{\adv} = \Pr[\Gamma_{\mathsf{TrustID}}$ returns 1]. \Cref{fig:ext_adv} illustrates how the game translates to a concrete implementation.
 
-While we could try and design some visual hash function that achieves this minimal security, we choose to go further and define a stronger threat model: this could alleviate our assumptions on the security of the rest of the TrustID architecture, as well as provide further insight.
+While we could try and design some visual hash function that achieves this minimal security, we choose to go further and define a stronger threat model: this could alleviate our assumptions on the security of the rest of the TrustID architecture, as well as provide further insight. [Also it is fun]
 
 \begin{figure}[h]
     \centering
@@ -190,7 +195,7 @@ We show that this security is indeed stronger that the minimal security we defin
     }
 \end{pchstack}
 
-Note that we suppose that $\adv$ has a way of efficiently knowing $\mathsf{md^\prime}$. Now, if $\adv_\mathsf{TrustID}$ wins at $\gid$, then $\adv$ wins at $\Gamma$. Therefore, $\advantage{\Gamma}{\adv} \geq \advantage{\gid}{\adv_\mathsf{TrustID}}$, which was assumed to be non-negligible, which means $\advantage{\Gamma}{\adv}$ is non-negligible.
+Now, if $\adv_\mathsf{TrustID}$ wins at $\gid$, then $\adv$ wins at $\Gamma$. Therefore, $\advantage{\Gamma}{\adv} \geq \advantage{\gid}{\adv_\mathsf{TrustID}}$, which was assumed to be non-negligible, which means $\advantage{\Gamma}{\adv}$ is non-negligible.
 That concludes the proof: if there exists an efficient adversary that breaks $\gid$, then there exists an efficient adversary that breaks $\Gamma$. This is equivalent to the statement we wanted to prove.
 
 \Cref{fig:front_adv} illustrate how the threat is stronger: the adversary can bypass the server to submit a hash directly to the frontend.
@@ -221,7 +226,7 @@ That concludes the proof: if there exists an efficient adversary that breaks $\g
 We separate the different combinations of properties a visual hash function may have, to analyse their strengths and weaknesses in terms of security.
  \subsection{No visual injectiveness, no intermediate pre-image resistance}
 \label{section:forge}
-If a visual hash function $\hh$ is not intermediate pre-image resistant and isn't visually injective, the adversary can create a forgery:
+If a visual hash function $\hh$ is neither intermediate pre-image resistant nor visually injective, the adversary can create a forgery:
 
 \begin{enumerate}
     \item From $F$, find $F^\prime \neq F \in \text{Im}(V)$ such that $F \vis F^\prime$.
@@ -238,7 +243,7 @@ Moreover, visual injectiveness implies that the only case where $V(x_1) \vis V(x
     \hh \text{ is visually injective} \wedge H \text{ is collision-resistant} \implies \hh \text{ is collision-resistant}
 \end{equation}
 \label{eq:sparse}
-Since there are well-documented hash functions that are considered collision-resistant, visual injectiveness would be the ultimate goal for our hash function. However we will (probably) see that visual injectiveness is hard to achieve if the input space of $V$ is large (i.e, $\ell$ is large)
+Since there are well-documented hash functions that are considered collision-resistant, visual injectiveness would be the ultimate goal for our hash function. 
 
 \subsection{Intermediate pre-image resistance}
 If $\hh = (H,V)$ is intermediate pre-image resistant but isn't visually injective, the attack described in \cref{section:forge} is not feasible, because step 2 is infeasible by intermediate pre-image resistance. [BUT IS IT ENOUGH FOR SECURITY ?]
@@ -277,8 +282,8 @@ We can refute the right direction ($\implies$) very easily. Indeed, \cref{fig:lo
 \subsubsection{HaarPSI distance}
 The Haar perceptual similarity index (HaarPSI) [ref] seems to be a relatively good measure to test whether a pair of fingerprints is distinguishable. The advantages it offers are a relatively low computation time compared to other PSI, which allows for automated parameter search, as well as a good correlation with human opinion scores [ref]. In contrast, the main downside is that although the results are re-linearized, the final output (a number between 0 and 1) is somewhat tricky to interpret: two clearly distinguishable images will have a HaarPSI around 0.1--0.2, and a HaarPSI over 0.6 yields a visual difference that is so small that we consider it imperceptible.
 
-For our future scheme, we would of course like to minimize the HaarPSI distance between any 2 fingerprints. However, given the complexity of the HaarPSI formula, we cannot work our way from that to create a scheme. Instead, we pick a threshold value $T_{Haar} = 0.5$ and we consider that $$\mathsf{HaarPSI}(F_1,F_2) \geq T_{Haar} \implies F_1 \vis F_2$$
-The value of $T_{Haar}$ was picked arbitrarily: indeed, determining the value experimentally would require user testing on many subjects, a process for which this project has neither the ambition nor the resources. Note that the condition is necessary but not sufficient: indeed, we empirically found some pairs of fingerprints with a low PSI distance that are not easy to distinguish.
+For our future scheme, we would of course like to minimize the HaarPSI distance between any 2 fingerprints. However, given the complexity of the HaarPSI formula, we cannot work our way from that to create a scheme. Instead, we pick a threshold value $T_{Haar} = [0.5]$ and we consider that $$\mathsf{HaarPSI}(F_1,F_2) \geq T_{Haar} \implies F_1 \vis F_2$$
+The value of $T_{Haar}$ was picked arbitrarily: indeed, we would ideally determine the value experimentally would require user testing, a process for which this project has neither the ambition nor the resources. Note that the condition on $T_{Haar}$ is necessary but not sufficient: indeed, we empirically found some pairs of fingerprints with a low PSI distance that are not easy to distinguish.
 
 
 \section{Existing schemes}
@@ -441,7 +446,7 @@ Once the spectrum is generated, the 2DIDFT is applied. The resulting array is th
 \subsubsection{Mapping bits to frequences}
 We would like every bit to have roughly the same "importance" with respect to the final image. Therefore, we map words of 4 bits to frequences according to the encoding depicted on figure [FIGURE ENCODING], in which flipping one bit changes both the phase and the module of the resulting frequence. One word is mapped to 2 frequences, which are places according to [FIGURE SPECTRUM].
 
-\Cref{fig:nothing}- shows the resulting fingerprints wits $h = \dots$ and $h^\prime = \dots$. We can see that the results are very hard to distinguish, with a PSI of 0.69 confirming that claim.
+\Cref{fig:nothing}- shows the resulting fingerprints wits $h = \dots$ and $h^\prime = \dots$. We can see that the results are very hard to distinguish. Furthermore, the PSI is 0.6367, which is more than the threshold value, therefore, we consider those hashes to be visually indistinguishable.
 
 \begin{center}
 \begin{figure}
@@ -461,7 +466,7 @@ $$f(a, x,y) = \begin{cases}255 & \text{if }  a(x,y) \geq 0.5\\
 			0 & \text{otherwise} \end{cases}$$
 
 \begin{center}
-\Cref{fig:oneFunc}- shows the two same $h$ and $h^\prime$. As expected, the two images are more easily distinguished (although we will not consider such a small difference to be acceptable). The PSI is 0.242.
+\Cref{fig:oneFunc}- shows the two same $h$ and $h^\prime$. As expected, the two images are more easily distinguished. The PSI is 0.2135.
 
 \begin{figure}
     \centering
@@ -476,12 +481,13 @@ $$f(a, x,y) = \begin{cases}255 & \text{if }  a(x,y) \geq 0.5\\
 \subsubsection{Number of functions}
 \label{rgbSect}
 
-While filtering offers a clear improvement, there is still an issue: we have to map $|h|$ bits to frequences, which results in having to sample spectrum too far away from the axes. To address this problem, we instead perform the sampling procedure [3] times. That way we have 3 spectra array $a_{red}, a_{green}, a_{blue}$, each corresponding to one color channel. The color of a pixel at position is $C(x,y) := (f(a_{red}, x, y), f(a_{green}, x, y), f(a_{blue}, x, y))$ where $f$ is the same filter as in the previous section. \Cref{fig:threeFuncs} shows the two same hashes. We can see that flipping one bit changes one spectrum (in this case, the spectrum corresponding to the blue channel). The resulting images are therefore similarly close to the previous step (Haar-PSI = 0.23).
+While filtering offers a clear improvement, there is still an issue: we have to map $|h|$ bits to frequences, which results in having to sample spectrum too far away from the axes. To address this problem, we instead perform the sampling procedure [3] times. That way we have 3 spectra array $a_{red}, a_{green}, a_{blue}$, each corresponding to one color channel. The color of a pixel at position is $C(x,y) := (f(a_{red}, x, y), f(a_{green}, x, y), f(a_{blue}, x, y))$ where $f$ is the same filter as in the previous section. \Cref{fig:threeFuncs} shows the two same hashes. We can see that flipping one bit changes one spectrum (in this case, the spectrum corresponding to the blue channel). The resulting images are therefore similarly close to the previous step (Haar-PSI = 0.2158).
 
 \begin{center}
 \begin{figure}
     \centering
     \includegraphics[width=3cm]{figures/ThreeFuncs.png}
+    \hspace{4pt}
     \includegraphics[width=3cm]{figures/ThreeFuncsP67Psi0232.png}
     \caption{The two fingerprints, with 3 functions}
     \label{fig:threeFuncs}
@@ -556,7 +562,7 @@ If only two bits are changed we have
 This constraint helps with the choice of $p$: indeed, we would like to maximize lcm$(12, |2| \mod p)$ so that we minimize the number of pairs that satisfy the constraint. In particular, good candidates are $p= 23$ (lcm$(12, |2| \mod p) = 132$) and $p=29$ (lcm$(12, |2| \mod p) = 84$)
 
 \subsubsection{Symmetries}
-While changing colors is a great way to achieve significant visual differences, there humans tend to perform better at identifying symmetrical objects [ref]. Therefore, we would like our fingerprints to be symmetric. The way we do this is to first generate the fingerprint as we did previously, and then apply some symmetry according to a symmetry mode [DETAILS].
+Humans tend to perform better at identifying symmetrical objects [ref]. Therefore, we would like our fingerprints to be symmetric. The way we do this is to first generate the fingerprint as we did previously, and then apply some symmetry according to a symmetry mode [DETAILS].
 
 In order to determine the symmetry mode, we simply compute $h \mod q$, where $q \neq p$ is a small prime (in the order of 20). 
 
@@ -577,8 +583,10 @@ We now analyse the worst case scenarios against our scheme. Let us assume $n$ bi
 \end{itemize}
 For an even $n > 2$, there are collisions in the sense that some pairs of hashes use the same palette, same colors and same symmetry.
 \begin{itemize}
-	\item For $n = 4$, we have $2^0 + 2^{84} + 2^{96} + 2^{108} \equiv 0 \mod 667$ which means flipping bits with indices $0 + d, 84 + d, 96 + d, 108 + d$ with $d \in \{0 \dots 11\}$ yields the same configuration if all the bits at these indices have the same value. We estimate the probability that $h$ contains a 4 bits of same value at at least one of the possibilities for $d$ to be $\left(1 - \frac{1}{8}\right)^{12} = \left(\frac{7}{8}\right)^{12} \approx \frac{1}{5}$. (Note that this estimation assumes independent and uniform bits, which is not guaranteed but we just want to show that the probability is very big). Because that is a very high probability, we need patterns to change enough when 4 frequences are changed. Empirically, this seems to be the case
+	\item For $n = 4$, we have $2^0 + 2^{84} + 2^{96} + 2^{108} \equiv 0 \mod 667$ which means flipping bits with indices $0 + d, 84 + d, 96 + d, 108 + d$ with $d \in \{0 \dots 11\}$ yields the same configuration if all the bits at these indices have the same value. We estimate the probability that $h$ contains a 4 bits of same value at at least one of the possibilities for $d$ to be $1 - \left(1 - \frac{1}{8}\right)^{12} = 1 - \left(\frac{7}{8}\right)^{12} \approx \frac{4}{5}$. (Note that this estimation assumes independent and uniform bits, which is not accurate but we just want to show that the probability has a high order of magnitude). Because that is a very high probability, we need patterns to change enough when 4 frequences are changed. Empirically, this seems to be the case
 \end{itemize}
+
+\end{document}
 
 \subsection{Randomness}
 While having a scheme relying entirely on a PRG is not desirable [WHY?], we may use randomness when generating the $\omega_i$ in order to achieve intermediate pre-image resistance. In particular, we tried randomizing any combination of the $\omega_i$ moduli and phases. \Cref{tab:detvsrand} shows the computation of the $\omega_i$, where $d_i$ is the evaluation of a distance function at the coordinates of the pixel corresponding to $b_i$. The exact formula for $d_i$ is described [LATER].
@@ -627,7 +635,7 @@ We want our $\omega_i$ to have high modules around the axes. That being said, we
 \end{table}
 
 
-\end{document}
+
 
 \subsection{First pre-image resistance}
 We claim that 
