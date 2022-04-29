@@ -141,13 +141,13 @@ public class Applet extends JFrame {
         JPanel topRowL = new JPanel();
         JPanel botRowL = new JPanel();
 
-        JButton valButtonL = new JButton("See hash");
+        JButton valButtonL = new JButton("See");
         valButtonL.addActionListener(l -> {
             params.sampleColors();
             canvas.drawHash(this.getGraphics(), inputL.getText(), 1, params);
         });
 
-        JButton newButtonL = new JButton("New hash");
+        JButton newButtonL = new JButton("New");
         newButtonL.addActionListener(l -> {
             params.sampleColors();
             inputL.setText(newHash(params.getMode().length() / 4));
@@ -162,8 +162,8 @@ public class Applet extends JFrame {
         distButtonOnce.addActionListener(l ->
                 psiDisplay.setText(Double.toString(psiDist(canvas, inputL.getText(), inputR.getText(), params, "image")).substring(0,6)));
 
-        JButton distButton = new JButton("Comp");
-        distButton.addActionListener(l -> {
+        JButton compButton = new JButton("Comp");
+        compButton.addActionListener(l -> {
 
             JFrame frame = new JFrame("Mode comparison");
             frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -216,7 +216,10 @@ public class Applet extends JFrame {
 
         JCheckBox checkBoxSymmetry = new JCheckBox("Sym");
         checkBoxSymmetry.setSelected(params.isSymmetric());
-        checkBoxSymmetry.addActionListener(l -> params.setSymmetric(checkBoxSymmetry.isSelected()));
+        checkBoxSymmetry.addActionListener(l -> {
+            params.setSymmetric(checkBoxSymmetry.isSelected());
+            updateHashes(canvas, inputL, inputR, 1, hamDistDisplay, false);
+        });
 
         JCheckBox checkBoxModPhase = new JCheckBox("Phase");
         checkBoxModPhase.addActionListener(l -> {
@@ -333,21 +336,37 @@ public class Applet extends JFrame {
             frame.setVisible(true);
         });
 
-        JComboBox contourBox = new JComboBox(DrawParams.Contour.values());
+        JComboBox<DrawParams.Contour> contourBox = new JComboBox<>(DrawParams.Contour.values());
         contourBox.addActionListener(l -> params.setContour((DrawParams.Contour) contourBox.getSelectedItem()));
         contourBox.setSelectedItem(params.getContour());
 
+        JComboBox<Integer> thicknessBox = new JComboBox<>(new Integer[]{1,2,3,4});
+        thicknessBox.addActionListener(l -> params.setThickness((int) thicknessBox.getSelectedItem()));
         JComboBox<DrawParams.SymMode> symmetryIndex = new JComboBox<>(DrawParams.SymMode.values());
         symmetryIndex.addActionListener(l -> params.setSymmetry((DrawParams.SymMode) symmetryIndex.getSelectedItem()));
         symmetryIndex.setSelectedItem(params.getSymmetry());
+
+        JCheckBox colorBlindBox = new JCheckBox("ColBlind");
+        colorBlindBox.addActionListener(l -> {
+            params.colorBlind = colorBlindBox.isSelected();
+            updateHashes(canvas, inputL, inputR, 1, hamDistDisplay, false);
+        });
+
+        JCheckBox pal32 = new JCheckBox("Pal32");
+        pal32.addActionListener(l -> {
+            params.palette32 = pal32.isSelected();
+            updateHashes(canvas, inputL, inputR, 1, hamDistDisplay, false);
+        });
 
         topRowL.add(newButtonL, BorderLayout.WEST);
         topRowL.add(inputL, BorderLayout.CENTER);
         topRowL.add(valButtonL, BorderLayout.EAST);
         topRowL.add(checkBoxClassicRGB, BorderLayout.SOUTH);
+        topRowL.add(colorBlindBox, BorderLayout.SOUTH);
         topRowL.add(checkBoxSymmetry, BorderLayout.SOUTH);
         botRowL.add(paramsButton);
-        botRowL.add(checkBoxModPhase);
+        //botRowL.add(checkBoxModPhase);
+        botRowL.add(pal32);
         botRowL.add(checkBoxFiltered);
         botRowL.add(modeSelector);
         JComboBox<Integer> comboBoxNFunc = new JComboBox<>(new Integer[]{1,2, 3, 4});
@@ -362,10 +381,11 @@ public class Applet extends JFrame {
         southL.add(topRowL, BorderLayout.NORTH);
         southL.add(distButtonOnce, BorderLayout.CENTER);
         southL.add(psiDisplay, BorderLayout.CENTER);
-        southL.add(distButton, BorderLayout.CENTER);
+        //southL.add(compButton, BorderLayout.CENTER);
         //southL.add(plotButton, BorderLayout.CENTER);
         southL.add(saveButtonL, BorderLayout.CENTER);
         southL.add(contourBox, BorderLayout.CENTER);
+        southL.add(thicknessBox, BorderLayout.CENTER);
         southL.add(symmetryIndex, BorderLayout.CENTER);
         southL.add(botRowL, BorderLayout.SOUTH);
         southL.setPreferredSize(new Dimension(WINDOW_W, BANNER_H));
@@ -722,9 +742,13 @@ public class Applet extends JFrame {
             params.sampleColors();
             canvas.drawHash(getGraphics(), inputChanged.getText(), shift, params);
             display.setText("Hamming dist = " + hamDistHex(inputChanged.getText(), inputOther.getText())
-            + ", parity changed = " + Arrays.toString(parityDist(inputChanged.getText(), inputOther.getText(), params))
-            + " mods = " + getPaletteShift((isChangedRight ? inputOther : inputChanged).getText()) + ", "
-            + getPaletteShift((isChangedRight ? inputChanged : inputOther).getText())
+//            + ", parity changed = " + Arrays.toString(parityDist(inputChanged.getText(), inputOther.getText(), params))
+//            + " mods = " + getPaletteShift((isChangedRight ? inputOther : inputChanged).getText()) + ", "
+//            + getPaletteShift((isChangedRight ? inputChanged : inputOther).getText())
+                    + "  mods =" + sumIndex((isChangedRight ? inputOther : inputChanged).getText(), 3) + ", " +
+                    sumIndex((isChangedRight ? inputChanged : inputOther).getText(), 3)
+                    + "// " + sumIndex((isChangedRight ? inputOther : inputChanged).getText(), 7) + ", " +
+                    sumIndex((isChangedRight ? inputChanged : inputOther).getText(), 7)
             + " syms = " + getSymmetry((isChangedRight ? inputOther : inputChanged).getText()) + ", "
             + getSymmetry((isChangedRight ? inputChanged : inputOther).getText()));
         }

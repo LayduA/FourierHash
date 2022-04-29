@@ -29,7 +29,10 @@ public class DrawParams {
     private SymMode symmetry;
     private double threshold;
     private Contour contour;
+    private int thickness;
     public boolean dontScale;
+    public boolean colorBlind;
+    public boolean palette32;
 
     public enum SymMode{
         HORIZONTAL_LEFT, HORIZONTAL_RIGHT, VERTICAL_LEFT, VERTICAL_RIGHT, DIAGONAL_LEFT, DIAGONAL_RIGHT, ANTIDIAGONAL_LEFT, ANTIDIAGONAL_RIGHT,
@@ -59,7 +62,10 @@ public class DrawParams {
         symmetry = SymMode.FROM_HASH;
         threshold = 0.5;
         contour = Contour.SMOOTH;
+        thickness = 1;
+        colorBlind = false;
         dontScale = false;
+        palette32 = false;
     }
 
     public DrawParams(DrawParams other) {
@@ -95,6 +101,14 @@ public class DrawParams {
     public static int worstBit(DrawMode mode) {
         if (mode == DrawMode.Fourier256) return 147;
         return 54;
+    }
+
+    public int getThickness() {
+        return thickness;
+    }
+
+    public void setThickness(int thickness) {
+        this.thickness = thickness;
     }
 
     public boolean isClassicRGB() {

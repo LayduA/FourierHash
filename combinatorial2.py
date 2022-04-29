@@ -27,7 +27,7 @@ def indices(n, k, m, r=1, p=0):
     for x in j:
         for p in range(r):
             for i in range(1 << (k-1)):
-                if np.sum((x[1] + p) * intToPlusMinus(i, k) ) % m == 0  and np.sum((intToPlusMinus(i, k) + 1)/2) % 2 == 0:
+                if np.sum((x[1] + p) * intToPlusMinus(i, k) ) % m == 0:
                     sols = np.append(sols,np.array([x[0], p,  (x[0]*r + p), (intToPlusMinus(i, k) + 1)/2]))
     return sols
 #print(indices(10,4,31,12,0).shape)

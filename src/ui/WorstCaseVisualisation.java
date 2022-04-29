@@ -9,9 +9,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 
 public class WorstCaseVisualisation extends JFrame {
@@ -27,13 +25,11 @@ public class WorstCaseVisualisation extends JFrame {
     public DrawParams params;
     private HashDrawer canvas;
     private int currHash;
-
+    private DataGeneration.DataElem[] elems;
 
     public WorstCaseVisualisation() {
         initUI();
     }
-
-    private DataGeneration.DataElem[] elems;
 
     public static void main(String[] args) {
 
@@ -43,21 +39,20 @@ public class WorstCaseVisualisation extends JFrame {
         });
 
 
-
     }
 
     private void initUI() {
         elems = new DataGeneration.DataElem[100];
-        try{
-            String file ="src/data/collisions100.csv";
+        try {
+            String file = "src/data/collisions100.csv";
 
             BufferedReader reader = new BufferedReader(new FileReader(file));
             Object[] lines = reader.lines().toArray();
             for (int i = 1; i < lines.length; i++) {
-                elems[i-1] = DataGeneration.DataElem.fromString((String) lines[i]);
+                elems[i - 1] = DataGeneration.DataElem.fromString((String) lines[i]);
             }
             reader.close();
-        }catch(Exception e){
+        } catch (Exception e) {
             System.out.println("Mais quelle erreur !" + e.getMessage());
         }
 
@@ -67,6 +62,8 @@ public class WorstCaseVisualisation extends JFrame {
 
         params = new DrawParams(DrawMode.FourierCartesian128);
         setLayout(new BorderLayout());
+        params.palette32 = true;
+        params.colorBlind = false;
 
         // --------------LEFT HALF--------------
 
@@ -93,8 +90,8 @@ public class WorstCaseVisualisation extends JFrame {
         });
 
         JPanel pane = new JPanel();
-        pane.setPreferredSize(new Dimension(50,50));
-        pane.setSize(new Dimension(50,50));
+        pane.setPreferredSize(new Dimension(50, 50));
+        pane.setSize(new Dimension(50, 50));
         //pane.setBackground(Color.RED);
         pane.setLayout(new GridBagLayout());
         pane.add(text);
@@ -121,12 +118,12 @@ public class WorstCaseVisualisation extends JFrame {
 
     }
 
-    public void drawHashes(JLabel text){
+    public void drawHashes(JLabel text) {
         canvas.drawHash(this.getGraphics(), elems[currHash].getOriginalHash(), 1, params);
         params.dontScale = true;
         canvas.drawHash(this.getGraphics(), elems[currHash].getDist() == 0.0 ? elems[currHash].getOriginalHash() : elems[currHash].getFlippedHash(), 2, params);
         params.dontScale = false;
-        text.setText("<html>" + elems[currHash].getOriginalHash() + "<br/>" + elems[currHash].getFlippedHash() + "<br/>" + elems[currHash].getDist()+ "</html>");
+        text.setText("<html>" + elems[currHash].getOriginalHash() + "<br/>" + elems[currHash].getFlippedHash() + "<br/>" + elems[currHash].getDist() + "</html>");
     }
 
 }

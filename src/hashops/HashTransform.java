@@ -253,16 +253,32 @@ public interface HashTransform {
     }
 
     static int getSymmetry(String hash) {
-//        String temp = hexToBin(hash);
-//        int count = 0;
-//        for (int i = 0; i < temp.length(); i++) {
-//            if (temp.charAt(i) == '1'){
-//                count += (i + INDEX_SHIFT);
-//            }
-//        }
-//
-//        return count % 13;
+
         return new BigInteger(new StringBuilder(hexToBin(hash)).reverse().toString(), 2).mod(BigInteger.valueOf(SYMMETRY_PRIME)).intValue();
+    }
+
+    static int sumIndex(String hash, int modulo){
+        String temp = hexToBin(hash);
+        int count = 0;
+        for (int i = 0; i < temp.length(); i++) {
+            if (temp.charAt(i) == '1'){
+                count += i;
+            }
+        }
+
+        return count % modulo;
+    }
+
+    static int weight(String hash){
+        String temp = hexToBin(hash);
+        int count = 0;
+        for (int i = 0; i < temp.length(); i++) {
+            if(temp.charAt(i) == '1'){
+                count ++;
+            }
+        }
+
+        return count;
     }
 
 
