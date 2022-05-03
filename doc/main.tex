@@ -542,24 +542,11 @@ Figure [FIGURE] depicts this process, and \cref{fig:threeFuncsColor} shows the t
 
 An even stronger attack would be to flip 2 bits that correspond to the same parity bit: flipping both $b_j$ and $b_{j+12k}$ yields a fingerprint that differs only in the shapes of the patterns, which may not be significant enough.
 
-\subsubsection{Palette shifting and reversing}
-As having only one color changed may result in very little zones switching colors, we would like to change more than one color if one bit is flipped. To achieve that, we apply a transformation to the palette before extracting the colors: namely, we shift it by $h \mod p$, where $h$ is interpreted as a 128-bit integer, and $p$ is a prime number less than 32 [MAYBE JUST ODD NUMBER] to be determined later. In addition, if the Hamming weight of the hash is odd, that is, if $\sum\limits_i b_i \mod 2 = 1$, we reverse the palette. That way, flipping an odd number of bits is guaranteed to have almost every color changed [PROOF?]. There are still possible collisions though: due to the fact that we have to pick a small prime, there exists some $h^\prime$ that differ from $h$ at an even number of indices that use the same palette and colors as $h$. For example, if we were to flip two bits at indices $\ell$ and $k$,  we would have the same palette shift if 
-$h^\prime = h + 2^\ell - 2^k = h \mod p$ and the bits at indices $k$ and $\ell$ are different, or if $h^\prime + 2^\ell + 2^k = h \mod p$ and the bits at indices $k$ and $\ell$ are equal. The scenario we want to avoid is two have both $h$ and $h^\prime$ use the exact same colors, that is, have the same palette shift and the same parity bits.
-This happens if 
+\subsubsection{Palette shift and permutation}
+As having only one color changed may result in very little zones switching colors, we would like to change more than one color if one bit is flipped. To achieve that, we apply a transformation to the palette before extracting the colors: namely, we shift it by $h \mod p$, where $h$ is interpreted as a 128-bit integer, and $p$ is a prime number less than 32 [MAYBE JUST ODD NUMBER] to be determined later. 
 
-$$	h + \sum\limits_\ell 2^\ell - \sum\limits_k 2^k = h \mod p $$
+Once the colors are extracted, we re-order the array according to a permutation extracted from the hash. The set of possible permutations is a code that achieve a satisfactory maximal distance.
 
-If only two bits are changed we have
-\begin{align*}
-	h + 2^k - 2^{k+12m} &= h \mod p\\
-	h + 2^k(2^{12m} - 1) &= h \mod p \\
-	2^k (2^{12m} - 1) &= 0 \mod p \\
-	2^{12m} - 1 &= 0 \mod p \\
-	2^{12m} &= 1 \mod p \\
-	12m &= 0 \mod (|2| \mod p)
-\end{align*}
-
-This constraint helps with the choice of $p$: indeed, we would like to maximize lcm$(12, |2| \mod p)$ so that we minimize the number of pairs that satisfy the constraint. In particular, good candidates are $p= 23$ (lcm$(12, |2| \mod p) = 132$) and $p=29$ (lcm$(12, |2| \mod p) = 84$)
 
 \subsubsection{Symmetries}
 Humans tend to perform better at identifying symmetrical objects [ref]. Therefore, we would like our fingerprints to be symmetric. The way we do this is to first generate the fingerprint as we did previously, and then apply some symmetry according to a symmetry mode [DETAILS].
@@ -575,6 +562,17 @@ k - \ell &= 0 \mod (|2| \mod q)
 Picking $p, q \in \{23, 29\}$ yields $\text{lcm}(|2| \mod p, |2| \mod q) = \text{lcm}(11, 28) = 308$. Therefore, if 2 bits are flipped, then either the palette is shifted differently, or the symmetry is not the same, or both. Either of these cases yields visually distinguishable results.
 
 \subsection{Worst cases}
+$$	h + \sum\limits_\ell 2^\ell - \sum\limits_k 2^k = h \mod p $$
+
+If only two bits are changed we have
+\begin{align*}
+	h + 2^k - 2^{k+12m} &= h \mod p\\
+	h + 2^k(2^{12m} - 1) &= h \mod p \\
+	2^k (2^{12m} - 1) &= 0 \mod p \\
+	2^{12m} - 1 &= 0 \mod p \\
+	2^{12m} &= 1 \mod p \\
+	12m &= 0 \mod (|2| \mod p)
+\end{align*}
 We now analyse the worst case scenarios against our scheme. Let us assume $n$ bits were flipped. Let us pick $p=29, q=23$. We have $pq = 667$, $|2| \mod p = 28, |q| \mod q = 11$
 \begin{itemize}
 	\item $n=1$ : The palette is flipped, the shift is different, the symmetry is different.

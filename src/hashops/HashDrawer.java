@@ -272,7 +272,7 @@ public class HashDrawer extends JPanel {
                 colors = new int[]{0, 0x80, 0xff, 0x8000, 0xff00, 0x8080, 0xffff, 0x800000, 0xff0000, 0x800080, 0xff00ff, 0x808000, 0xffff00, 0x808080, 0xffffff, 0x123456};
                 break;
             default:
-                colors = null;
+                colors = new int[]{};
         }
         if (!params.isClassicRGB()) {
             colors = sampleColors(hash, params);
@@ -466,9 +466,9 @@ public class HashDrawer extends JPanel {
 
     }
 
-    private int[] sampleColors(String hash, DrawParams params){
+    private int[] sampleColors(String hash, DrawParams params) {
         //BEGIN COLOR MAPPING
-        if(!params.palette32 || params.colorBlind) {
+        if (!params.palette32 || params.colorBlind) {
             int[][][] palettes = new int[3][2][8];
             // RED TO BLUE
             // RED TO BLUE COLOR-BLIND
@@ -476,12 +476,19 @@ public class HashDrawer extends JPanel {
                     new int[]{0xd73027, 0xf46d43, 0xfdae61, 0xfee090, 0xe0f3f8, 0xabd9e9, 0x74add1, 0x4575b4},
                     new int[]{0xb2182b, 0xd6604d, 0xf4a582, 0xfddbc7, 0xd1e5f0, 0x92c5de, 0x4393c3, 0x2166ac}
             };
+            // NEON
             // RED TO BLACK
+            // JAJ
+            // OTHER JAJ with params http://vrl.cs.brown.edu/color -> GREEN TO PURPLE BUT FLASHY
             // BROWN TO PURPLE COLOR-BLIND
             palettes[1] = new int[][]{
-                    new int[]{0xb2182b, 0xd6604d, 0xf4a582, 0xfddbc7, 0xe0e0e0, 0xbababa, 0x878787, 0x4d4d4d},
+                    //new int[]{0x00062e, 0x00ffff, 0x0900bd, 0x990bb5, 0xc90ab6, 0xd4203e, 0xff3700, 0xffd500},
+                    //new int[]{0xb2182b, 0xd6604d, 0xf4a582, 0xfddbc7, 0xe0e0e0, 0xbababa, 0x878787, 0x4d4d4d},
+                    //new int[]{0xa40038, 0xd43e1f, 0xdf892e, 0x4e7026, 0x09177e, 0x330043, 0x01000e, 0xf5c1c5},
+                    new int[]{0x3588d1, 0xe5f642, 0x715cb6, 0xb6eee2, 0x387836, 0xf27ff5, 0x2cf52b, 0xb00bd9},
                     new int[]{0xb35806, 0xe08214, 0xfdb863, 0xfee0b6, 0xd8daeb, 0xb2abd2, 0x8073ac, 0x542788}
             };
+
             // LIL MIX
             // PURPLE TO GREEN COLOR-BLIND
             palettes[2] = new int[][]{
@@ -489,14 +496,16 @@ public class HashDrawer extends JPanel {
                     new int[]{0x762a83, 0x9970ab, 0xc2a5cf, 0xe7d4e8, 0xd9f0d3, 0xa6dba0, 0x5aae61, 0x1b7837}
             };
 
-            int paletteInd = sumIndex(hash, 3);
+            int paletteInd = params.palette32 ? sumIndex(hash, 3) : (1 + weight(hash) % 2);
             int[] palette = palettes[paletteInd][params.colorBlind ? 1 : 0];
 
-            int shiftPalette = sumIndex(hash, 7);
-            palette = rotate(palette, shiftPalette, 0);
+            int permutInd = getPerm(hash);//sumIndex(hash, 616);
+            palette = permute(palette, Combinatorial.codewords[permutInd]);
 
-            boolean flip = (weight(hash) % 2 == 1);
-            if (flip) {
+            //int shiftPalette = sumIndex(hash, 7);
+            //palette = rotate(palette, shiftPalette, 0);
+
+            if (params.palette32 && weight(hash) % 2 == 1) {
                 List<Object> li = Arrays.asList(Arrays.stream(palette).boxed().toArray());
                 Collections.reverse(li);
                 palette = li.stream().mapToInt(I -> (Integer) I).toArray();
@@ -507,33 +516,36 @@ public class HashDrawer extends JPanel {
         // BEGIN 32-PALETTE SAMPLING
 
 
-            Boolean[] groupParities = HashTransform.getParities(hash, params);
-            int[] palette = new int[1 << params.getNFunc()];
-            int[] palette32 = params.paletteRGB(32, null);
-            int shiftPalette = HashTransform.getPaletteShift(hash);
+        Boolean[] groupParities = HashTransform.getParities(hash, params);
+        int[] palette = new int[1 << params.getNFunc()];
+        int[] palette32 = params.paletteRGB(32, null);
+        int shiftPalette = HashTransform.getPaletteShift(hash);
 
-            palette32 = rotate(palette32, shiftPalette, 0);
-            int globalParity = hexToBin(hash).chars().map(b -> b - '0').sum() % 2;
-            if (globalParity == 1) {
-                List<Object> li = Arrays.asList(Arrays.stream(palette32).boxed().toArray());
-                Collections.reverse(li);
-                palette32 = li.stream().mapToInt(I -> (Integer) I).toArray();
-            }
-            int indexColor;
-            for (int i = 0; i < palette.length; i++) {
-                if (palette.length == 8) {
-                    indexColor = 4 * i + (groupParities[2 * i] ? 2 : 0) + (groupParities[2 * i + 1] ? 1 : 0);
-                    palette[i] = palette32[indexColor];
-                } else if (palette.length == 16) {
-                    palette[i] = palette32[2 * i + (groupParities[i] ? 1 : 0)];
-                }
-            }
-            //palette = rotate(palette, (Stream.of(groupParities)).mapToInt(b -> b ? 1 : 0).sum(), 1); //(int) Math.floor(8 * jouj.nextDouble()));
-            palette = rotate(palette, shiftPalette, 0);
-            //END COLOR MAPPING
-            return palette;
-            //END 32-PALETTE SAMPLING
+        palette32 = rotate(palette32, shiftPalette, 0);
 
+        int indexColor;
+        for (int i = 0; i < palette.length; i++) {
+            if (palette.length == 8) {
+                indexColor = 4 * i + (groupParities[2 * i] ? 2 : 0) + (groupParities[2 * i + 1] ? 1 : 0);
+                palette[i] = palette32[indexColor];
+            } else if (palette.length == 16) {
+                palette[i] = palette32[2 * i + (groupParities[i] ? 1 : 0)];
+            }
+        }
+        int permutInd = getPerm(hash);
+        palette = permute(palette, Combinatorial.codewords[params.permut == -1 ? permutInd : params.permut]);
+        //END COLOR MAPPING
+        return palette;
+        //END 32-PALETTE SAMPLING
+
+    }
+
+    private int[] permute(int[] original, int[] indArr) {
+        int[] perm = new int[indArr.length];
+        for (int i = 0; i < indArr.length; i++) {
+            perm[i] = original[indArr[i]];
+        }
+        return perm;
     }
 
     private void symmetrify(BufferedImage res, DrawParams.SymMode symMode) {

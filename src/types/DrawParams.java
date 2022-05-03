@@ -33,6 +33,7 @@ public class DrawParams {
     public boolean dontScale;
     public boolean colorBlind;
     public boolean palette32;
+    public int permut = -1;
 
     public enum SymMode{
         HORIZONTAL_LEFT, HORIZONTAL_RIGHT, VERTICAL_LEFT, VERTICAL_RIGHT, DIAGONAL_LEFT, DIAGONAL_RIGHT, ANTIDIAGONAL_LEFT, ANTIDIAGONAL_RIGHT,
@@ -65,7 +66,7 @@ public class DrawParams {
         thickness = 1;
         colorBlind = false;
         dontScale = false;
-        palette32 = false;
+        palette32 = true;
     }
 
     public DrawParams(DrawParams other) {

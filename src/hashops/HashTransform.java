@@ -18,6 +18,7 @@ public interface HashTransform {
 
     int SYMMETRY_PRIME = 23;
     int SHIFT_PRIME = 29;
+    int PERM_PRIME = 613;
 
     /**
      * Flips the bit of given index in the input hash and outputs the result as a hex string.
@@ -253,8 +254,12 @@ public interface HashTransform {
     }
 
     static int getSymmetry(String hash) {
-
         return new BigInteger(new StringBuilder(hexToBin(hash)).reverse().toString(), 2).mod(BigInteger.valueOf(SYMMETRY_PRIME)).intValue();
+    }
+
+    static int getPerm(String hash) {
+        return new BigInteger(new StringBuilder(hexToBin(hash)).reverse().toString(), 2).mod(BigInteger.valueOf(PERM_PRIME)).intValue();
+        //return sumIndex(hash, PERM_PRIME);
     }
 
     static int sumIndex(String hash, int modulo){
@@ -267,6 +272,10 @@ public interface HashTransform {
         }
 
         return count % modulo;
+    }
+
+    static double getAverageBit(String hash){
+        return sumIndex(hash, 128 * 100000) / (4.0 * hash.length());
     }
 
     static int weight(String hash){
@@ -447,7 +456,7 @@ public interface HashTransform {
                     new Color(0xa9e0a),
                     new Color(0xf4d1c3),
                     new Color(0x4f3835),
-                    new Color(0x1d1918),
+                    new Color(0x362D2B),
             };
         }
         int[] ref = new int[0];

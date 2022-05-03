@@ -1,4 +1,5 @@
 from itertools import permutations
+from operator import mod
 import numpy as np
 import matplotlib.pyplot as plt
 def nChooseK(n, k):
@@ -53,6 +54,7 @@ def mod2(arrX):
     return np.sum(arrX) % 2
 
 #combinations = every assignment of nVar variables
+pSym = 23
 nVar = 10
 combinations = np.zeros((1 << nVar, nVar))
 for i in range(combinations.shape[0]):
@@ -61,7 +63,7 @@ for i in range(combinations.shape[0]):
 combinations = combinations[(np.sum(combinations, axis = 1) % 2) == 0]
 
 def powerShifted(i):
-    return ((2 ** ((np.arange(nVar) * 12 + i) % 22)) % 23)
+    return ((2 ** ((np.arange(nVar) * 12 + i) % (pSym-1))) % pSym)
 
 powershifted = np.zeros((12, nVar))
 for i in range(12):
@@ -73,7 +75,7 @@ def getSumModP(x, i, p):
 count = 0
 for s in range(12):
     for c in range(combinations.shape[0]):
-        if getSumModP(c, s, 23) == 0 and getSumModP(c, s, 29)==0 and combinations[c].sum() != 0:
+        if getSumModP(c, s, pSym) == 0 and getSumModP(c, s, 29)==0 and combinations[c].sum() != 0:
             print(combinations[c], powershifted[s])
             count += 1
 if count == 0:
@@ -82,12 +84,15 @@ zeroVal = 3
 
 
 count = 0
-mod23 = (2**((np.arange(10) * 12) % 22) % 23)
+
+mod23 = (2**((np.arange(10) * 12) % (pSym-1)) % pSym)
 mod29 = (2**((np.arange(10) * 12) % 28) % 29)
+
+pPerm = 613
 print(mod23, mod29)
 for s in range(12):
 
-    for n in range(4,5,2):
+    for n in range(4,5,1):
 
         plusMinusBits = np.array([])
         for i in range(1 << n):
@@ -99,10 +104,36 @@ for s in range(12):
             #print(comb, 2**(12*comb % 22) % 23)
                 indices = (12 * comb) + s
                 for signs in plusMinusBits:
-                    mod23 = (2**(indices % 22) % 23 * signs)
-                    mod29 = (2**(indices % 28) % 29 * signs)
-                    if np.sum(mod23) % 23 == 0 and np.sum(mod29) % 29 == 0:
+                    mod23 = (2**(indices % (pSym-1)) % pSym * signs)
+                    mod29 = (2**(indices % 28) % 29) * signs
+                    modPerm= [pow(2, int(i), pPerm) for i in indices] * signs
+                    if np.sum(mod23) % pSym == 0 and np.sum(mod29) % 29 == 0 and np.sum(modPerm) % pPerm == 0:
                         #if signs[0] > 0:
-                        print(indices * signs)#, comb, s, mod23, mod29, np.sum(mod29)) #print(comb, 2**(indices % 22) % 23, signs, ((indices) * signs))
+                        print(indices * signs, modPerm.sum())#, comb, s, mod23, mod29, np.sum(mod29)) #print(comb, 2**(indices % 22) % 23, signs, ((indices) * signs))
                         count += 1
 print(count)
+pairs = []
+perms = permutations(range(10), 2)
+
+for p1 in perms:
+    for p2 in permutations(range(10), 2):
+        pairs.append(([sorted(p1),sorted(p2)]))
+pairs = np.unique(pairs, axis=0)
+
+if True:
+    plusMinusBits = np.array([])
+    for i in range(1 << 4):
+        plusMinusBits = np.append(plusMinusBits, intToPlusMinus(i, 4))
+    plusMinusBits = plusMinusBits.reshape((2**4, 4))
+    for s1 in range(12):
+        for s2 in [number for number in range(0,12) if number != s1]:
+            for comb in pairs:
+                comb = comb.reshape((4,))
+                indices = (12 * comb) + [s1,s1,s2,s2]
+                for signs in plusMinusBits:
+                    mod23 = (2**(indices % (pSym-1)) % pSym * signs)
+                    mod29 = (2**(indices % 28) % 29) * signs
+                    modPerm= [pow(2, int(i), pPerm) for i in indices] * signs
+                    if np.sum(mod23) % pSym == 0 and np.sum(mod29) % 29 == 0 and np.sum(modPerm) % pPerm == 0:
+                        #if signs[0] > 0:
+                        print(indices * signs, modPerm.sum())#, comb, s, mod23, mod29, np.sum(mod29)) #print(comb, 2**(indices % 22) % 23, signs, ((indices) * signs))

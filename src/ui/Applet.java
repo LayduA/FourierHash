@@ -2,7 +2,10 @@ package src.ui;
 
 import src.crypto.PRNG128BitsInsecure;
 import src.crypto.SecureCrypto;
-import src.hashops.*;
+import src.hashops.AttackIndices;
+import src.hashops.AvgDistRunnable;
+import src.hashops.HashDrawer;
+import src.hashops.SimpleHashRunnable;
 import src.types.Distance;
 import src.types.DrawMode;
 import src.types.DrawParams;
@@ -76,6 +79,12 @@ public class Applet extends JFrame {
             Applet app = new Applet();
             app.setVisible(true);
         });
+    }
+
+    public static String newHash(int length) {
+        return SecureCrypto.getHash(
+                        Integer.toHexString(ThreadLocalRandom.current().nextInt(Integer.MIN_VALUE, Integer.MAX_VALUE)))
+                .substring(0, length);
     }
 
     public void setMode(DrawMode mode) {
@@ -160,7 +169,7 @@ public class Applet extends JFrame {
         psiDisplay = new JTextArea("psi = ");
         JButton distButtonOnce = new JButton("Psi");
         distButtonOnce.addActionListener(l ->
-                psiDisplay.setText(Double.toString(psiDist(canvas, inputL.getText(), inputR.getText(), params, "image")).substring(0,6)));
+                psiDisplay.setText(Double.toString(psiDist(canvas, inputL.getText(), inputR.getText(), params, "image")).substring(0, 6)));
 
         JButton compButton = new JButton("Comp");
         compButton.addActionListener(l -> {
@@ -293,7 +302,7 @@ public class Applet extends JFrame {
         });
 
         JTextField thresholdField = new JTextField("0.5", 3);
-        thresholdField.addActionListener(l ->{
+        thresholdField.addActionListener(l -> {
             params.setThreshold(Double.parseDouble(thresholdField.getText()));
         });
 
@@ -340,7 +349,7 @@ public class Applet extends JFrame {
         contourBox.addActionListener(l -> params.setContour((DrawParams.Contour) contourBox.getSelectedItem()));
         contourBox.setSelectedItem(params.getContour());
 
-        JComboBox<Integer> thicknessBox = new JComboBox<>(new Integer[]{1,2,3,4});
+        JComboBox<Integer> thicknessBox = new JComboBox<>(new Integer[]{1, 2, 3, 4});
         thicknessBox.addActionListener(l -> params.setThickness((int) thicknessBox.getSelectedItem()));
         JComboBox<DrawParams.SymMode> symmetryIndex = new JComboBox<>(DrawParams.SymMode.values());
         symmetryIndex.addActionListener(l -> params.setSymmetry((DrawParams.SymMode) symmetryIndex.getSelectedItem()));
@@ -369,7 +378,7 @@ public class Applet extends JFrame {
         botRowL.add(pal32);
         botRowL.add(checkBoxFiltered);
         botRowL.add(modeSelector);
-        JComboBox<Integer> comboBoxNFunc = new JComboBox<>(new Integer[]{1,2, 3, 4});
+        JComboBox<Integer> comboBoxNFunc = new JComboBox<>(new Integer[]{1, 2, 3, 4});
         comboBoxNFunc.addActionListener(l -> {
             Integer n = (Integer) comboBoxNFunc.getSelectedItem();
             if (n != null) {
@@ -501,32 +510,34 @@ public class Applet extends JFrame {
             HashDrawer canvasDemo = new HashDrawer();
             canvasDemo.setPreferredSize(new Dimension(1200, 600));
             JLabel[] jlabs = new JLabel[32];
-            for(int i = 0; i < jlabs.length; i++) {
+            for (int i = 0; i < jlabs.length; i++) {
                 jlabs[i] = new JLabel();
                 jlabs[i].setPreferredSize(new Dimension(120, 20));
                 jlabs[i].setSize(new Dimension(120, 20));
-                jlabs[i].setLocation(getShiftX(i+3)+15, getShiftY(i+3)+100);
+                jlabs[i].setLocation(getShiftX(i + 3) + 15, getShiftY(i + 3) + 100);
                 jlabs[i].setOpaque(false);
                 frame.getContentPane().add(jlabs[i], BorderLayout.CENTER);
             }
 
-            JButton runButton = new JButton("Worst cases");
-            runButton.setPreferredSize(new Dimension(300,20));
+            JButton worstCasesButton = new JButton("Worst cases");
+            worstCasesButton.setPreferredSize(new Dimension(300, 20));
             JButton symButton = new JButton("Symmetries");
-            symButton.setPreferredSize(new Dimension(300,20));
+            symButton.setPreferredSize(new Dimension(300, 20));
+            JButton permButton = new JButton("Permutations");
+            permButton.setPreferredSize(new Dimension(300, 20));
 
-            runButton.addActionListener(e -> {
+            worstCasesButton.addActionListener(e -> {
                 // canv.setLocation(200, 200);
-                if (params.getMode() == DrawMode.FourierCartesian128) {
-                    String input = inputL.getText();
-                    String inputBin = hexToBin(input);
-                    int count = 3;
+                String input = inputL.getText();
+                String inputBin = hexToBin(input);
+                int count = 3;
+                if (params.palette32) {
 
                     jlabs[count - 3].setText("original");
                     canvasDemo.drawHash(frame.getGraphics(),
                             input, count++, params);
                     int[][][] allAttacks = {AttackIndices.sameParity4bits, AttackIndices.sameParity6bits, AttackIndices.sameParity8bits, AttackIndices.sameParity10bits};
-                    for(int[][] attacks : allAttacks) {
+                    for (int[][] attacks : allAttacks) {
                         for (int[] indices : attacks) {
                             boolean toDraw = true;
                             for (int index : indices) {
@@ -545,6 +556,20 @@ public class Applet extends JFrame {
                         }
                         count++;
                     }
+                } else {
+                    for (int i = 1; i < 4; i++) {
+                        int gap = 33 * i;
+                        if (count >= 35) break;
+                        for (int j = 0; j < inputBin.length() - gap; j++) {
+                            if (count >= 35) break;
+                            jlabs[count - 3].setText(j + ", " + (gap + j));
+
+                            if (inputBin.charAt(j) != inputBin.charAt(j + gap)) {
+                                canvasDemo.drawHash(frame.getGraphics(),
+                                        flipBits(input, j, j + gap), count++, params);
+                            }
+                        }
+                    }
                 }
             });
 
@@ -554,7 +579,7 @@ public class Applet extends JFrame {
                     String input = inputL.getText();
                     int count = 3;
 
-                    while(count - 3 < DrawParams.SymMode.FROM_HASH.ordinal()) {
+                    while (count - 3 < DrawParams.SymMode.FROM_HASH.ordinal()) {
                         params.setSymmetry(DrawParams.SymMode.values()[count - 3]);
                         canvasDemo.drawHash(frame.getGraphics(),
                                 input, count++, params);
@@ -563,15 +588,31 @@ public class Applet extends JFrame {
                 }
             });
 
+            permButton.addActionListener(e -> {
+                int permPush = params.permut;
+                if (params.getMode() == DrawMode.FourierCartesian128) {
+                    String input = inputL.getText();
+                    int count = 3;
+
+                    while (count - 3 < 32) {
+                        params.permut = count - 3;
+                        canvasDemo.drawHash(frame.getGraphics(),
+                                input, count++, params);
+                    }
+                }
+                params.permut = permPush;
+            });
+
             // frame.add(panel);
             // panel.add(canv);
-            // panel.add(runButton);
+            // panel.add(worstCasesButton);
 
             // frame.getContentPane().add(BorderLayout.CENTER, panel);
 
             frame.getContentPane().add(BorderLayout.CENTER, canvasDemo);
-            panel.add(BorderLayout.CENTER, runButton);
+            panel.add(BorderLayout.CENTER, worstCasesButton);
             panel.add(BorderLayout.SOUTH, symButton);
+            panel.add(BorderLayout.SOUTH, permButton);
             frame.getContentPane().add(BorderLayout.SOUTH, panel);
             frame.pack();
             frame.setLocationByPlatform(true);
@@ -741,23 +782,20 @@ public class Applet extends JFrame {
             params.setPrng(new PRNG128BitsInsecure(inputChanged.getText()));
             params.sampleColors();
             canvas.drawHash(getGraphics(), inputChanged.getText(), shift, params);
+            String leftText = (isChangedRight ? inputOther : inputChanged).getText();
+            String rightText = (isChangedRight ? inputChanged : inputOther).getText();
+
             display.setText("Hamming dist = " + hamDistHex(inputChanged.getText(), inputOther.getText())
 //            + ", parity changed = " + Arrays.toString(parityDist(inputChanged.getText(), inputOther.getText(), params))
 //            + " mods = " + getPaletteShift((isChangedRight ? inputOther : inputChanged).getText()) + ", "
 //            + getPaletteShift((isChangedRight ? inputChanged : inputOther).getText())
-                    + "  mods =" + sumIndex((isChangedRight ? inputOther : inputChanged).getText(), 3) + ", " +
-                    sumIndex((isChangedRight ? inputChanged : inputOther).getText(), 3)
-                    + "// " + sumIndex((isChangedRight ? inputOther : inputChanged).getText(), 7) + ", " +
-                    sumIndex((isChangedRight ? inputChanged : inputOther).getText(), 7)
-            + " syms = " + getSymmetry((isChangedRight ? inputOther : inputChanged).getText()) + ", "
-            + getSymmetry((isChangedRight ? inputChanged : inputOther).getText()));
+                    + "/ pal =" + (!params.palette32 ? (weight(leftText) + ", " + weight(rightText)) : (getPaletteShift(leftText) + ", " +
+                    getPaletteShift(rightText)))
+                    + "/ perm =" + getPerm(leftText) + ", " +
+                    getPerm(rightText)
+                    + "/ syms = " + getSymmetry(leftText) + ", "
+                    + getSymmetry(rightText));
         }
-    }
-
-    public static String newHash(int length) {
-        return SecureCrypto.getHash(
-                        Integer.toHexString(ThreadLocalRandom.current().nextInt(Integer.MIN_VALUE, Integer.MAX_VALUE)))
-                .substring(0, length);
     }
 
     /**
