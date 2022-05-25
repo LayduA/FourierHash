@@ -418,35 +418,33 @@ The second criterion is what inspired us in the design of our scheme.
 The complexity of the RandomHash function generation algorithm grows exponentially with depth, which can incur high computing time. So we design a new scheme with the following idea: instead of generating a random function and hoping that its frequency spectrum is centered around low frequences, we proceed "in reverse" and generate a frequency spectrum centered around low frequences then apply a 2-dimensional inverse Fourier transform to create the image.
 
 \subsection{2D Discrete Fourier Transform}
-The 2D Discrete Fourier Transform (2DDFT) is defined as follows:
+The 2D Discrete Fourier Transform (2DDFT) of a function $f : (\mathbb{Z} \times \mathbb{Z}) \rightarrow \mathbb{C}$ is another function $\mathcal{F}: (\mathbb{Z} \times \mathbb{Z}) \rightarrow \mathbb{C}$ defined as follows:
 $$\mathcal{F}(u,v) = \frac{1}{MN}\sum\limits_{x=0}^{M-1}\sum\limits_{y=0}^{N-1}f(x,y) e^{-i2\pi(ux/M + vy/N)}$$
-and the 2D Inverse Fourier Transform (2DIDFT):
+where $M$ and $N$ are the bounds of $f$. From $\mathcal{F}$, we can get $f$ back using the 2D Inverse Discrete Fourier Transform (2DIDFT):
 $$f(x,y) = \sum\limits_{u=0}^{M-1}\sum\limits_{v=0}^{N-1}\mathcal F(u,v) e^{i2\pi(ux/M + vy/N)}$$
-where $M$ and $N$ are the dimensions of the input image, and $f(x,y)$ denotes the value of the pixel at position $(x,y)$. Although $\mathcal{F}(u,v)$ is defined for any $u,v \in \mathbb Z$, since $\mathcal F(u + M, v) = \mathcal F(u, v + N) = \mathcal F(u,v)$, we restrict the input domain to $[0,M-1]$ for $u$ and $[0,N-1]$ for $v$ (similarly to how we would sometimes restrict the input domain to $[0, 2\pi)$ for trigonometric functions).
+
 
 \subsection{Spectrum generation}
-What we would like to achieve is to map a hash to an array of coefficients in the frequency domain, and then apply the inverse 2D Transform on this frequency spectrum to get a fingerprint [UNCLEAR]. In this section we give an insight as to how we would generate this spectrum.
+What we would like to achieve is to map a hash $h$ to an array of coefficients $S \in \mathbb{C}^{m\times n}$, and then apply the 2D inverse Fourier Transform on $S$ to obtain a fingerprint $F \in \mathbb{P}^{m \times n}$. In this section we detail the generation of $S$. We call $S$ a \textit{spectrum}.
 
-First, we have that $\mathcal{F}(u,v)$ is a complex number, meaning each element in the output space of $\mathcal F$ can be thought of as a pair of real numbers (either complex and imaginary parts in a Cartesian system or a modulus and phase in a polar system). 
-
-There is a symmetry in the output space: indeed, we have 
+First, we notice that $S$ must be symmetric up to complex conjugation: 
 \begin{align*}
     \mathcal{F}(-u,-v) &= \frac{1}{MN}\sum\limits_{x=0}^{M-1}\sum\limits_{y=0}^{N-1}f(x,y) e^{-i2\pi(-ux/M - vy/N)}\\
     &=  \frac{1}{MN}\sum\limits_{x=0}^{M-1}\sum\limits_{y=0}^{N-1}f(x,y) e^{i2\pi(ux/M + vy/N)}\\
     &= \mathcal{F}(u,v)^*
 \end{align*}
-where $(\cdot)^*$ denotes the complex conjugate. That means we actually have to sample $MN/2$ complex numbers in order to generate a $M \times N$ spectrum.
+where $(\cdot)^*$ denotes the complex conjugate. Thus, we actually have to generate $MN/2$ pairs of complex conjugates in order to generate a $M \times N$ spectrum.
 
-Figure X shows a graphical representation of how we generate our spectrum. The darker squares represent a number with a greater module.
+We want the spectrum to be concentrated around the axes. To achieve that, we will scale the coefficients so that the ones closer to whe axes have a greater module. Figure X shows a graphical representation of how we generate our spectrum. The darker squares represent a number with a greater module.
 
-[SOMETHING ABOUT DISTANCE HERE PROBABLY]
-
-Once the spectrum is generated, the 2DIDFT is applied. The resulting array is then scaled by the inverse of its mean in order to have a mean of 1 [bc very few have values $> 1$], and then multiplied by 255 to get an array of gray pixels. We apply the modulo 255 operator to values greater than 255 to generate the final pixel array. 
+Once the spectrum is generated, we apply the 2DIDFT to get a 2D array of complex numbers. 
 
 \subsubsection{Mapping bits to frequences}
-We would like every bit to have roughly the same "importance" with respect to the final image. Therefore, we map words of 4 bits to frequences according to the encoding depicted on figure [FIGURE ENCODING], in which flipping one bit changes both the phase and the module of the resulting frequence. One word is mapped to 2 frequences, which are places according to [FIGURE SPECTRUM].
+We would like every bit to have roughly the same "importance" with respect to the final image. Therefore, we map words of 4 bits to complex coefficients according to the encoding depicted on figure [FIGURE ENCODING], so that flipping one bit changes both the phase and the module of the resulting frequence. Each coefficient is then placed twice on the spectrum, such that the average distance to the origin of every word is roughly the same. [FIGURE SPECTRUM] shows where each coefficient is placed on the spectrum.
 
-\Cref{fig:nothing}- shows the resulting fingerprints wits $h = \dots$ and $h^\prime = \dots$. We can see that the results are very hard to distinguish. Furthermore, the PSI is 0.6367, which is more than the threshold value, therefore, we consider those hashes to be visually indistinguishable.
+During testing, we noticed that the 2DIDFT tends to output mainly very small values (of the order of $10^{-4}$). Therefore, we normalize the spectrum by dividing each coefficient by the average module of spectrum. To get a the color value of the pixel at position $(x,y)$, we multiply the module of the coefficient at position $(x,y)$ with 255. (reducing modulo 256 if necessary).
+
+\Cref{fig:nothing} shows the resulting fingerprints wits $h = \dots$ and $h^\prime = \dots$. We can see that the results are very hard to distinguish. Furthermore, the PSI is 0.6367, which is more than the threshold value, therefore, we consider those hashes to be visually indistinguishable.
 
 \begin{center}
 \begin{figure}
@@ -461,12 +459,12 @@ We would like every bit to have roughly the same "importance" with respect to th
 
 \subsubsection{Filtering}
 
-During testing, we noticed that the high-contrast zones due to overflows tend to stand out to the eye and thus help with the distinction of fingerprints [REF WOULD BE NICE]. Therefore, we decided to apply a simple filter to enforce very high contrast zones: namely, from an array $a$ of real values issued from the 2DIDFT, we apply
-$$f(a, x,y) = \begin{cases}255 & \text{if }  a(x,y) \geq 0.5\\ 
+We notice that the high-contrast zones (that were produced by overflows) tend to stand out to the eye and thus help with the distinction of fingerprints [REF WOULD BE NICE]. Therefore, we apply a simple filter to enforce very high contrast zones: namely, from $S$, get a fingerprint $F$ by computing
+$$F[x,y] = \begin{cases}1 & \text{if }  |S[x,y]| \geq 0.5\\ 
 			0 & \text{otherwise} \end{cases}$$
-
 \begin{center}
-\Cref{fig:oneFunc}- shows the two same $h$ and $h^\prime$. As expected, the two images are more easily distinguished. The PSI is 0.2135.
+We also slightly change the normalization of $S$: we perform an additional division by 2 on every coefficient such that the spectrum has now an average module of $\frac{1}{2}$. We do that to try and have black and white zones of roughly the same areas.
+\Cref{fig:oneFunc} shows the two same $h$ and $h^\prime$. As expected, the two images are more easily distinguished. The PSI is 0.2135.
 
 \begin{figure}
     \centering
@@ -481,7 +479,7 @@ $$f(a, x,y) = \begin{cases}255 & \text{if }  a(x,y) \geq 0.5\\
 \subsubsection{Number of functions}
 \label{rgbSect}
 
-While filtering offers a clear improvement, there is still an issue: we have to map $|h|$ bits to frequences, which results in having to sample spectrum too far away from the axes. To address this problem, we instead perform the sampling procedure [3] times. That way we have 3 spectra array $a_{red}, a_{green}, a_{blue}$, each corresponding to one color channel. The color of a pixel at position is $C(x,y) := (f(a_{red}, x, y), f(a_{green}, x, y), f(a_{blue}, x, y))$ where $f$ is the same filter as in the previous section. \Cref{fig:threeFuncs} shows the two same hashes. We can see that flipping one bit changes one spectrum (in this case, the spectrum corresponding to the blue channel). The resulting images are therefore similarly close to the previous step (Haar-PSI = 0.2158).
+While filtering offers a clear improvement, we are faced with an issue: we have to map $|h|$ bits to frequences. Standard hash lengths (128,256,512 bits) result in having to sample many coefficients, which will force us to sample coefficients too far away from the axes which translate to too much noise in the fingerprints. To address this problem, we perform the sampling procedure 3 times to generate 3 spectra $S_{0}, S_{1}, S_{2}$.  \Cref{fig:threeFuncs} shows the two same hashes when 3 functions are sampled. The current implementation of Fourier Hash supports 128-bit hashes.
 
 \begin{center}
 \begin{figure}
@@ -496,25 +494,29 @@ While filtering offers a clear improvement, there is still an issue: we have to 
 
 \subsubsection{Colors}
 
-As we have just seen, a difference in colors helps with distingishibility. We would thus have a lot to gain picking a different set of colors for different hashes. As we would like to use colors more colors than the combinations of the pure colors (colors that have only one non-zero), we must slightly change the way we assign a color to a pixel: we must choose $2^3$ colors to account for every possibility of the filtered values of $a_0, a_1$ and $a_2$. Suppose we have an array named $Colors$ of length 8, containing rgb encodings.
+We would like to improve the scheme by picking different set of colors for different hashes. We therefore have to define the way we assign a color to a pixel: we must choose $2^3$ colors to account for every possibility of the values of $S_0, S_1$ and $S_2$. Suppose we have an array named $Colors$ of length 8, containing rgb encodings.
 \begin{table}
 	\begin{center}
 	\begin{tabular}{c|c}
-		Filtered values of $a_0(x,y)$, $a_1(x,y)$, $a_2(x,y)$ & $C(x,y)$\\
+		$S_0[x,y]$, $S_1[x,y]$, $S_2[x,y]$ & $F[x,y]$\\
 		\hline 0,   0,   0 & $Colors[0]$\\
-		 0,   0, 255 & $Colors[1]$\\
-		 0, 255,   0 & $Colors[2]$\\
-		 0, 255, 255 & $Colors[3]$\\
-		 255,   0,   0 & $Colors[4]$\\
-		 255,   0, 255 & $Colors[5]$\\
-		 255, 255,   0 & $Colors[6]$\\
-		255, 255, 255 & $Colors[7]$\\
+		 0, 0, 1 & $Colors[1]$\\
+		 0, 1, 0 & $Colors[2]$\\
+		 0, 1, 1 & $Colors[3]$\\
+		 1, 0, 0 & $Colors[4]$\\
+		 1, 0, 1 & $Colors[5]$\\
+		 1, 1, 0 & $Colors[6]$\\
+		 1, 1, 1 & $Colors[7]$\\
 	\end{tabular}
 	\caption{Color mapping}
 	\end{center}
 \end{table}
 
-Note that the system described in \cref{rgbSect} corresponds to picking the color to be the filtered values directly. To choose the set of 8 colors that will make the output set of $C(x,y)$, we use parity bits:
+We bow go further into details regarding how we construct the $Colors$ array. Once again, we would like every bit to have more or less the same impact on the resulting image. To do that, we will make use of two operations: modulos and additions modulo 2 (i.e XORs). First, we have to set the number of possible colors: we would like to have as many as possible as to maximize the diversity of the outputs. However, too much color possibilities would imply some of these colors are very close to each other up to the point where they are not distinguishable for a great part of the population. After testing different numbers, we chose to set the total number of colors to be 32.
+
+We use a fixed 32-color array, which we call the \textit{palette}. [ANNEX] shows the colors that make up the palette.
+
+The first step we chose to implement is to rotate the palette, so that different hashes will have different set of colors. In order to compute the magnitude of the rotation, we compute $h \mod p_{\text{shift}}$, where $h$ is the hash interpreted as an integer. Once the palette is rotated, we have to pick colors indices. To do this, we perform an addition modulo 2 (XOR) on certain bits of the hash, which we call \textit{parity bits}. Each bit of $h$ is a part of exactly one parity bit.
 
 Let the parity bits $p_0$ to $p_{15}$ be defined as 
 \begin{equation*}
@@ -528,40 +530,75 @@ We compute the colors indices:
  $$c_j = p_{2j} || p_{2j+1} \text{ for } j \in \{0,\dotsc,7\}$$ where $||$ denotes concatenation, therefore $c_j \in \{0,1,2,3\}$.
  Let $Palette$ be a fixed 32 colors palette. We fill $Colors$ as :
 $$Colors[j] = Palette[4j + c_j] \text{ for } j \in \{0, \dotsc, 7\}$$
-Figure [FIGURE] depicts this process, and \cref{fig:threeFuncsColor} shows the two hashes. We can see that flipping one bit results in one color change. While in our case the results are quite obviously different (Haar PSI = 0.25 [COMMENT ON THIS]), there are cases where only a very small portion of the image is of a certain color, which would yield almost no difference should this color be changed.
+Figure [FIGURE] depicts this process.
 
 \begin{center}
 \begin{figure}
     \centering
     \includegraphics[width=3cm]{figures/Colors.png}
-    \includegraphics[width=3cm]{figures/ColorsP67Psi0255.png}
-    \caption{The two fingerprints, with 3 functions}
+    \hspace{3pt}
+    \includegraphics[width=3cm]{figures/ColorsP67Psi02058.png}
+    \caption{The two fingerprints, with color sampling}
     \label{fig:threeFuncsColor}
 \end{figure}
 \end{center}
 
-An even stronger attack would be to flip 2 bits that correspond to the same parity bit: flipping both $b_j$ and $b_{j+12k}$ yields a fingerprint that differs only in the shapes of the patterns, which may not be significant enough.
+\subsubsection{Color permutations}
 
-\subsubsection{Palette shift and permutation}
-As having only one color changed may result in very little zones switching colors, we would like to change more than one color if one bit is flipped. To achieve that, we apply a transformation to the palette before extracting the colors: namely, we shift it by $h \mod p$, where $h$ is interpreted as a 128-bit integer, and $p$ is a prime number less than 32 [MAYBE JUST ODD NUMBER] to be determined later. 
+One thing we noticed during experimentation is that if two hashes have the same parity bits and same palette shift, then the colors will be the same and at the same place on the fingerprint. We introduce a permutation on the color array in order to address this issue. The way we compute the permutation is as follows. From [ref], we have a $(8, [4 OR 5])$-code, which means a code with words of length 8 such that the minimal distance between any two words is [4 OR 5]. We order arbitrarily the [2688 OR 616] words that make up this code. To get a permutation, we compute $j = h \mod [2683 OR 613]$ (which is prime). The permutation is the $j$-th word of the code.
 
-Once the colors are extracted, we re-order the array according to a permutation extracted from the hash. The set of possible permutations is a code that achieve a satisfactory maximal distance.
+\begin{center}
+\begin{figure}
+    \centering
+    \includegraphics[width=3cm]{figures/Shift.png}
+    \hspace{3pt}
+    \includegraphics[width=3cm]{figures/ShiftP67.png}
+    \caption{The two fingerprints, with the shift and permutation}
+    \label{fig:shifted}
+\end{figure}
+\end{center}
+
+\Cref{fig:shifted} shows the two fingerprints when the shift and permutations are performed. The PSI is 0.1810
 
 
 \subsubsection{Symmetries}
 Humans tend to perform better at identifying symmetrical objects [ref]. Therefore, we would like our fingerprints to be symmetric. The way we do this is to first generate the fingerprint as we did previously, and then apply some symmetry according to a symmetry mode [DETAILS].
 
-In order to determine the symmetry mode, we simply compute $h \mod q$, where $q \neq p$ is a small prime (in the order of 20). 
+In order to determine the symmetry mode, we compute $h \mod 23$. The reason we chose this number is that is prime, small enough that we can implement different symmetry modes.
 
+\begin{center}
+\begin{figure}
+    \centering
+    \includegraphics[width=3cm]{figures/Symmetry.png}
+    \hspace{3pt}
+    \includegraphics[width=3cm]{figures/SymmetryP67.png}
+    \caption{The two fingerprints, with the shift and permutation}
+    \label{fig:shifted}
+\end{figure}
+\end{center}
+
+
+
+\subsection{Collisions}
+\newcommand{\foralls}{\hspace{2pt}\forall\hspace{2pt}}
+We now analyse the different collisions against our scheme. 
+
+Let $h$ be a hash that produces fingerprint $F$, and $h^\prime \neq h$ a hash that produces fingerprint $F^\prime$. We define as collisions the following cases:
+\begin{itemize}
+	\item $h^\prime$ and $h$ use the same symmetry mode $\iff h = h^\prime \mod 23$
+	\item $h^\prime$ and $h$ use the same palette shift $\iff h = h^\prime \mod p_{\text{shift}}$
+	\item $h^\prime$ and $h$ use the same colors (up to permutation) $\iff (h = h^\prime \mod p_{\text{shift}}) \wedge (p_i = p^\prime_i \foralls i)$
+	\item $h^\prime$ and $h$ use the exact same colors $\iff (h = h^\prime \mod p_{\text{shift}}) \wedge (p_i = p^\prime_i \foralls i) \wedge (h^\prime = h \mod [2683 OR 613])$
+\end{itemize}
+
+The main idea [TO EXPAND/CLARIFY/PROVE] is that the more different two spectra are, the more different the fingerprints will look. That way, we can relate the difference between fingerprints with the Hamming distance between the hashes.
 To have the same the same symmetry, one would have to achieve $k - \ell = 0\mod (|2| \mod q)$. Having the same palette shift AND same symmetry yields
 $$\begin{cases}
 k - \ell &= 0 \mod (|2| \mod p)\\
 k - \ell &= 0 \mod (|2| \mod q)
-\end{cases} \iff k - \ell = 0 \mod \text{lcm}(|2| \mod p, |2| \mod q)$$.
+\end{cases} \iff k - \ell = 0 \mod \text{lcm}(|2| \mod p, |2| \mod q)$$
 
-Picking $p, q \in \{23, 29\}$ yields $\text{lcm}(|2| \mod p, |2| \mod q) = \text{lcm}(11, 28) = 308$. Therefore, if 2 bits are flipped, then either the palette is shifted differently, or the symmetry is not the same, or both. Either of these cases yields visually distinguishable results.
-
-\subsection{Worst cases}
+Picking $p, q \in \{23, p_{\text{shift}}\}$ yields $\text{lcm}(|2| \mod p, |2| \mod q) = \text{lcm}(11, 28) = 308$. Therefore, if 2 bits are flipped, then either the palette is shifted differently, or the symmetry is not the same, or both. Either of these cases yields visually distinguishable results.
 $$	h + \sum\limits_\ell 2^\ell - \sum\limits_k 2^k = h \mod p $$
 
 If only two bits are changed we have
@@ -573,7 +610,7 @@ If only two bits are changed we have
 	2^{12m} &= 1 \mod p \\
 	12m &= 0 \mod (|2| \mod p)
 \end{align*}
-We now analyse the worst case scenarios against our scheme. Let us assume $n$ bits were flipped. Let us pick $p=29, q=23$. We have $pq = 667$, $|2| \mod p = 28, |q| \mod q = 11$
+Let us assume $n$ bits were flipped. Let us pick $p=p_{\text{shift}}, q=23$. We have $pq = 667$, $|2| \mod p = 28, |q| \mod q = 11$
 \begin{itemize}
 	\item $n=1$ : The palette is flipped, the shift is different, the symmetry is different.
 	\item $n=2$ : Either the shift is different, the symmetry is different, or both.

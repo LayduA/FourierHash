@@ -96,7 +96,7 @@ public class GenFunc {
     public static double cap(double val, double low, double high) {
         if (val > high)
             return high;
-        return val < low ? low : val;
+        return Math.max(val, low);
     }
 
     public double eval(double x, double y) {
@@ -104,6 +104,7 @@ public class GenFunc {
             System.out.println("error in function of type " + type.name());
             return 0;
         }
+        //if(x > -1) return Math.random() * 2 - 1;
         switch (type) {
             case CONST:
                 return value;

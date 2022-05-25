@@ -39,7 +39,7 @@ def indices(n, k, m, r=1, p=0):
 # for i in range(3,32):
 #     if len([p for p in kmodP if p + i in kmodP]) == 0:
 #         print(i)
-# print([k % 28 for k in kmodP])
+# print([k % (pShift -1) for k in kmodP])
 # print(orders)
 def f(x):
     temp = x % 23
@@ -55,6 +55,7 @@ def mod2(arrX):
 
 #combinations = every assignment of nVar variables
 pSym = 23
+pShift = 31
 nVar = 10
 combinations = np.zeros((1 << nVar, nVar))
 for i in range(combinations.shape[0]):
@@ -75,7 +76,7 @@ def getSumModP(x, i, p):
 count = 0
 for s in range(12):
     for c in range(combinations.shape[0]):
-        if getSumModP(c, s, pSym) == 0 and getSumModP(c, s, 29)==0 and combinations[c].sum() != 0:
+        if getSumModP(c, s, pSym) == 0 and getSumModP(c, s, pShift)==0 and combinations[c].sum() != 0:
             print(combinations[c], powershifted[s])
             count += 1
 if count == 0:
@@ -85,15 +86,15 @@ zeroVal = 3
 
 count = 0
 
-mod23 = (2**((np.arange(10) * 12) % (pSym-1)) % pSym)
-mod29 = (2**((np.arange(10) * 12) % 28) % 29)
+modSym = (2**((np.arange(10) * 12) % (pSym-1)) % pSym)
+modpShift = (2**((np.arange(10) * 12) % (pShift -1)) % pShift)
 
 pPerm = 613
-print(mod23, mod29)
+print(modSym, modpShift)
 for s in range(12):
 
-    for n in range(4,5,1):
-
+    for n in range(4,11,1):
+        print("n = ", n)
         plusMinusBits = np.array([])
         for i in range(1 << n):
             plusMinusBits = np.append(plusMinusBits, intToPlusMinus(i, n))
@@ -104,22 +105,28 @@ for s in range(12):
             #print(comb, 2**(12*comb % 22) % 23)
                 indices = (12 * comb) + s
                 for signs in plusMinusBits:
-                    mod23 = (2**(indices % (pSym-1)) % pSym * signs)
-                    mod29 = (2**(indices % 28) % 29) * signs
+                    modSym = (2**(indices % (pSym-1)) % pSym * signs)
+                    modpShift = (2**(indices % (pShift -1)) % pShift) * signs
                     modPerm= [pow(2, int(i), pPerm) for i in indices] * signs
-                    if np.sum(mod23) % pSym == 0 and np.sum(mod29) % 29 == 0 and np.sum(modPerm) % pPerm == 0:
+                    if np.sum(modSym) % pSym == 0 and np.sum(modpShift) % pShift == 0 and np.sum(modPerm) % pPerm == 0:
                         #if signs[0] > 0:
-                        print(indices * signs, modPerm.sum())#, comb, s, mod23, mod29, np.sum(mod29)) #print(comb, 2**(indices % 22) % 23, signs, ((indices) * signs))
+                        print(indices * signs, modPerm.sum())#, comb, s, mod23, modpShift, np.sum(modpShift)) #print(comb, 2**(indices % 22) % 23, signs, ((indices) * signs))
                         count += 1
 print(count)
 pairs = []
-perms = permutations(range(10), 2)
+perms = []
+for perm in permutations(range(10), 2):
+    perms.append(perm)
+for d in range(4):
+    perms.append([120 + d, 124 + d])
 
 for p1 in perms:
-    for p2 in permutations(range(10), 2):
+    for p2 in perms:
         pairs.append(([sorted(p1),sorted(p2)]))
 pairs = np.unique(pairs, axis=0)
 
+#pairs = pairs.reshape((len(pairs)//2, 2))
+print(pairs.shape)
 if True:
     plusMinusBits = np.array([])
     for i in range(1 << 4):
@@ -128,12 +135,16 @@ if True:
     for s1 in range(12):
         for s2 in [number for number in range(0,12) if number != s1]:
             for comb in pairs:
-                comb = comb.reshape((4,))
-                indices = (12 * comb) + [s1,s1,s2,s2]
+                indices = [0,0,0,0]
+                indices[0], indices [1] = (comb[0] * (1 if comb[0][0] >= 120 else 12)) + s1
+                indices[2], indices [3] = (comb[1] * (1 if comb[0][0] >= 120 else 12)) + s2
+                if indices[0] == indices[2] or indices[1] == indices[3]:
+                    continue
+                indices = np.array(indices)
                 for signs in plusMinusBits:
-                    mod23 = (2**(indices % (pSym-1)) % pSym * signs)
-                    mod29 = (2**(indices % 28) % 29) * signs
+                    modSym = (2**(indices % (pSym-1)) % pSym * signs)
+                    modpShift = (2**(indices % (pShift -1)) % pShift) * signs
                     modPerm= [pow(2, int(i), pPerm) for i in indices] * signs
-                    if np.sum(mod23) % pSym == 0 and np.sum(mod29) % 29 == 0 and np.sum(modPerm) % pPerm == 0:
+                    if np.sum(modSym) % pSym == 0 and np.sum(modpShift) % pShift == 0 and np.sum(modPerm) % pPerm == 0:
                         #if signs[0] > 0:
-                        print(indices * signs, modPerm.sum())#, comb, s, mod23, mod29, np.sum(mod29)) #print(comb, 2**(indices % 22) % 23, signs, ((indices) * signs))
+                        print(indices * signs, modPerm.sum())#, comb, s, mod23, modpShift, np.sum(modpShift)) #print(comb, 2**(indices % 22) % 23, signs, ((indices) * signs))

@@ -143,4 +143,11 @@ public class ComplexNumber {
     return new ComplexNumber(r * Math.cos(phi), r * Math.sin(phi));
   }
 
+  @Override
+  public String toString() {
+    return "{" +
+            + real +
+            ", " + imaginary +
+            '}';
+  }
 }

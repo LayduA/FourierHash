@@ -1,5 +1,9 @@
 package src.hashops;
 
+import org.apache.commons.math3.complex.Complex;
+import org.apache.commons.math3.transform.DftNormalization;
+import org.apache.commons.math3.transform.FastFourierTransformer;
+import org.apache.commons.math3.transform.TransformType;
 import src.crypto.PRNG128BitsInsecure;
 import src.fourier.ComplexNumber;
 import src.fourier.FFT;
@@ -16,7 +20,11 @@ import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,7 +38,7 @@ import static src.ui.Applet.*;
 
 public class HashDrawer extends JPanel {
 
-    private static final int DEPTH = 10;
+    private static final int DEPTH = 4;
     public static int[][] horribleMagic = new int[][]{
             {-1, 10, -1, -1, -1},
             {-1, 6, 11, -1, -1},
@@ -110,7 +118,7 @@ public class HashDrawer extends JPanel {
         } else if (drawMode == DrawMode.Random128) {
             drawFuncHash(g, hash, shift, DEPTH);
         } else if (drawMode.name().startsWith("Fourier")) {
-            drawFourierHash(g, hash, shift, params);
+            drawFourierHashClean(g, hash, shift, params);
         }
 
     }
@@ -132,7 +140,7 @@ public class HashDrawer extends JPanel {
                 doubleR = fr.eval((i * 2.0) / bi.getWidth() - 1, (j * 2.0) / bi.getHeight() - 1);
                 doubleG = fg.eval((i * 2.0) / bi.getWidth() - 1, (j * 2.0) / bi.getHeight() - 1);
                 doubleB = fb.eval((i * 2.0) / bi.getWidth() - 1, (j * 2.0) / bi.getHeight() - 1);
-                rgb = (int) Math.floor(doubleR * 127.5 + 127.5) << 16 | (int) Math.floor(doubleG * 127.5 + 127.5) << 8 | (int) Math.floor(doubleB * 127.5 + 127.5);
+                rgb = (int) Math.floor(doubleG * 127.5 + 127.5) << 16 | (int) Math.floor(doubleG * 127.5 + 127.5) << 8 | (int) Math.floor(doubleG * 127.5 + 127.5);
 
                 bi.setRGB(i, j, (int) rgb);
                 flatArrayR[i * bi.getWidth() + j] = (int) Math.floor(doubleR * 127.5 + 127.5);
@@ -141,7 +149,6 @@ public class HashDrawer extends JPanel {
             }
         }
 
-        g.drawImage(bi, getShiftX(shift), getShiftY(shift), null);// getShiftX(shift, 5, 15, 985), getShiftY(shift, 5,
 
         // Spectral analysis
         double[] amplitudeR = new FFT(flatArrayR, bi.getWidth(), bi.getHeight()).output.getMagnitude();
@@ -177,12 +184,14 @@ public class HashDrawer extends JPanel {
                 rVal = (int) Math.floor(outputR[i][j] * 255);
                 gVal = (int) Math.floor(outputG[i][j] * 255);
                 bVal = (int) Math.floor(outputB[i][j] * 255);
-                spectrum.setRGB(i, j, rVal << 16 | gVal << 8 | bVal);
+                spectrum.setRGB(i, j, gVal << 8 | gVal << 16 | gVal);//rVal << 16 | gVal << 8 | bVal);
             }
         }
         // null);
-        if (shift == 1)
+        g.drawImage(bi, getShiftX(shift), getShiftY(shift), null);// getShiftX(shift, 5, 15, 985), getShiftY(shift, 5,
+        if (shift == 1) {
             g.drawImage(spectrum, getShiftX(shift) + (int) (getHashWidth(shift) * 1.1), getShiftY(shift), null);
+        }
     }
 
     private double[] normalizeMean(double[] in) {
@@ -216,8 +225,24 @@ public class HashDrawer extends JPanel {
         setValues(x, y, targetArr, moduli, phis, size);
     }
 
+    private void setValues(int x, int y, Complex[][] targetArr, Complex value) {
+        targetArr[x][y] = new Complex(value.getReal(), value.getImaginary());
+        int size = targetArr.length;
+        if (x != 0 && y == 0) {
+            targetArr[size - x][y] = new Complex(value.getReal(), -value.getImaginary());
+        } else if (x == 0 && y != 0) {
+            targetArr[x][size - y] = new Complex(value.getReal(), -value.getImaginary());
+        } else if (x != 0) {
+            targetArr[size - x][size - y] = new Complex(value.getReal(), -value.getImaginary());
+        }
+    }
+
     private double[] mapToComplex(int bits) {
         return new double[]{reals[bits], ims[bits]};
+    }
+
+    private Complex mapToComplexClean(int bits) {
+        return new Complex(reals[bits], ims[bits]);
     }
 
     public int[] drawFourierHash(Graphics g, String hash, int shift, DrawParams params) {
@@ -282,7 +307,7 @@ public class HashDrawer extends JPanel {
 
             nBitsPerElement = 4;
 
-            int groupSize = nBitsPerElement * 3; // nFunc;
+            int groupSize = nBitsPerElement * params.getNFunc();
             int nGroups = params.getMode().length() / groupSize;
             int maxInd = nGroups * groupSize;
             int remainder = params.getMode().length() - maxInd;
@@ -298,11 +323,10 @@ public class HashDrawer extends JPanel {
                 for (int k = 0; k < complexes.length; k++) {
                     StringBuilder sb = new StringBuilder();
                     for (int i = 0; i < nBitsPerElement; i++) {
-                        sb.append(binTemp.charAt(ind + ((ind / groupSize * 2 + nBitsPerElement * k + i) % groupSize)));
+                        sb.append(binTemp.charAt(ind + ((nBitsPerElement * k) % groupSize + i)));
                     }
                     complexes[k] = mapToComplex(Integer.parseInt(sb.toString(), 2));
                 }
-
 //                for (int k = 0; k < complexes.length; k++) {
 //                    complexes[k] = mapToComplex(Integer.parseInt(binTemp.substring(ind + nBitsPerElement * k, ind + nBitsPerElement * (k + 1)), 2));
 //                }
@@ -317,18 +341,19 @@ public class HashDrawer extends JPanel {
             }
 
             if (params.getMode() == DrawMode.FourierCartesian128) {
-                int x = horribleMagicIndex[maxInd / groupSize][0];
-                int y = horribleMagicIndex[maxInd / groupSize][1];
+                ind = maxInd;
+                int x = horribleMagicIndex[ind * 2 / groupSize][0];
+                int y = horribleMagicIndex[ind * 2 / groupSize][1];
                 //BEGIN FREQUENCES SAMPLING
-                for (int i = 4; i < remainder / nBitsPerElement; i++) {
-                    complexes[i] = mapToComplex(Integer.parseInt(binTemp.substring(ind + nBitsPerElement * i, ind + nBitsPerElement * (i + 1)), 2));
-                    moduli[i] = params.dist(x, y) * Math.sqrt(complexes[i][0] * complexes[i][0] + complexes[i][1] * complexes[i][1]);
-                    phis[i] = Math.atan2(complexes[i][1], complexes[i][0]);
+                for (int k = 0; k < remainder / nBitsPerElement; k++) {
+                    complexes[k] = mapToComplex(Integer.parseInt(binTemp.substring(ind + nBitsPerElement * k, ind + nBitsPerElement * (k + 1)), 2));
+                    moduli[k] = params.dist(x, y) * Math.sqrt(complexes[k][0] * complexes[k][0] + complexes[k][1] * complexes[k][1]);
+                    phis[k] = Math.atan2(complexes[k][1], complexes[k][0]);
                 }
-                for (int i = remainder / nBitsPerElement; i < complexes.length; i++) {
-                    moduli[i] = params.dist(x, y);
-                    phis[i] = 0;
-                }
+//                for (int i = remainder / nBitsPerElement; i < complexes.length; i++) {
+//                    moduli[i] = params.dist(x, y);
+//                    phis[i] = 0;
+//                }
                 setValues(x, y, dataSpectrums, moduli, phis, spectrumWidth);
                 //END FREQUENCES SAMPLING
             }
@@ -373,7 +398,6 @@ public class HashDrawer extends JPanel {
                 }
             }
         }
-
         Object[] inverseFFTsO = Arrays.stream(dataSpectrums).map(spec -> new InverseFFT().transform(spec)).toArray();
         TwoDArray[] inverseFFTs = new TwoDArray[inverseFFTsO.length];
         double[][] imageValues = new double[inverseFFTs.length][];
@@ -381,7 +405,7 @@ public class HashDrawer extends JPanel {
 
         for (int i = 0; i < inverseFFTsO.length; i++) {
             inverseFFTs[i] = (TwoDArray) inverseFFTsO[i];
-            imageValues[i] = inverseFFTs[i].DCToCentre(normalizeMean(inverseFFTs[i].getMagnitude()));
+            imageValues[i] = normalizeMean(inverseFFTs[i].getMagnitude());//inverseFFTs[i].DCToCentre(normalizeMean(inverseFFTs[i].getMagnitude()));
             mags[i] = normalize(dataSpectrums[i].getMagnitude());
         }
 
@@ -457,7 +481,6 @@ public class HashDrawer extends JPanel {
                 getShiftX(shift) - (params.dontScale ? 100 : 0), getShiftY(params.dontScale ? 1 : shift), null)) {
             System.out.println("error drawing image");
         }
-        ;
 
 //        if (shift == 1 || shift == 2) {
 //            g.drawImage(scale((params.isSeePhase() ? centerPhase : centerSpectrum), getHashWidth(shift), getHashHeight(shift)), getShiftX(shift) + (int) (getHashWidth(shift) * 1.1), getShiftY(shift), null);
@@ -466,8 +489,169 @@ public class HashDrawer extends JPanel {
 
     }
 
+    public Complex[][] generateSpectrum(DrawParams params, String hash, int funcIndex) {
+
+        int nBitsPerElement = 4;
+
+        Complex[][] spectrum = new Complex[256][256];
+
+        int groupSize = nBitsPerElement * params.getNFunc();
+        int nGroups = params.getMode().length() / groupSize;
+        int maxIndex = nGroups * groupSize;
+        int curr4Bits;
+        Complex complex;
+        int[] coords;
+
+        for (int i = 0; i < 256; i++) {
+            for (int j = 0; j < 256; j++) {
+                spectrum[i][j] = new Complex(0, 0);
+            }
+        }
+
+        for (int currentIndex = 0; currentIndex <= maxIndex; currentIndex += groupSize) {
+
+            if (currentIndex + funcIndex * nBitsPerElement >= params.getMode().length()) continue;
+
+            curr4Bits = extract4Bits(hash, currentIndex / 4 + funcIndex);
+
+            complex = mapToComplexClean(curr4Bits);
+
+            if (currentIndex < maxIndex) {
+                coords = horribleMagicIndex[currentIndex / groupSize];
+                setValues(coords[0], coords[1], spectrum, complex.multiply(params.dist(coords[0], coords[1])));
+            }
+            if (params.getMode().length() == 128) {
+                coords = horribleMagicIndex[(currentIndex + maxIndex) / groupSize];
+                setValues(coords[0], coords[1], spectrum, complex.multiply(params.dist(coords[0], coords[1])));
+            }
+        }
+        return spectrum;
+    }
+
+    public Complex[][] ifft2D(Complex[][] source) {
+        Complex[][] out = new Complex[source.length][source[0].length];
+        Complex[][] intermediate = new Complex[source.length][source[0].length];
+        FastFourierTransformer fft = new FastFourierTransformer(DftNormalization.STANDARD);
+
+        for (int i = 0; i < source.length; i++) {
+            Complex[] newCol = fft.transform(source[i], TransformType.INVERSE);
+            Complex acc = new Complex(0, 0);
+            for (int j = 0; j < out[0].length; j++) {
+                acc = acc.add(source[i][j]);
+            }
+            for (int j = 0; j < source.length; j++) {
+                intermediate[i][j] = new Complex(newCol[j].getReal(), newCol[j].getImaginary());
+            }
+        }
+
+
+        for (int i = 0; i < source.length; i++) {
+            Complex[] column = getColumn(intermediate, i);
+            Complex[] newRow = fft.transform(column, TransformType.INVERSE);
+            for (int j = 0; j < source.length; j++) {
+                out[j][i] = new Complex(newRow[j].getReal(), newRow[i].getImaginary());
+            }
+        }
+
+        Complex acc = new Complex(0, 0);
+        for (int i = 0; i < out.length; i++) {
+            for (int j = 0; j < out[0].length; j++) {
+                acc = acc.add(out[i][j]);
+            }
+        }
+        return out;
+    }
+
+    private Complex[] getColumn(Complex[][] arr, int ind) {
+        Complex[] col = new Complex[arr.length];
+        for (int i = 0; i < col.length; i++) {
+            col[i] = new Complex(arr[i][ind].getReal(), arr[i][ind].getImaginary());
+        }
+        return col;
+    }
+
+    public Complex[][] normalizeMean(Complex[][] arr) {
+        double mean = 0;
+        int size = arr.length * arr[0].length;
+
+        for (int i = 0; i < arr.length; i++) {
+            for (int j = 0; j < arr[0].length; j++) {
+                mean += arr[i][j].abs() / size;
+            }
+        }
+
+        Complex[][] normalized = new Complex[arr.length][arr[0].length];
+        for (int i = 0; i < arr.length; i++) {
+            for (int j = 0; j < arr[0].length; j++) {
+                normalized[i][j] = arr[i][j].divide(mean).multiply(0.4);
+            }
+        }
+
+        return normalized;
+    }
+
+    public int[][] drawFourierHashClean(Graphics g, String hash, int shift, DrawParams params) {
+        int spectrumWidth = HASH_W;
+        int spectrumHeight = HASH_H;
+        Complex[][][] dataSpectrums = new Complex[params.getNFunc()][spectrumWidth][spectrumHeight];
+
+        for (int i = 0; i < params.getNFunc(); i++) {
+            dataSpectrums[i] = generateSpectrum(params, hash, i);
+        }
+        int[] colors = sampleColors(hash, params);
+
+        Complex[][][] inverses = new Complex[dataSpectrums.length][256][256];
+        for (int i = 0; i < inverses.length; i++) {
+            inverses[i] = ifft2D(dataSpectrums[i]);
+        }
+
+        Complex[][][] normalized = new Complex[dataSpectrums.length][256][256];
+        for (int i = 0; i < inverses.length; i++) {
+            normalized[i] = normalizeMean(inverses[i]);
+        }
+
+
+        BufferedImage res = new BufferedImage(spectrumWidth, spectrumHeight, BufferedImage.TYPE_INT_RGB);
+        int[][] fingerprintInt = new int[res.getWidth()][res.getHeight()];
+
+
+        for (int i = 0; i < spectrumWidth; i++) {
+            for (int j = 0; j < spectrumHeight; j++) {
+                res.setRGB(i, j, getRGBCorr(params, colors, i, j, normalized));
+            }
+        }
+
+        if (params.getContour() != DrawParams.Contour.NONE) {
+            contour(res, params);
+        }
+
+        if (params.isSymmetric()) {
+            symmetrify(res, params.getSymmetry() == DrawParams.SymMode.FROM_HASH ? DrawParams.SymMode.values()[HashTransform.getSymmetry(hash)] : params.getSymmetry());
+        }
+        //Here to ensure the return int array is what we see on the screen
+        for (int i = 0; i < spectrumWidth; i++) {
+            for (int j = 0; j < spectrumHeight; j++) {
+                fingerprintInt[i][j] = res.getRGB(i, j);
+            }
+        }
+
+        if (!g.drawImage(scale(res, getHashWidth(params.dontScale ? 0 : shift), getHashHeight(params.dontScale ? 0 : shift)),
+                getShiftX(shift) - (params.dontScale ? 100 : 0), getShiftY(params.dontScale ? 1 : shift), null)) {
+            System.out.println("error drawing image");
+        }
+
+        return fingerprintInt;
+    }
+
+    //        if (shift == 1 || shift == 2) {
+//            g.drawImage(scale((params.isSeePhase() ? centerPhase : centerSpectrum), getHashWidth(shift), getHashHeight(shift)), getShiftX(shift) + (int) (getHashWidth(shift) * 1.1), getShiftY(shift), null);
+//        }
+
     private int[] sampleColors(String hash, DrawParams params) {
         //BEGIN COLOR MAPPING
+        if (params.isClassicRGB()) {
+            return new int[]{0x000000, 0x0000ff, 0x00ff00, 0x00ffff, 0xff0000, 0xff00ff, 0xffff00, 0xffffff};
+        }
         if (!params.palette32 || params.colorBlind) {
             int[][][] palettes = new int[3][2][8];
             // RED TO BLUE
@@ -516,24 +700,49 @@ public class HashDrawer extends JPanel {
         // BEGIN 32-PALETTE SAMPLING
 
 
-        Boolean[] groupParities = HashTransform.getParities(hash, params);
+        Boolean[] groupParities = HashTransform.getParities(hash.substring(0, 32), params);
+        if (params.getMode().length() == 256) {
+            Boolean[] secondHalfParities = getParities(hash.substring(32), params);
+            for (int i = 0; i < groupParities.length; i++) {
+                groupParities[i] ^= secondHalfParities[i];
+            }
+        }
+
         int[] palette = new int[1 << params.getNFunc()];
         int[] palette32 = params.paletteRGB(32, null);
         int shiftPalette = HashTransform.getPaletteShift(hash);
-
         palette32 = rotate(palette32, shiftPalette, 0);
 
         int indexColor;
         for (int i = 0; i < palette.length; i++) {
             if (palette.length == 8) {
-                indexColor = 4 * i + (groupParities[2 * i] ? 2 : 0) + (groupParities[2 * i + 1] ? 1 : 0);
+                indexColor = 4 * i + (!groupParities[2 * i] ? 2 : 0) + (!groupParities[2 * i + 1] ? 1 : 0);
                 palette[i] = palette32[indexColor];
             } else if (palette.length == 16) {
                 palette[i] = palette32[2 * i + (groupParities[i] ? 1 : 0)];
             }
         }
+
         int permutInd = getPerm(hash);
-        palette = permute(palette, Combinatorial.codewords[params.permut == -1 ? permutInd : params.permut]);
+        int[] permutation = new int[palette.length];
+        if (PERM_PRIME == 613) permutation = Combinatorial.codewords[permutInd];
+        else {
+            try {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream("src/code8_4.txt"), StandardCharsets.UTF_8));
+                String[] line = new String[palette.length];
+
+                for (int i = 0; i < permutInd; i++) {
+                    line = reader.readLine().strip().split(",");
+                }
+                permutation = new int[line.length];
+                for (int i = 0; i < line.length; i++) {
+                    permutation[i] = Integer.parseInt(line[i].strip());
+                }
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+        }
+        palette = permute(palette, permutation);//Combinatorial.codewords[params.permut == -1 ? permutInd : params.permut]);
         //END COLOR MAPPING
         return palette;
         //END 32-PALETTE SAMPLING
@@ -649,16 +858,30 @@ public class HashDrawer extends JPanel {
     private int getRGBCorr(DrawParams params, int[] colors, int index, double[]... funcs) {
         if ((1 << funcs.length) != colors.length)
             throw new IllegalArgumentException("number of functions vs number of colors");
-        double corr = params.getCorr();
         int color = 0;
         for (int i = 0; i < funcs.length; i++) {
-            color += ((funcs[i][index] * corr > params.getThreshold()) ? 1 : 0) << (funcs.length - 1 - i);
+            color += ((funcs[i][index] > params.getThreshold()) ? 1 : 0) << (funcs.length - 1 - i);
         }
         if (params.isFiltered()) {
             return colors[color];
         } else {
             int n = params.getNFunc();
-            return (int) (255 * corr * funcs[0][index]) % 255 << 16 | (int) (255 * corr * funcs[Math.min(0, n - 1)][index]) % 255 << 8 | (int) (255 * corr * funcs[Math.min(0, n - 1)][index]) % 255;
+            return (int) (255 * 0.5 * funcs[0][index]) % 255 << 16 | (int) (255 * 0.5 * funcs[Math.min(0, n - 1)][index]) % 255 << 8 | (int) (255 * 0.5 * funcs[Math.min(0, n - 1)][index]) % 255;
+        }
+    }
+
+    private int getRGBCorr(DrawParams params, int[] colors, int x, int y, Complex[][][] funcs) {
+        if ((1 << funcs.length) != colors.length)
+            throw new IllegalArgumentException("number of functions vs number of colors");
+        int color = 0;
+        for (int i = 0; i < funcs.length; i++) {
+            color += ((funcs[i][x][y].abs() > params.getThreshold()) ? 1 : 0) << (funcs.length - 1 - i);
+        }
+        if (params.isFiltered()) {
+            return colors[color];
+        } else {
+            int n = params.getNFunc();
+            return (int) (255 * funcs[0][x][y].abs()) % 255 << 16 | (int) (255 * funcs[Math.min(0, n - 1)][x][y].abs()) % 255 << 8 | (int) (255 * funcs[Math.min(0, n - 1)][x][y].abs()) % 255;
         }
     }
 
@@ -841,6 +1064,10 @@ public class HashDrawer extends JPanel {
 
     private int extractBits(long source, int index, int length) {
         return (int) ((source & (((1L << length) - 1) << (index - length))) >>> (index - length));
+    }
+
+    private int extract4Bits(String source, int index) {
+        return Integer.parseInt(Character.toString(source.charAt(index)), 16);
     }
 
     public void drawGridLinesHash(Graphics g, String hex, int shift, DrawParams params) {

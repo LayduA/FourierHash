@@ -1,13 +1,17 @@
 package src.hashops;
 
 import src.crypto.SecureCrypto;
+import src.fourier.ComplexNumber;
+import src.fourier.InverseFFT;
+import src.fourier.TwoDArray;
 import src.types.DrawMode;
 import src.types.DrawParams;
+import src.ui.Applet;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Stream;
 
@@ -15,7 +19,7 @@ import static src.hashops.HashTransform.*;
 
 public class DataGeneration {
 
-    public static void main(String[] args) {
+    public static void main2(String[] args) {
         HashDrawer drawer = new HashDrawer();
         DrawParams params = new DrawParams(DrawMode.FourierCartesian128);
         ArrayList<DataElem> distances = new ArrayList<>();
@@ -60,6 +64,76 @@ public class DataGeneration {
             System.out.println("Something went wrong");
         }
         System.out.println("Finished in " + (System.currentTimeMillis() - start) / 1000.0 + "s");
+    }
+
+    public static void main(String[] args){
+//        TwoDArray pixels = new TwoDArray(256,256);
+//        for (int i = 0; i < 256; i++) {
+//            for (int j = 0; j < 256; j++) {
+//                pixels.values[i][j] = new ComplexNumber((i / 60f), j % 2);
+//            }
+//        }
+//
+//        TwoDArray result = new InverseFFT().transform(pixels);
+//        System.out.println(Arrays.deepToString(result.values[1]));
+
+//        int mod = PERM_PRIME * SHIFT_PRIME * SYMMETRY_PRIME;
+//        long[] vals = new long[128];
+//        for (int i = 0; i < vals.length; i++) {
+//            vals[i] = powerMod(2L, i, mod);
+//        }
+//
+//        long[][] sums2 = new long[128][128];
+//        for (int i = 0; i < 128; i++) {
+//            for (int j = 0; j < 128; j++) {
+//                sums2[i][j] = (vals[i] + vals[j]) % mod;
+//            }
+//        }
+//
+//        long[][][] sums3 = new long[128][128][128];
+//        for (int i = 0; i < 128; i++) {
+//            for (int j = 0; j < 128; j++) {
+//                for (int k = 0; k < 128; k++) {
+//                    sums3[i][j][k] = (vals[i] + vals[j] + vals[k]) % mod;
+//                    if(sums3[i][j][k] == 0) System.out.println("(3,0): " + i + " " + j + " " + k);
+//                    if(sums3[i][j][k] == mod - 1) System.out.println("(3, -1): " + i + " " + j + " " + k);
+//                }
+//            }
+//        }
+//        HashSet<Set<Integer>> combs40 = new HashSet<>();
+//        HashSet<Set<Integer>> combs41 = new HashSet<>();
+//        long[][][][] sums4 = new long[128][128][128][128];
+//        for (int i = 0; i < 128; i++) {
+//            for (int j = 0; j < 128; j++) {
+//                for (int k = 0; k < 128; k++) {
+//                    for (int l = 0; l < 128; l++) {
+//                        sums4[i][j][k][l] = (vals[i] + vals[j] + vals[k] + vals[l]) % mod;
+//                        if (sums4[i][j][k][l] == 0) combs40.add(new HashSet<>(Arrays.asList(i, j, k, l)));//System.out.println("(4,0): " + i + " " + j + " " + k + " " + l);
+//                        if (sums4[i][j][k][l] == mod - 1) combs41.add(new HashSet<>(Arrays.asList(i, j, k, l)));//System.out.println("(4,-1): " + i + " " + j + " " + k +  " "  + l);
+//                    }
+//                }
+//            }
+//        }
+//        System.out.println(combs40.size() + " " + combs40);
+//        System.out.println(combs41.size() + " " + combs41);
+
+        DrawParams params = new DrawParams(DrawMode.FourierCartesian128);
+        HashDrawer drawer = new HashDrawer();
+        int[] pixels = drawer.drawFourierHash(new BufferedImage(256,256, BufferedImage.TYPE_INT_RGB).createGraphics(), Applet.DEFAULT_HASH.substring(0, 32), 0, params);
+        System.out.println(Arrays.toString(pixels));
+    }
+
+    public static long powerMod(long base, long exponent, long modulus){
+        if (modulus == 1) return 0;
+        long result = 1;
+        base = base % modulus;
+        while (exponent > 0) {
+            if (exponent % 2 == 1)  //odd number
+                result = (result * base) % modulus;
+            exponent = exponent >> 1; //divide by 2
+            base = (base * base) % modulus;
+        }
+        return result;
     }
 
     public static class DataElem {

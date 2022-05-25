@@ -172,7 +172,6 @@ $$h = \underbrace{\textcolor{red}{\underline{1}100}}_{f_1} \dashline \underbrace
     \foreach \Y/\Col/\Lab in \paletteshifted{
         \node[rectangle,fill=\Col,  minimum width = \scl*5 cm, minimum height = \scl*1.5 cm] (r) at (\scl*5*2.5, \scl * \Y * 1.5) {\texttt{\Lab}};
     }
-    \node[text width = \scl*7cm] at (\scl * 19cm, \scl * 6){if $w(h) \mod 2 = 1$, reverse order};
 \end{tikzpicture}
 
 %$$\sum\text{index} = \sum\limits_{k=0}^{128}  I(b_k = 1)k \mod 31$$ 
@@ -336,7 +335,7 @@ If we pick $p = 29, q = 23$ we have $(|2| \mod p,|2| \mod q) = (28, 11)$ and $\t
 \def \s{0.5cm}
 \begin{tikzpicture}
 	\node[rectangle] (r) at (\s * 10, 0){\texttt{h = 101011101010101\dots1010011110111}};
-	\node[rectangle]
+	\node[rectangle]{oui};
 \end{tikzpicture}
 
 

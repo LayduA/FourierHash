@@ -18,7 +18,7 @@ public interface HashTransform {
 
     int SYMMETRY_PRIME = 23;
     int SHIFT_PRIME = 29;
-    int PERM_PRIME = 613;
+    int PERM_PRIME = 2683;//613
 
     /**
      * Flips the bit of given index in the input hash and outputs the result as a hex string.
@@ -221,9 +221,9 @@ public interface HashTransform {
         int nBitsPerElement = 4;
 
         int groupSize = params.getNFunc() * nBitsPerElement;
-        int nGroups = params.getMode().length() / groupSize;
+        int nGroups = binHash.length() / groupSize;
         int maxInd = nGroups * groupSize;
-        int remainder = params.getMode().length() - maxInd;
+        int remainder = binHash.length() - maxInd;
         Boolean[] groupParities = new Boolean[groupSize + remainder / 2];
         for (int i = 0; i < groupSize; i++) {
             StringBuilder sb = new StringBuilder();
@@ -250,15 +250,15 @@ public interface HashTransform {
     }
 
     static int getPaletteShift(String hash) {
-        return new BigInteger(new StringBuilder(hexToBin(hash)).reverse().toString(), 2).mod(BigInteger.valueOf(SHIFT_PRIME)).intValue();
+        return new BigInteger(hash, 16).mod(BigInteger.valueOf(SHIFT_PRIME)).intValue();
     }
 
     static int getSymmetry(String hash) {
-        return new BigInteger(new StringBuilder(hexToBin(hash)).reverse().toString(), 2).mod(BigInteger.valueOf(SYMMETRY_PRIME)).intValue();
+        return new BigInteger(hash, 16).mod(BigInteger.valueOf(SYMMETRY_PRIME)).intValue();
     }
 
     static int getPerm(String hash) {
-        return new BigInteger(new StringBuilder(hexToBin(hash)).reverse().toString(), 2).mod(BigInteger.valueOf(PERM_PRIME)).intValue();
+        return new BigInteger(hash, 16).mod(BigInteger.valueOf(PERM_PRIME)).intValue();
         //return sumIndex(hash, PERM_PRIME);
     }
 
@@ -453,14 +453,14 @@ public interface HashTransform {
                     new Color(0x38466c),
                     new Color(0x32421b),
                     new Color(0x5e5e39),
-                    new Color(0xa9e0a),
+                    new Color(0x0a9e0a),
                     new Color(0xf4d1c3),
                     new Color(0x4f3835),
                     new Color(0x362D2B),
             };
         }
         int[] ref = new int[0];
-        double shiftCoeff = r == null ? params.prng().rand() : r.nextDouble();
+        double shiftCoeff = 0;// r == null ? params.prng().rand() : 0;
         float shift = (360f / n) * (float) shiftCoeff;
 
         for (int i = 0; i < n; i++) {
