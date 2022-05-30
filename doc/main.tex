@@ -545,7 +545,7 @@ Figure [FIGURE] depicts this process.
 
 \subsubsection{Color permutations}
 
-One thing we noticed during experimentation is that if two hashes have the same parity bits and same palette shift, then the colors will be the same and at the same place on the fingerprint. We introduce a permutation on the color array in order to address this issue. The way we compute the permutation is as follows. From [ref], we have a $(8, [4 OR 5])$-code, which means a code with words of length 8 such that the minimal distance between any two words is [4 OR 5]. We order arbitrarily the [2688 OR 616] words that make up this code. To get a permutation, we compute $j = h \mod [2683 OR 613]$ (which is prime). The permutation is the $j$-th word of the code.
+One thing we noticed during experimentation is that if two hashes have the same parity bits and same palette shift, then the colors will be the same and at the same place on the fingerprint. We introduce a permutation on the color array in order to address this issue. The way we compute the permutation is as follows. From [ref], we have a $(8, [4 OR 5])$-code, which means a code with words of length 8 such that the minimal distance between any two words is [4 OR 5]. We order arbitrarily the [2688 OR 616] words that make up this code. To compute the permutation that will be applied to the color array, we compute $j = h \mod$ [2683 OR 613] (which is prime) and get the $j$-th word of the code.
 
 \begin{center}
 \begin{figure}
@@ -562,10 +562,7 @@ One thing we noticed during experimentation is that if two hashes have the same 
 
 
 \subsubsection{Symmetries}
-Humans tend to perform better at identifying symmetrical objects [ref]. Therefore, we would like our fingerprints to be symmetric. The way we do this is to first generate the fingerprint as we did previously, and then apply some symmetry according to a symmetry mode [DETAILS].
-
-In order to determine the symmetry mode, we compute $h \mod 23$. The reason we chose this number is that is prime, small enough that we can implement different symmetry modes.
-
+Humans tend to perform better at identifying symmetrical objects [ref]. Therefore, we would like our fingerprints to be symmetric. In order to determine the type of symmetry to apply, we compute $h \mod p_{\text{symmetry}}$. The different types of symmetries are detailed [SOMEWHERE]. \Cref{fig:symms} show the result of applying this process to our 2 hashes. 
 \begin{center}
 \begin{figure}
     \centering
@@ -573,7 +570,7 @@ In order to determine the symmetry mode, we compute $h \mod 23$. The reason we c
     \hspace{3pt}
     \includegraphics[width=3cm]{figures/SymmetryP67.png}
     \caption{The two fingerprints, with the shift and permutation}
-    \label{fig:shifted}
+    \label{fig:symms}
 \end{figure}
 \end{center}
 
@@ -581,36 +578,45 @@ In order to determine the symmetry mode, we compute $h \mod 23$. The reason we c
 
 \subsection{Collisions}
 \newcommand{\foralls}{\hspace{2pt}\forall\hspace{2pt}}
-We now analyse the different collisions against our scheme. 
+We now analyse the different collisions against our scheme. Before going into details in the analysis of the Fourier spectra, we will first consider the collisions on the other factors of the fingerprints, such as the colors and symmetries. We do this because we a change of one of these factors will induce a significant enough change so that the fingerprint will be visually distinguishable even if their Fourier spectra are close.
 
-Let $h$ be a hash that produces fingerprint $F$, and $h^\prime \neq h$ a hash that produces fingerprint $F^\prime$. We define as collisions the following cases:
+Let $h$ be a hash that produces fingerprint $F$, and $h^\prime \neq h$ a hash that produces fingerprint $F^\prime$. We define as collisions the following cases (as well as any non-empty combination of these cases):
 \begin{itemize}
-	\item $h^\prime$ and $h$ use the same symmetry mode $\iff h = h^\prime \mod 23$
-	\item $h^\prime$ and $h$ use the same palette shift $\iff h = h^\prime \mod p_{\text{shift}}$
-	\item $h^\prime$ and $h$ use the same colors (up to permutation) $\iff (h = h^\prime \mod p_{\text{shift}}) \wedge (p_i = p^\prime_i \foralls i)$
-	\item $h^\prime$ and $h$ use the exact same colors $\iff (h = h^\prime \mod p_{\text{shift}}) \wedge (p_i = p^\prime_i \foralls i) \wedge (h^\prime = h \mod [2683 OR 613])$
+	\item Symmetry collision: $h^\prime$ and $h$ use the same symmetry mode $\iff h = h^\prime \mod p_{\text{symmetry}}$
+	\item Palette collision: $h^\prime$ and $h$ use the same palette shift $\iff h = h^\prime \mod p_{\text{shift}}$
+	\item Colors collision: $h^\prime$ and $h$ use the same colors (up to permutation) $\iff (h = h^\prime \mod p_{\text{shift}}) \wedge (p_i = p^\prime_i \foralls i)$
+	\item Permutation collision: $h^\prime$ and $h$ use the exact same colors $\iff (h = h^\prime \mod p_{\text{shift}}) \wedge (p_i = p^\prime_i \foralls i) \wedge (h^\prime = h \mod$ [2683 OR 613])
 \end{itemize}
 
-The main idea [TO EXPAND/CLARIFY/PROVE] is that the more different two spectra are, the more different the fingerprints will look. That way, we can relate the difference between fingerprints with the Hamming distance between the hashes.
-To have the same the same symmetry, one would have to achieve $k - \ell = 0\mod (|2| \mod q)$. Having the same palette shift AND same symmetry yields
-$$\begin{cases}
-k - \ell &= 0 \mod (|2| \mod p)\\
-k - \ell &= 0 \mod (|2| \mod q)
-\end{cases} \iff k - \ell = 0 \mod \text{lcm}(|2| \mod p, |2| \mod q)$$
+The main idea [TO EXPAND/CLARIFY/PROVE] is that the more different two spectra $S$ and $S^\prime$ are, the more different the fingerprints $F$ and $F^\prime$ will look. That way, we can relate the difference between fingerprints with the Hamming distance between the hashes. Doing so, we can assume the worst case scenarii are the cases where the Hamming distance between $h$ and $h^\prime$ is the lowest.
 
-Picking $p, q \in \{23, p_{\text{shift}}\}$ yields $\text{lcm}(|2| \mod p, |2| \mod q) = \text{lcm}(11, 28) = 308$. Therefore, if 2 bits are flipped, then either the palette is shifted differently, or the symmetry is not the same, or both. Either of these cases yields visually distinguishable results.
+\subsubsection{Hamming distance of 1}
+If $h$ and $h^\prime$ have a distance of 1, then only one bit is flipped, which means $h^\prime = h \pm 2^k$ for some $k \in \{0,\dotsc, 127\}$. Therefore, none of the defined collisions can happen, as for any prime $p > 2$, $(h^\prime = h \mod p) \iff (h \pm 2^k = h \mod p) \iff (2^k = 0 \mod p)$ is false for any $k\in \mathbb{N}$.
+
+\subsubsection{Hamming distance of 2}
+We now analyse the case where 2 bits are flipped. We begin with the case where twe two flipped bits are different, that is, $h^\prime = h + 2^k - 2^\ell$ or , with $k \neq \ell \in \{0, \dotsc, 127\}$. Then
+\begin{align*}
+	h + 2^k - 2^{\ell} &= h \mod p\\
+	h + 2^k(2^{\ell - k} - 1) &= h \mod p \\
+	2^k (2^{\ell - k} - 1) &= 0 \mod p \\
+	2^{\ell - k} - 1 &= 0 \mod p \\
+	2^{\ell - k} &= 1 \mod p \\
+	\ell - k &= 0 \mod (|2| \mod p)
+\end{align*}
+where $|2| \mod p $ denotes the order of 2 modulo $p$. The permutation collision is then not possible, as $|2| \mod $ [613 OR 2683] = [612 OR 2682] $> 128$. However the other collisions might still happen, as we have to pick small primes to account for the palette length and the number of symmetry types. However by picking smart choices for $p_\text{symmetry}$ and $p_\text{shift}$ we can avoid having the symmetry collision and the shift collision it the same time. Indeed, having both these collisions imply
+
+$$\begin{cases}
+k - \ell &= 0 \mod (|2| \mod p_\text{symmetry})\\
+k - \ell &= 0 \mod (|2| \mod p_\text{shift})
+\end{cases} \iff k - \ell = 0 \mod \text{lcm}(|2| \mod p_\text{symmetry}, |2| \mod p_\text{shift})$$
+
+Then if we can pick $p_\text{symmetry}$ and $p_\text{shift}$ such that $\text{lcm}(|2| \mod p_\text{symmetry}, |2| \mod p_\text{shift}) > 128$, both of these collisions cannot happen at the same time. 
+
 $$	h + \sum\limits_\ell 2^\ell - \sum\limits_k 2^k = h \mod p $$
 
 If only two bits are changed we have
-\begin{align*}
-	h + 2^k - 2^{k+12m} &= h \mod p\\
-	h + 2^k(2^{12m} - 1) &= h \mod p \\
-	2^k (2^{12m} - 1) &= 0 \mod p \\
-	2^{12m} - 1 &= 0 \mod p \\
-	2^{12m} &= 1 \mod p \\
-	12m &= 0 \mod (|2| \mod p)
-\end{align*}
-Let us assume $n$ bits were flipped. Let us pick $p=p_{\text{shift}}, q=23$. We have $pq = 667$, $|2| \mod p = 28, |q| \mod q = 11$
+
+Let us assume $n$ bits were flipped. Let us pick $p=p_{\text{shift}}, q=p_{\text{symmetry}}$. We have $pq = 667$, $|2| \mod p = 28, |q| \mod q = 11$
 \begin{itemize}
 	\item $n=1$ : The palette is flipped, the shift is different, the symmetry is different.
 	\item $n=2$ : Either the shift is different, the symmetry is different, or both.
@@ -623,53 +629,10 @@ For an even $n > 2$, there are collisions in the sense that some pairs of hashes
 
 \end{document}
 
-\subsection{Randomness}
-While having a scheme relying entirely on a PRG is not desirable [WHY?], we may use randomness when generating the $\omega_i$ in order to achieve intermediate pre-image resistance. In particular, we tried randomizing any combination of the $\omega_i$ moduli and phases. \Cref{tab:detvsrand} shows the computation of the $\omega_i$, where $d_i$ is the evaluation of a distance function at the coordinates of the pixel corresponding to $b_i$. The exact formula for $d_i$ is described [LATER].
 
-\begin{table}[]
-    \centering
-    \begin{tabular}{|c|c|c|}
-    \hline
-        & Deterministic Phase & Random Phase \\
-        \hline
-        Deterministic module    & $\omega_i = d_i \cdot (0.5 + 0.5b_i) /// 1 \cdot \exp{(b_i \cdot \pi i)}$ & $\omega_i = d_i \cdot b_i\exp{(rand() \cdot 2 \pi i )}$\\
-        \hline
-        Random module & $\omega_i = d_i \cdot rand() \cdot \exp{(b_i \cdot \pi i)}$ & $\omega_i = d_i \cdot rand()\cdot \exp{(rand() \cdot 2\pi i)}$\\
-        \hline
-    \end{tabular}
-    \caption{Caption}
-    \label{tab:detvsrand}
-\end{table}
 
 \subsection{Distance function}
 We want our $\omega_i$ to have high modules around the axes. That being said, we have to decide exactly which function must the modules follow. We tried several options, detailed in \cref{tab:distances}.
-
-\subsection{(Temporary) Fourier visual hash scheme}
-
-
-\begin{table}[]
-    \centering
-    \def\arraystretch{1.5}
-    \begin{tabular}{|c|c|}
-        \hline
-        Name & Formula \\
-        \hline
-        \verb!MANHATTAN! &  $\frac{1}{|x| + |y|}$\\
-        \verb!SQUARE! &  $\frac{1}{x^2 + y^2}$\\
-        \verb!CUBIC! &  $\frac{1}{|x|^3 + |y|^3}$\\
-        \verb!EUCLIDEAN! &   $\frac{1}{\sqrt{x^2 + y^2}}$\\
-        \verb!CUBIC! & $\frac{1}{x^3 + y^3}$\\
-        \verb!MULT! &  $\frac{1}{|xy|}$\\
-        \verb!XY! &  $\frac{|xy|}{x^2 + y^2}$\\
-        \verb!BELL! & $e^{-(x^2 + y^2)/3}$\\
-        \verb!SIGMOID! & if $\frac{1 - 2\max(|x|,|y|)}{(1-2t)(1 + e^{-0.01|xy|})}$\\
-        \hline
-    \end{tabular}
-    \caption{Caption}
-    \label{tab:distances}
-\end{table}
-
-
 
 
 \subsection{First pre-image resistance}

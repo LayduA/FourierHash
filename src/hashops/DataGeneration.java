@@ -77,36 +77,37 @@ public class DataGeneration {
 //        TwoDArray result = new InverseFFT().transform(pixels);
 //        System.out.println(Arrays.deepToString(result.values[1]));
 
-//        int mod = PERM_PRIME * SHIFT_PRIME * SYMMETRY_PRIME;
-//        long[] vals = new long[128];
-//        for (int i = 0; i < vals.length; i++) {
-//            vals[i] = powerMod(2L, i, mod);
-//        }
-//
-//        long[][] sums2 = new long[128][128];
-//        for (int i = 0; i < 128; i++) {
-//            for (int j = 0; j < 128; j++) {
+        int mod = PERM_PRIME * SHIFT_PRIME * SYMMETRY_PRIME;
+        int hashLength = 256;
+        long[] vals = new long[hashLength];
+        for (int i = 0; i < vals.length; i++) {
+            vals[i] = powerMod(2L, i, mod);
+        }
+
+//        long[][] sums2 = new long[hashLength][hashLength];
+//        for (int i = 0; i < hashLength; i++) {
+//            for (int j = 0; j < hashLength; j++) {
 //                sums2[i][j] = (vals[i] + vals[j]) % mod;
 //            }
 //        }
-//
-//        long[][][] sums3 = new long[128][128][128];
-//        for (int i = 0; i < 128; i++) {
-//            for (int j = 0; j < 128; j++) {
-//                for (int k = 0; k < 128; k++) {
-//                    sums3[i][j][k] = (vals[i] + vals[j] + vals[k]) % mod;
-//                    if(sums3[i][j][k] == 0) System.out.println("(3,0): " + i + " " + j + " " + k);
-//                    if(sums3[i][j][k] == mod - 1) System.out.println("(3, -1): " + i + " " + j + " " + k);
-//                }
-//            }
-//        }
+
+        long[][][] sums3 = new long[hashLength][hashLength][hashLength];
+        for (int i = 0; i < hashLength; i++) {
+            for (int j = 0; j < hashLength; j++) {
+                for (int k = 0; k < hashLength; k++) {
+                    sums3[i][j][k] = (vals[i] + vals[j] + vals[k]) % mod;
+                    if(sums3[i][j][k] == 0) System.out.println("(3,0): " + i + " " + j + " " + k);
+                    if(sums3[i][j][k] == mod - 1) System.out.println("(3, -1): " + i + " " + j + " " + k);
+                }
+            }
+        }
 //        HashSet<Set<Integer>> combs40 = new HashSet<>();
 //        HashSet<Set<Integer>> combs41 = new HashSet<>();
-//        long[][][][] sums4 = new long[128][128][128][128];
-//        for (int i = 0; i < 128; i++) {
-//            for (int j = 0; j < 128; j++) {
-//                for (int k = 0; k < 128; k++) {
-//                    for (int l = 0; l < 128; l++) {
+//        long[][][][] sums4 = new long[hashLength][hashLength][hashLength][hashLength];
+//        for (int i = 0; i < hashLength; i++) {
+//            for (int j = 0; j < hashLength; j++) {
+//                for (int k = 0; k < hashLength; k++) {
+//                    for (int l = 0; l < hashLength; l++) {
 //                        sums4[i][j][k][l] = (vals[i] + vals[j] + vals[k] + vals[l]) % mod;
 //                        if (sums4[i][j][k][l] == 0) combs40.add(new HashSet<>(Arrays.asList(i, j, k, l)));//System.out.println("(4,0): " + i + " " + j + " " + k + " " + l);
 //                        if (sums4[i][j][k][l] == mod - 1) combs41.add(new HashSet<>(Arrays.asList(i, j, k, l)));//System.out.println("(4,-1): " + i + " " + j + " " + k +  " "  + l);
@@ -116,11 +117,11 @@ public class DataGeneration {
 //        }
 //        System.out.println(combs40.size() + " " + combs40);
 //        System.out.println(combs41.size() + " " + combs41);
-
-        DrawParams params = new DrawParams(DrawMode.FourierCartesian128);
-        HashDrawer drawer = new HashDrawer();
-        int[] pixels = drawer.drawFourierHash(new BufferedImage(256,256, BufferedImage.TYPE_INT_RGB).createGraphics(), Applet.DEFAULT_HASH.substring(0, 32), 0, params);
-        System.out.println(Arrays.toString(pixels));
+//
+//        DrawParams params = new DrawParams(DrawMode.FourierCartesian128);
+//        HashDrawer drawer = new HashDrawer();
+//        int[] pixels = drawer.drawFourierHash(new BufferedImage(256,256, BufferedImage.TYPE_INT_RGB).createGraphics(), Applet.DEFAULT_HASH.substring(0, 32), 0, params);
+//        System.out.println(Arrays.toString(pixels));
     }
 
     public static long powerMod(long base, long exponent, long modulus){
