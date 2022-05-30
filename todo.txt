@@ -1,0 +1,8 @@
+-Machine MAC nécessaire
+-Etre invité au comtpe ELCA (OSC) (demander à Fratt)
+
+
+TODO : 
+- optimiser javascript
+- checker comment est computé le sessionID
+- iOS (on hold)

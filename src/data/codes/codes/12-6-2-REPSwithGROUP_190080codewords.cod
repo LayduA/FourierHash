@@ -1,0 +1,7 @@
+2 orbits found
+Permutation group acting on a set of cardinality 12
+    (0, 10, 1, 2, 3)(4, 7, 11, 5, 6)
+    (0, 8, 4, 11, 10, 7, 1, 3)(5, 9)
+M(12)
+ 0 1 2 3 4 5 6 7 8 9 10 11 : 1
+ 0 1 2 3 4 10 5 6 7 8 9 11 : 2

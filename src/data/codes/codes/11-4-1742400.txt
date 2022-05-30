@@ -1,0 +1,10 @@
+A full codeword file can be downloaded from the section on 
+permutation codes at:
+
+http://data.research.glam.ac.uk/projects/
+
+or from
+
+http://www.idsia.ch/~roberto/permutationcode_11-4-1742400_11.zip
+
+or contact roberto@idsia.ch

@@ -1,0 +1,1047 @@
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 22.3) (preloaded format=pdflatex 2022.4.11)  3 MAY 2022 15:44
+entering extended mode
+ restricted \write18 enabled.
+ %&-line parsing enabled.
+**C:/Users/laya/Documents/VisualHashApplet/doc/main.tex
+(C:/Users/laya/Documents/VisualHashApplet/doc/main.tex
+LaTeX2e <2021-11-15> patch level 1
+L3 programming layer <2022-02-24>
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/base\article.cls
+Document Class: article 2021/10/04 v1.4n Standard LaTeX document class
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/base\size10.clo
+File: size10.clo 2021/10/04 v1.4n Standard LaTeX file (size option)
+)
+\c@part=\count185
+\c@section=\count186
+\c@subsection=\count187
+\c@subsubsection=\count188
+\c@paragraph=\count189
+\c@subparagraph=\count190
+\c@figure=\count191
+\c@table=\count192
+\abovecaptionskip=\skip47
+\belowcaptionskip=\skip48
+\bibindent=\dimen138
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/base\inputenc.sty
+Package: inputenc 2021/02/14 v1.3d Input encoding file
+\inpenc@prehook=\toks16
+\inpenc@posthook=\toks17
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\amssymb.sty
+Package: amssymb 2013/01/14 v3.01 AMS font symbols
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\amsfonts.sty
+Package: amsfonts 2013/01/14 v3.01 Basic AMSFonts support
+\@emptytoks=\toks18
+\symAMSa=\mathgroup4
+\symAMSb=\mathgroup5
+LaTeX Font Info:    Redeclaring math symbol \hbar on input line 98.
+LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
+(Font)                  U/euf/m/n --> U/euf/b/n on input line 106.
+))
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsmath.sty
+Package: amsmath 2021/10/15 v2.17l AMS math features
+\@mathmargin=\skip49
+
+For additional information on amsmath, use the `?' option.
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amstext.sty
+Package: amstext 2021/08/26 v2.01 AMS text
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsgen.sty
+File: amsgen.sty 1999/11/30 v2.0 generic functions
+\@emptytoks=\toks19
+\ex@=\dimen139
+))
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsbsy.sty
+Package: amsbsy 1999/11/29 v1.2d Bold Symbols
+\pmbraise@=\dimen140
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsopn.sty
+Package: amsopn 2021/08/26 v2.02 operator names
+)
+\inf@bad=\count193
+LaTeX Info: Redefining \frac on input line 234.
+\uproot@=\count194
+\leftroot@=\count195
+LaTeX Info: Redefining \overline on input line 399.
+\classnum@=\count196
+\DOTSCASE@=\count197
+LaTeX Info: Redefining \ldots on input line 496.
+LaTeX Info: Redefining \dots on input line 499.
+LaTeX Info: Redefining \cdots on input line 620.
+\Mathstrutbox@=\box50
+\strutbox@=\box51
+\big@size=\dimen141
+LaTeX Font Info:    Redeclaring font encoding OML on input line 743.
+LaTeX Font Info:    Redeclaring font encoding OMS on input line 744.
+\macc@depth=\count198
+\c@MaxMatrixCols=\count199
+\dotsspace@=\muskip16
+\c@parentequation=\count266
+\dspbrk@lvl=\count267
+\tag@help=\toks20
+\row@=\count268
+\column@=\count269
+\maxfields@=\count270
+\andhelp@=\toks21
+\eqnshift@=\dimen142
+\alignsep@=\dimen143
+\tagshift@=\dimen144
+\tagwidth@=\dimen145
+\totwidth@=\dimen146
+\lineht@=\dimen147
+\@envbody=\toks22
+\multlinegap=\skip50
+\multlinetaggap=\skip51
+\mathdisplay@stack=\toks23
+LaTeX Info: Redefining \[ on input line 2938.
+LaTeX Info: Redefining \] on input line 2939.
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/algorithm2e\algorithm2e.
+sty
+Package: algorithm2e 2017/07/18 v5.2 algorithms environments
+\c@AlgoLine=\count271
+ (C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/base\ifthen.sty
+Package: ifthen 2020/11/24 v1.1c Standard LaTeX ifthen package (DPC)
+)
+\algocf@hangindent=\skip52
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/ifoddpage\ifoddpage.sty
+Package: ifoddpage 2016/04/23 v1.1 Conditionals for odd/even page detection
+\c@checkoddpage=\count272
+) (C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/tools\xspace.sty
+Package: xspace 2014/10/28 v1.13 Space after command names (DPC,MH)
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/relsize\relsize.sty
+Package: relsize 2013/03/29 ver 4.1
+)
+\skiptotal=\skip53
+\skiplinenumber=\skip54
+\skiprule=\skip55
+\skiphlne=\skip56
+\skiptext=\skip57
+\skiplength=\skip58
+\algomargin=\skip59
+\skipalgocfslide=\skip60
+\algowidth=\dimen148
+\inoutsize=\dimen149
+\inoutindent=\dimen150
+\interspacetitleruled=\dimen151
+\interspacealgoruled=\dimen152
+\interspacetitleboxruled=\dimen153
+\algocf@ruledwidth=\skip61
+\algocf@inoutbox=\box52
+\algocf@inputbox=\box53
+\AlCapSkip=\skip62
+\AlCapHSkip=\skip63
+\algoskipindent=\skip64
+\algocf@nlbox=\box54
+\algocf@hangingbox=\box55
+\algocf@untilbox=\box56
+\algocf@skipuntil=\skip65
+\algocf@capbox=\box57
+\algocf@lcaptionbox=\skip66
+\algoheightruledefault=\skip67
+\algoheightrule=\skip68
+\algotitleheightruledefault=\skip69
+\algotitleheightrule=\skip70
+\c@algocfline=\count273
+\c@algocfproc=\count274
+\c@algocf=\count275
+\algocf@algoframe=\box58
+\algocf@algobox=\box59
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/algorithmicx\algpseudoco
+de.sty
+Package: algpseudocode 
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/algorithmicx\algorithmic
+x.sty
+Package: algorithmicx 2005/04/27 v1.2 Algorithmicx
+
+Document Style algorithmicx 1.2 - a greatly improved `algorithmic' style
+\c@ALG@line=\count276
+\c@ALG@rem=\count277
+\c@ALG@nested=\count278
+\ALG@tlm=\skip71
+\ALG@thistlm=\skip72
+\c@ALG@Lnr=\count279
+\c@ALG@blocknr=\count280
+\c@ALG@storecount=\count281
+\c@ALG@tmpcounter=\count282
+\ALG@tmplength=\skip73
+)
+Document Style - pseudocode environments for use with the `algorithmicx' style
+) (C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/graphics\graphicx.sty
+Package: graphicx 2021/09/16 v1.2d Enhanced LaTeX Graphics (DPC,SPQR)
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/graphics\keyval.sty
+Package: keyval 2014/10/28 v1.15 key=value parser (DPC)
+\KV@toks@=\toks24
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/graphics\graphics.sty
+Package: graphics 2021/03/04 v1.4d Standard LaTeX Graphics (DPC,SPQR)
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/graphics\trig.sty
+Package: trig 2021/08/11 v1.11 sin cos tan (DPC)
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/graphics-cfg\graphics.cf
+g
+File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
+)
+Package graphics Info: Driver file: pdftex.def on input line 107.
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/graphics-def\pdftex.def
+File: pdftex.def 2020/10/05 v1.2a Graphics/color driver for pdftex
+))
+\Gin@req@height=\dimen154
+\Gin@req@width=\dimen155
+) (C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/cleveref\cleveref.sty
+Package: cleveref 2018/03/27 v0.21.4 Intelligent cross-referencing
+Package cleveref Info: `algorithmicx' support loaded on input line 3120.
+Package cleveref Info: `algorithm2e' support loaded on input line 3147.
+) (C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/geometry\geometry.sty
+Package: geometry 2020/01/02 v5.9 Page Geometry
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/iftex\ifvtex.sty
+Package: ifvtex 2019/10/25 v1.7 ifvtex legacy package. Use iftex instead.
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/iftex\iftex.sty
+Package: iftex 2022/02/03 v1.0f TeX engine tests
+))
+\Gm@cnth=\count283
+\Gm@cntv=\count284
+\c@Gm@tempcnt=\count285
+\Gm@bindingoffset=\dimen156
+\Gm@wd@mp=\dimen157
+\Gm@odd@mp=\dimen158
+\Gm@even@mp=\dimen159
+\Gm@layoutwidth=\dimen160
+\Gm@layoutheight=\dimen161
+\Gm@layouthoffset=\dimen162
+\Gm@layoutvoffset=\dimen163
+\Gm@dimlist=\toks25
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/geometry\geometry.cfg))
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/pgf/frontendlayer\tikz.s
+ty
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/pgf/basiclayer\pgf.sty
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/pgf/utilities\pgfrcs.sty
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfutil-
+common.tex
+\pgfutil@everybye=\toks26
+\pgfutil@tempdima=\dimen164
+\pgfutil@tempdimb=\dimen165
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfutil-
+common-lists.tex))
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfutil-
+latex.def
+\pgfutil@abb=\box60
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfrcs.c
+ode.tex
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf\pgf.revision.tex)
+Package: pgfrcs 2021/05/15 v3.1.9a (3.1.9a)
+))
+Package: pgf 2021/05/15 v3.1.9a (3.1.9a)
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/pgf/basiclayer\pgfcore.s
+ty
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/pgf/systemlayer\pgfsys.s
+ty
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsys
+.code.tex
+Package: pgfsys 2021/05/15 v3.1.9a (3.1.9a)
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfkeys.
+code.tex
+\pgfkeys@pathtoks=\toks27
+\pgfkeys@temptoks=\toks28
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfkeysf
+iltered.code.tex
+\pgfkeys@tmptoks=\toks29
+))
+\pgf@x=\dimen166
+\pgf@y=\dimen167
+\pgf@xa=\dimen168
+\pgf@ya=\dimen169
+\pgf@xb=\dimen170
+\pgf@yb=\dimen171
+\pgf@xc=\dimen172
+\pgf@yc=\dimen173
+\pgf@xd=\dimen174
+\pgf@yd=\dimen175
+\w@pgf@writea=\write3
+\r@pgf@reada=\read2
+\c@pgf@counta=\count286
+\c@pgf@countb=\count287
+\c@pgf@countc=\count288
+\c@pgf@countd=\count289
+\t@pgf@toka=\toks30
+\t@pgf@tokb=\toks31
+\t@pgf@tokc=\toks32
+\pgf@sys@id@count=\count290
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgf.cf
+g
+File: pgf.cfg 2021/05/15 v3.1.9a (3.1.9a)
+)
+Driver file for pgf: pgfsys-pdftex.def
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsys
+-pdftex.def
+File: pgfsys-pdftex.def 2021/05/15 v3.1.9a (3.1.9a)
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsys
+-common-pdf.def
+File: pgfsys-common-pdf.def 2021/05/15 v3.1.9a (3.1.9a)
+)))
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsys
+softpath.code.tex
+File: pgfsyssoftpath.code.tex 2021/05/15 v3.1.9a (3.1.9a)
+\pgfsyssoftpath@smallbuffer@items=\count291
+\pgfsyssoftpath@bigbuffer@items=\count292
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/systemlayer\pgfsys
+protocol.code.tex
+File: pgfsysprotocol.code.tex 2021/05/15 v3.1.9a (3.1.9a)
+))
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/xcolor\xcolor.sty
+Package: xcolor 2021/10/31 v2.13 LaTeX color extensions (UK)
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/graphics-cfg\color.cfg
+File: color.cfg 2016/01/02 v1.6 sample color configuration
+)
+Package xcolor Info: Driver file: pdftex.def on input line 227.
+Package xcolor Info: Model `cmy' substituted by `cmy0' on input line 1352.
+Package xcolor Info: Model `hsb' substituted by `rgb' on input line 1356.
+Package xcolor Info: Model `RGB' extended on input line 1368.
+Package xcolor Info: Model `HTML' substituted by `rgb' on input line 1370.
+Package xcolor Info: Model `Hsb' substituted by `hsb' on input line 1371.
+Package xcolor Info: Model `tHsb' substituted by `hsb' on input line 1372.
+Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1373.
+Package xcolor Info: Model `Gray' substituted by `gray' on input line 1374.
+Package xcolor Info: Model `wave' substituted by `hsb' on input line 1375.
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcore
+.code.tex
+Package: pgfcore 2021/05/15 v3.1.9a (3.1.9a)
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmath.code.
+tex
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathcalc.c
+ode.tex
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathutil.c
+ode.tex)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathparser
+.code.tex
+\pgfmath@dimen=\dimen176
+\pgfmath@count=\count293
+\pgfmath@box=\box61
+\pgfmath@toks=\toks33
+\pgfmath@stack@operand=\toks34
+\pgfmath@stack@operation=\toks35
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfuncti
+ons.code.tex
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfuncti
+ons.basic.code.tex)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfuncti
+ons.trigonometric.code.tex)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfuncti
+ons.random.code.tex)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfuncti
+ons.comparison.code.tex)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfuncti
+ons.base.code.tex)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfuncti
+ons.round.code.tex)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfuncti
+ons.misc.code.tex)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfuncti
+ons.integerarithmetics.code.tex)))
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmathfloat.
+code.tex
+\c@pgfmathroundto@lastzeros=\count294
+))
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfint.code.t
+ex)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcore
+points.code.tex
+File: pgfcorepoints.code.tex 2021/05/15 v3.1.9a (3.1.9a)
+\pgf@picminx=\dimen177
+\pgf@picmaxx=\dimen178
+\pgf@picminy=\dimen179
+\pgf@picmaxy=\dimen180
+\pgf@pathminx=\dimen181
+\pgf@pathmaxx=\dimen182
+\pgf@pathminy=\dimen183
+\pgf@pathmaxy=\dimen184
+\pgf@xx=\dimen185
+\pgf@xy=\dimen186
+\pgf@yx=\dimen187
+\pgf@yy=\dimen188
+\pgf@zx=\dimen189
+\pgf@zy=\dimen190
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcore
+pathconstruct.code.tex
+File: pgfcorepathconstruct.code.tex 2021/05/15 v3.1.9a (3.1.9a)
+\pgf@path@lastx=\dimen191
+\pgf@path@lasty=\dimen192
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcore
+pathusage.code.tex
+File: pgfcorepathusage.code.tex 2021/05/15 v3.1.9a (3.1.9a)
+\pgf@shorten@end@additional=\dimen193
+\pgf@shorten@start@additional=\dimen194
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcore
+scopes.code.tex
+File: pgfcorescopes.code.tex 2021/05/15 v3.1.9a (3.1.9a)
+\pgfpic=\box62
+\pgf@hbox=\box63
+\pgf@layerbox@main=\box64
+\pgf@picture@serial@count=\count295
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcore
+graphicstate.code.tex
+File: pgfcoregraphicstate.code.tex 2021/05/15 v3.1.9a (3.1.9a)
+\pgflinewidth=\dimen195
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcore
+transformations.code.tex
+File: pgfcoretransformations.code.tex 2021/05/15 v3.1.9a (3.1.9a)
+\pgf@pt@x=\dimen196
+\pgf@pt@y=\dimen197
+\pgf@pt@temp=\dimen198
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcore
+quick.code.tex
+File: pgfcorequick.code.tex 2021/05/15 v3.1.9a (3.1.9a)
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcore
+objects.code.tex
+File: pgfcoreobjects.code.tex 2021/05/15 v3.1.9a (3.1.9a)
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcore
+pathprocessing.code.tex
+File: pgfcorepathprocessing.code.tex 2021/05/15 v3.1.9a (3.1.9a)
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcore
+arrows.code.tex
+File: pgfcorearrows.code.tex 2021/05/15 v3.1.9a (3.1.9a)
+\pgfarrowsep=\dimen199
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcore
+shade.code.tex
+File: pgfcoreshade.code.tex 2021/05/15 v3.1.9a (3.1.9a)
+\pgf@max=\dimen256
+\pgf@sys@shading@range@num=\count296
+\pgf@shadingcount=\count297
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcore
+image.code.tex
+File: pgfcoreimage.code.tex 2021/05/15 v3.1.9a (3.1.9a)
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcore
+external.code.tex
+File: pgfcoreexternal.code.tex 2021/05/15 v3.1.9a (3.1.9a)
+\pgfexternal@startupbox=\box65
+))
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcore
+layers.code.tex
+File: pgfcorelayers.code.tex 2021/05/15 v3.1.9a (3.1.9a)
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcore
+transparency.code.tex
+File: pgfcoretransparency.code.tex 2021/05/15 v3.1.9a (3.1.9a)
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcore
+patterns.code.tex
+File: pgfcorepatterns.code.tex 2021/05/15 v3.1.9a (3.1.9a)
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/basiclayer\pgfcore
+rdf.code.tex
+File: pgfcorerdf.code.tex 2021/05/15 v3.1.9a (3.1.9a)
+)))
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/modules\pgfmodules
+hapes.code.tex
+File: pgfmoduleshapes.code.tex 2021/05/15 v3.1.9a (3.1.9a)
+\pgfnodeparttextbox=\box66
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/modules\pgfmodulep
+lot.code.tex
+File: pgfmoduleplot.code.tex 2021/05/15 v3.1.9a (3.1.9a)
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/pgf/compatibility\pgfcom
+p-version-0-65.sty
+Package: pgfcomp-version-0-65 2021/05/15 v3.1.9a (3.1.9a)
+\pgf@nodesepstart=\dimen257
+\pgf@nodesepend=\dimen258
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/pgf/compatibility\pgfcom
+p-version-1-18.sty
+Package: pgfcomp-version-1-18 2021/05/15 v3.1.9a (3.1.9a)
+))
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/pgf/utilities\pgffor.sty
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/pgf/utilities\pgfkeys.st
+y
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgfkeys.
+code.tex))
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/pgf/math\pgfmath.sty
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmath.code.
+tex))
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/utilities\pgffor.c
+ode.tex
+Package: pgffor 2021/05/15 v3.1.9a (3.1.9a)
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/math\pgfmath.code.
+tex)
+\pgffor@iter=\dimen259
+\pgffor@skip=\dimen260
+\pgffor@stack=\toks36
+\pgffor@toks=\toks37
+))
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tikz
+\tikz.code.tex
+Package: tikz 2021/05/15 v3.1.9a (3.1.9a)
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/libraries\pgflibra
+ryplothandlers.code.tex
+File: pgflibraryplothandlers.code.tex 2021/05/15 v3.1.9a (3.1.9a)
+\pgf@plot@mark@count=\count298
+\pgfplotmarksize=\dimen261
+)
+\tikz@lastx=\dimen262
+\tikz@lasty=\dimen263
+\tikz@lastxsaved=\dimen264
+\tikz@lastysaved=\dimen265
+\tikz@lastmovetox=\dimen266
+\tikz@lastmovetoy=\dimen267
+\tikzleveldistance=\dimen268
+\tikzsiblingdistance=\dimen269
+\tikz@figbox=\box67
+\tikz@figbox@bg=\box68
+\tikz@tempbox=\box69
+\tikz@tempbox@bg=\box70
+\tikztreelevel=\count299
+\tikznumberofchildren=\count300
+\tikznumberofcurrentchild=\count301
+\tikz@fig@count=\count302
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/modules\pgfmodulem
+atrix.code.tex
+File: pgfmodulematrix.code.tex 2021/05/15 v3.1.9a (3.1.9a)
+\pgfmatrixcurrentrow=\count303
+\pgfmatrixcurrentcolumn=\count304
+\pgf@matrix@numberofcolumns=\count305
+)
+\tikz@expandcount=\count306
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tikz
+/libraries\tikzlibrarytopaths.code.tex
+File: tikzlibrarytopaths.code.tex 2021/05/15 v3.1.9a (3.1.9a)
+)))
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/tikz-3dplot\tikz-3dplot.
+sty
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tikz
+/libraries\tikzlibrarycalc.code.tex
+File: tikzlibrarycalc.code.tex 2021/05/15 v3.1.9a (3.1.9a)
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tikz
+/libraries\tikzlibrary3d.code.tex
+File: tikzlibrary3d.code.tex 2021/05/15 v3.1.9a (3.1.9a)
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tikz
+/libraries\tikzlibraryarrows.code.tex
+File: tikzlibraryarrows.code.tex 2021/05/15 v3.1.9a (3.1.9a)
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/libraries\pgflibra
+ryarrows.code.tex
+File: pgflibraryarrows.code.tex 2021/05/15 v3.1.9a (3.1.9a)
+\arrowsize=\dimen270
+)))
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/cryptocode\cryptocode.st
+y
+Package: cryptocode 2021/08/15 v0.44 Cryptocode LaTeX package for typesetting p
+seudocode, algorithms and protocols as well as cryptographic proofs.
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/mathtools\mathtools.sty
+Package: mathtools 2022/02/07 v1.28a mathematical typesetting tools
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/tools\calc.sty
+Package: calc 2017/05/25 v4.3 Infix arithmetic (KKT,FJ)
+\calc@Acount=\count307
+\calc@Bcount=\count308
+\calc@Adimen=\dimen271
+\calc@Bdimen=\dimen272
+\calc@Askip=\skip74
+\calc@Bskip=\skip75
+LaTeX Info: Redefining \setlength on input line 80.
+LaTeX Info: Redefining \addtolength on input line 81.
+\calc@Ccount=\count309
+\calc@Cskip=\skip76
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/mathtools\mhsetup.sty
+Package: mhsetup 2021/03/18 v1.4 programming setup (MH)
+)
+\g_MT_multlinerow_int=\count310
+\l_MT_multwidth_dim=\dimen273
+\origjot=\skip77
+\l_MT_shortvdotswithinadjustabove_dim=\dimen274
+\l_MT_shortvdotswithinadjustbelow_dim=\dimen275
+\l_MT_above_intertext_sep=\dimen276
+\l_MT_below_intertext_sep=\dimen277
+\l_MT_above_shortintertext_sep=\dimen278
+\l_MT_below_shortintertext_sep=\dimen279
+\xmathstrut@box=\box71
+\xmathstrut@dim=\dimen280
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/pgf/frontendlayer/tikz
+/libraries\tikzlibrarypositioning.code.tex
+File: tikzlibrarypositioning.code.tex 2021/05/15 v3.1.9a (3.1.9a)
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/xargs\xargs.sty
+Package: xargs 2008/03/22 v1.1  extended macro definitions  (mpg)
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/xkeyval\xkeyval.sty
+Package: xkeyval 2020/11/20 v2.8 package option processing (HA)
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/xkeyval\xkeyval.tex
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/generic/xkeyval\xkvutils.tex
+\XKV@toks=\toks38
+\XKV@tempa@toks=\toks39
+)
+\XKV@depth=\count311
+File: xkeyval.tex 2014/12/03 v2.7a key=value parser (HA)
+))
+\xargs@max=\count312
+\xargs@toksa=\toks40
+\xargs@toksb=\toks41
+) (C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/forloop\forloop.sty
+Package: forloop 2006/09/18 v3.0 For Loops for LaTeX
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/tools\array.sty
+Package: array 2021/10/04 v2.5f Tabular extension package (FMi)
+\col@sep=\dimen281
+\ar@mcellbox=\box72
+\extrarowheight=\dimen282
+\NC@list=\toks42
+\extratabsurround=\skip78
+\backup@length=\skip79
+\ar@cellbox=\box73
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/l3packages/xparse\xparse
+.sty (C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/l3kernel\expl3.sty
+Package: expl3 2022-02-24 L3 programming layer (loader) 
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/l3backend\l3backend-pdft
+ex.def
+File: l3backend-pdftex.def 2022-02-07 L3 backend support: PDF output (pdfTeX)
+\l__color_backend_stack_int=\count313
+\l__pdf_internal_box=\box74
+))
+Package: xparse 2022-01-12 L3 Experimental document command parser
+) (C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/pbox\pbox.sty
+Package: pbox 2011/12/07 v1.2 Dynamic parboxes
+\pb@xlen=\skip80
+) (C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/varwidth\varwidth.sty
+Package: varwidth 2009/03/30 ver 0.92;  Variable-width minipages
+\@vwid@box=\box75
+\sift@deathcycles=\count314
+\@vwid@loff=\dimen283
+\@vwid@roff=\dimen284
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/bigfoot\suffix.sty
+Package: suffix 2006/07/15 1.5a Variant command support
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/etoolbox\etoolbox.sty
+Package: etoolbox 2020/10/05 v2.5k e-TeX tools for LaTeX (JAW)
+\etb@tempcnta=\count315
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/environ\environ.sty
+Package: environ 2014/05/04 v0.3 A new way to define environments
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/trimspaces\trimspaces.st
+y
+Package: trimspaces 2009/09/17 v1.1 Trim spaces around a token list
+))
+\pcaboveskip=\skip81
+\pcbelowskip=\skip82
+\pcbeforeskip=\skip83
+\pcafterskip=\skip84
+\c@@pc@global@pc@cnt=\count316
+\c@@pc@global@pc@nestcnt=\count317
+\c@@pc@stackdepth=\count318
+\@pc@stackspace@len=\skip85
+\pcbeforehstackskip=\skip86
+\pcafterhstackskip=\skip87
+\@pc@stackcontentbox=\box76
+\@pc@minipage@length=\skip88
+\@pc@alt@minipage@length=\skip89
+\@pc@length@tmp@width@vstack=\skip90
+\@pseudocodecodeminlineheight@len=\skip91
+\@pcindentwidth=\skip92
+\c@pclinenumber=\count319
+\c@Hpclinenumber=\count320
+\c@@pclinenumber=\count321
+\c@H@pclinenumber=\count322
+\c@@pclinenumbertmp=\count323
+\c@pcgamecounter=\count324
+\c@Hpcgamecounter=\count325
+\c@pcrlinenumber=\count326
+\c@Hpcrlinenumber=\count327
+\c@@pcrlinenumbertmp=\count328
+\pcheadlinesep=\skip93
+\pcbodylinesep=\skip94
+\@pseudocodeheadheight@len=\skip95
+\pcheadheight=\skip96
+\c@@pc@indentationlevel=\count329
+\c@pccolumncounter=\count330
+\c@@pcsubprogcnt1=\count331
+\c@@pcrsubprogcnt1=\count332
+\c@@pcsubprogcnt2=\count333
+\c@@pcrsubprogcnt2=\count334
+\c@@pcsubprogcnt3=\count335
+\c@@pcrsubprogcnt3=\count336
+\c@@pcsubprogcnt4=\count337
+\c@@pcrsubprogcnt4=\count338
+\c@@pcsubprogcnt5=\count339
+\c@@pcrsubprogcnt5=\count340
+\c@@pcsubprogcnt6=\count341
+\c@@pcrsubprogcnt6=\count342
+\c@@pcsubprogcnt7=\count343
+\c@@pcrsubprogcnt7=\count344
+\c@@pcsubprogcnt8=\count345
+\c@@pcrsubprogcnt8=\count346
+\c@@pcsubprogcnt9=\count347
+\c@@pcrsubprogcnt9=\count348
+\c@@pcsubprogstep=\count349
+\pcmessagearrow=\skip97
+\c@@pc@remember=\count350
+\@bb@message@voffset=\skip98
+\@bb@query@voffset=\skip99
+\@bb@oraclequery@voffset=\skip100
+\@bb@challengerquery@voffset=\skip101
+\c@@bb@oracle@cnt=\count351
+\c@@bb@oracle@nestcnt=\count352
+\c@@bb@challenger@cnt=\count353
+\c@@bb@challenger@nestcnt=\count354
+\c@@bb@env@nestcnt=\count355
+\@bb@com@tmpoffset=\skip102
+\@bb@tmplength@b=\skip103
+\c@pcstartgamecounter=\count356
+)
+No file main.aux.
+\openout1 = `main.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 39.
+LaTeX Font Info:    ... okay on input line 39.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 39.
+LaTeX Font Info:    ... okay on input line 39.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 39.
+LaTeX Font Info:    ... okay on input line 39.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 39.
+LaTeX Font Info:    ... okay on input line 39.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 39.
+LaTeX Font Info:    ... okay on input line 39.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 39.
+LaTeX Font Info:    ... okay on input line 39.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 39.
+LaTeX Font Info:    ... okay on input line 39.
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pdf.mki
+i
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count357
+\scratchdimen=\dimen285
+\scratchbox=\box77
+\nofMPsegments=\count358
+\nofMParguments=\count359
+\everyMPshowfont=\toks43
+\MPscratchCnt=\count360
+\MPscratchDim=\dimen286
+\MPnumerator=\count361
+\makeMPintoPDFobject=\count362
+\everyMPtoPDFconversion=\toks44
+)
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/epstopdf-pkg\epstopdf-ba
+se.sty
+Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
+Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
+85.
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/00miktex\epstopdf-sys.cf
+g
+File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
+))
+*geometry* driver: auto-detecting
+*geometry* detected driver: pdftex
+*geometry* verbose mode - [ preamble ] result:
+* driver: pdftex
+* paper: a4paper
+* layout: <same size as paper>
+* layoutoffset:(h,v)=(0.0pt,0.0pt)
+* modes: 
+* h-part:(L,W,R)=(42.67912pt, 512.14963pt, 42.67912pt)
+* v-part:(T,H,B)=(56.9055pt, 686.7347pt, 101.40665pt)
+* \paperwidth=597.50787pt
+* \paperheight=845.04684pt
+* \textwidth=512.14963pt
+* \textheight=686.7347pt
+* \oddsidemargin=-29.59087pt
+* \evensidemargin=-29.59087pt
+* \topmargin=-52.36449pt
+* \headheight=12.0pt
+* \headsep=25.0pt
+* \topskip=10.0pt
+* \footskip=30.0pt
+* \marginparwidth=65.0pt
+* \marginparsep=11.0pt
+* \columnsep=10.0pt
+* \skip\footins=9.0pt plus 4.0pt minus 2.0pt
+* \hoffset=0.0pt
+* \voffset=0.0pt
+* \mag=1000
+* \@twocolumnfalse
+* \@twosidefalse
+* \@mparswitchfalse
+* \@reversemarginfalse
+* (1in=72.27pt=25.4mm, 1cm=28.453pt)
+
+LaTeX Font Info:    Trying to load font information for U+msa on input line 40.
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+LaTeX Font Info:    Trying to load font information for U+msb on input line 40.
+
+
+(C:\Users\laya\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+)
+[1
+
+{C:/Users/laya/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}]
+
+LaTeX Warning: Reference `fig:no_adv' on page 1 undefined on input line 98.
+
+[2]
+
+LaTeX Warning: Reference `fig:ext_adv' on page 1 undefined on input line 138.
+
+
+Overfull \hbox (15.63335pt too wide) detected at line 160
+[]
+ []
+
+
+Overfull \hbox (18.4333pt too wide) in paragraph at lines 160--160
+ [] 
+ []
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[3]
+
+LaTeX Warning: Reference `fig:front_adv' on page 1 undefined on input line 201.
+
+
+[4]
+
+LaTeX Warning: Reference `section:forge' on page 1 undefined on input line 249.
+
+
+[5]
+
+LaTeX Warning: Reference `fig:lowdist' on page 1 undefined on input line 262.
+
+
+LaTeX Warning: Reference `fig:highdist' on page 1 undefined on input line 263.
+
+<figures/0000000000000.png, id=46, 210.7875pt x 210.7875pt>
+File: figures/0000000000000.png Graphic file (type png)
+<use figures/0000000000000.png>
+Package pdftex.def Info: figures/0000000000000.png  used on input line 267.
+(pdftex.def)             Requested size: 85.35826pt x 85.35881pt.
+<figures/0000000001052.png, id=47, 210.7875pt x 210.7875pt>
+File: figures/0000000001052.png Graphic file (type png)
+<use figures/0000000001052.png>
+Package pdftex.def Info: figures/0000000001052.png  used on input line 268.
+(pdftex.def)             Requested size: 85.35826pt x 85.35881pt.
+<figures/e7e6bda110965.png, id=48, 210.7875pt x 210.7875pt>
+File: figures/e7e6bda110965.png Graphic file (type png)
+<use figures/e7e6bda110965.png>
+Package pdftex.def Info: figures/e7e6bda110965.png  used on input line 275.
+(pdftex.def)             Requested size: 85.35826pt x 85.35881pt.
+<figures/e7f2bdd111301.png, id=49, 210.7875pt x 210.7875pt>
+File: figures/e7f2bdd111301.png Graphic file (type png)
+<use figures/e7f2bdd111301.png>
+Package pdftex.def Info: figures/e7f2bdd111301.png  used on input line 276.
+(pdftex.def)             Requested size: 85.35826pt x 85.35881pt.
+[6 <C:/Users/laya/Documents/VisualHashApplet/doc/figures/0000000000000.png (PNG
+ copy)> <C:/Users/laya/Documents/VisualHashApplet/doc/figures/0000000001052.png
+ (PNG copy)> <C:/Users/laya/Documents/VisualHashApplet/doc/figures/e7e6bda11096
+5.png (PNG copy)> <C:/Users/laya/Documents/VisualHashApplet/doc/figures/e7f2bdd
+111301.png (PNG copy)>]
+
+LaTeX Warning: Reference `section:forge' on page 1 undefined on input line 291.
+
+
+
+LaTeX Warning: Reference `algo:lifehash' on page 1 undefined on input line 295.
+
+
+[7]
+
+LaTeX Warning: Reference `fig:lifehash' on page 1 undefined on input line 327.
+
+<figures/ee3.png, id=59, 144.54pt x 144.54pt>
+File: figures/ee3.png Graphic file (type png)
+<use figures/ee3.png>
+Package pdftex.def Info: figures/ee3.png  used on input line 341.
+(pdftex.def)             Requested size: 142.26378pt x 142.27016pt.
+<figures/443.png, id=60, 144.54pt x 144.54pt>
+File: figures/443.png Graphic file (type png)
+<use figures/443.png>
+Package pdftex.def Info: figures/443.png  used on input line 342.
+(pdftex.def)             Requested size: 142.26378pt x 142.27016pt.
+[8 <C:/Users/laya/Documents/VisualHashApplet/doc/figures/ee3.png> <C:/Users/lay
+a/Documents/VisualHashApplet/doc/figures/443.png>]
+
+LaTeX Warning: Reference `fig:randomart' on page 1 undefined on input line 399.
+
+
+<figures/randomart.png, id=67, 256.96pt x 256.96pt>
+File: figures/randomart.png Graphic file (type png)
+<use figures/randomart.png>
+Package pdftex.def Info: figures/randomart.png  used on input line 403.
+(pdftex.def)             Requested size: 142.26378pt x 142.26552pt.
+[9 <C:/Users/laya/Documents/VisualHashApplet/doc/figures/randomart.png (PNG cop
+y)>] [10]
+
+LaTeX Warning: Reference `fig:nothing' on page 1 undefined on input line 449.
+
+<figures/Nothing.png, id=74, 256.96pt x 256.96pt>
+File: figures/Nothing.png Graphic file (type png)
+<use figures/Nothing.png>
+Package pdftex.def Info: figures/Nothing.png  used on input line 454.
+(pdftex.def)             Requested size: 85.35826pt x 85.35774pt.
+<figures/NothingP67Psi0664.png, id=75, 256.96pt x 256.96pt>
+File: figures/NothingP67Psi0664.png Graphic file (type png)
+<use figures/NothingP67Psi0664.png>
+Package pdftex.def Info: figures/NothingP67Psi0664.png  used on input line 456.
+
+(pdftex.def)             Requested size: 85.35826pt x 85.35774pt.
+
+LaTeX Warning: Reference `fig:oneFunc' on page 1 undefined on input line 469.
+
+<figures/Filtered.png, id=76, 256.96pt x 256.96pt>
+File: figures/Filtered.png Graphic file (type png)
+<use figures/Filtered.png>
+Package pdftex.def Info: figures/Filtered.png  used on input line 473.
+(pdftex.def)             Requested size: 85.35826pt x 85.35774pt.
+<figures/FilteredP67Psi0242.png, id=77, 256.96pt x 256.96pt>
+File: figures/FilteredP67Psi0242.png Graphic file (type png)
+<use figures/FilteredP67Psi0242.png>
+Package pdftex.def Info: figures/FilteredP67Psi0242.png  used on input line 475
+.
+(pdftex.def)             Requested size: 85.35826pt x 85.35774pt.
+
+LaTeX Warning: Reference `fig:threeFuncs' on page 1 undefined on input line 484
+.
+
+[11 <C:/Users/laya/Documents/VisualHashApplet/doc/figures/Nothing.png (PNG copy
+)> <C:/Users/laya/Documents/VisualHashApplet/doc/figures/NothingP67Psi0664.png 
+(PNG copy)> <C:/Users/laya/Documents/VisualHashApplet/doc/figures/Filtered.png 
+(PNG copy)> <C:/Users/laya/Documents/VisualHashApplet/doc/figures/FilteredP67Ps
+i0242.png (PNG copy)>]
+<figures/ThreeFuncs.png, id=81, 256.96pt x 256.96pt>
+File: figures/ThreeFuncs.png Graphic file (type png)
+<use figures/ThreeFuncs.png>
+Package pdftex.def Info: figures/ThreeFuncs.png  used on input line 489.
+(pdftex.def)             Requested size: 85.35826pt x 85.35774pt.
+<figures/ThreeFuncsP67Psi0232.png, id=82, 256.96pt x 256.96pt>
+File: figures/ThreeFuncsP67Psi0232.png Graphic file (type png)
+<use figures/ThreeFuncsP67Psi0232.png>
+Package pdftex.def Info: figures/ThreeFuncsP67Psi0232.png  used on input line 4
+91.
+(pdftex.def)             Requested size: 85.35826pt x 85.35774pt.
+
+
+LaTeX Warning: Reference `rgbSect' on page 1 undefined on input line 517.
+
+
+LaTeX Warning: Reference `fig:threeFuncsColor' on page 1 undefined on input lin
+e 531.
+
+<figures/Colors.png, id=83, 256.96pt x 256.96pt>
+File: figures/Colors.png Graphic file (type png)
+<use figures/Colors.png>
+Package pdftex.def Info: figures/Colors.png  used on input line 536.
+(pdftex.def)             Requested size: 85.35826pt x 85.35774pt.
+<figures/ColorsP67Psi02058.png, id=84, 256.96pt x 256.96pt>
+File: figures/ColorsP67Psi02058.png Graphic file (type png)
+<use figures/ColorsP67Psi02058.png>
+Package pdftex.def Info: figures/ColorsP67Psi02058.png  used on input line 538.
+
+(pdftex.def)             Requested size: 85.35826pt x 85.35774pt.
+[12 <C:/Users/laya/Documents/VisualHashApplet/doc/figures/ThreeFuncs.png (PNG c
+opy)> <C:/Users/laya/Documents/VisualHashApplet/doc/figures/ThreeFuncsP67Psi023
+2.png (PNG copy)>]
+<figures/Shift.png, id=88, 256.96pt x 256.96pt>
+File: figures/Shift.png Graphic file (type png)
+<use figures/Shift.png>
+Package pdftex.def Info: figures/Shift.png  used on input line 554.
+(pdftex.def)             Requested size: 85.35826pt x 85.35774pt.
+<figures/ShiftP67.png, id=89, 256.96pt x 256.96pt>
+File: figures/ShiftP67.png Graphic file (type png)
+<use figures/ShiftP67.png>
+Package pdftex.def Info: figures/ShiftP67.png  used on input line 556.
+(pdftex.def)             Requested size: 85.35826pt x 85.35774pt.
+
+
+LaTeX Warning: Reference `fig:shifted' on page 1 undefined on input line 562.
+
+<figures/Symmetry.png, id=90, 256.96pt x 256.96pt>
+File: figures/Symmetry.png Graphic file (type png)
+<use figures/Symmetry.png>
+Package pdftex.def Info: figures/Symmetry.png  used on input line 573.
+(pdftex.def)             Requested size: 85.35826pt x 85.35774pt.
+<figures/SymmetryP67.png, id=91, 256.96pt x 256.96pt>
+File: figures/SymmetryP67.png Graphic file (type png)
+<use figures/SymmetryP67.png>
+Package pdftex.def Info: figures/SymmetryP67.png  used on input line 575.
+(pdftex.def)             Requested size: 85.35826pt x 85.35774pt.
+[13 <C:/Users/laya/Documents/VisualHashApplet/doc/figures/Colors.png (PNG copy)
+> <C:/Users/laya/Documents/VisualHashApplet/doc/figures/ColorsP67Psi02058.png (
+PNG copy)> <C:/Users/laya/Documents/VisualHashApplet/doc/figures/Shift.png (PNG
+ copy)> <C:/Users/laya/Documents/VisualHashApplet/doc/figures/ShiftP67.png (PNG
+ copy)> <C:/Users/laya/Documents/VisualHashApplet/doc/figures/Symmetry.png (PNG
+ copy)> <C:/Users/laya/Documents/VisualHashApplet/doc/figures/SymmetryP67.png (
+PNG copy)>]
+! TeX capacity exceeded, sorry [input stack size=10000].
+\calc@pre@scan ...c@pre@scan \romannumeral -`\a #1
+                                                  
+l.591 ...{shift}) \wedge (p_i = p^\prime_i \forall
+                                                   i)$
+If you really absolutely need more capacity,
+you can ask a wizard to enlarge me.
+
+ 
+Here is how much of TeX's memory you used:
+ 20830 strings out of 478582
+ 417007 string characters out of 2844816
+ 758757 words of memory out of 3000000
+ 38640 multiletter control sequences out of 15000+600000
+ 482952 words of font info for 80 fonts, out of 8000000 for 9000
+ 1141 hyphenation exceptions out of 8191
+ 10000i,27n,89p,1214b,1676s stack positions out of 10000i,1000n,20000p,200000b,80000s
+!  ==> Fatal error occurred, no output PDF file produced!
