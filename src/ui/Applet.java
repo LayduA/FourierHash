@@ -74,7 +74,7 @@ public class Applet extends JFrame {
     }
 
     public static void main(String[] args) {
-
+        System.out.println(SecureCrypto.getHash("hello"));
         EventQueue.invokeLater(() -> {
             Applet app = new Applet();
             app.setVisible(true);
